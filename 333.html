@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>四年級健康大冒險 - QR Code版</title>
+    <style>
+        :root {
+            --pk-red: #ff1c1c;
+            --pk-white: #f0f0f0;
+            --pk-black: #222;
+            --pk-blue: #3b4cca;
+            --pk-yellow: #ffde00;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: #333;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--pk-black);
+            user-select: none;
+        }
+
+        #game-container {
+            width: 800px;
+            height: 600px;
+            background-color: var(--pk-white);
+            border: 8px solid var(--pk-black);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .header-bar {
+            height: 60px;
+            background-color: var(--pk-red);
+            border-bottom: 4px solid var(--pk-black);
+            display: flex;
+            align-items: center;
+            padding-left: 20px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .screen {
+            padding: 20px;
+            height: calc(100% - 100px);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .active { display: flex !important; }
+
+        h1 {
+            font-size: 36px;
+            color: var(--pk-blue);
+            margin-bottom: 20px;
+            text-shadow: 2px 2px var(--pk-yellow);
+            font-weight: 900;
+        }
+
+        .btn {
+            background-color: var(--pk-white);
+            border: 4px solid var(--pk-black);
+            padding: 15px 30px;
+            margin: 8px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.2);
+            width: 300px; /*稍微加寬*/
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background-color: var(--pk-yellow);
+            transform: translate(-2px, -2px);
+        }
+
+        .btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: none;
+        }
+
+        /* QR Code 區域樣式 */
+        #qr-container {
+            display: none;
+            margin-top: 10px;
+            border: 4px solid var(--pk-black);
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        input[type="text"] {
+            font-size: 20px;
+            padding: 10px;
+            border: 4px solid var(--pk-black);
+            margin-bottom: 20px;
+            width: 250px;
+            text-align: center;
+        }
+
+        .question-box {
+            border: 4px solid var(--pk-black);
+            padding: 20px;
+            background: white;
+            width: 90%;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.6;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 95%;
+        }
+
+        .option-btn {
+            width: 100%;
+            margin: 0;
+            text-align: left;
+            font-size: 18px;
+            padding: 12px;
+        }
+
+        .checkbox-group {
+            text-align: left;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            width: 90%;
+            margin-bottom: 20px;
+        }
+        .checkbox-item {
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .checkbox-item input {
+            margin-right: 10px;
+            width: 24px;
+            height: 24px;
+        }
+
+        .feedback-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 100;
+        }
+
+        .feedback-content {
+            background: var(--pk-white);
+            color: var(--pk-black);
+            border: 6px solid var(--pk-yellow);
+            padding: 30px;
+            width: 80%;
+            text-align: left;
+            border-radius: 10px;
+            box-shadow: 0 0 20px #fff;
+        }
+        
+        table {
+            width: 90%;
+            border-collapse: collapse;
+            font-size: 16px;
+            margin-top: 10px;
+            background: white;
+        }
+        th, td {
+            border: 2px solid var(--pk-black);
+            padding: 8px;
+            text-align: center;
+        }
+        th { background-color: var(--pk-red); color: white; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div class="header-bar">
+        <span>HP: <span id="hp-display">100/100</span> | LV: 4年級</span>
+    </div>
+
+    <div id="screen-home" class="screen active">
+        <h1>健康知識<br>大師挑戰賽</h1>
+        <div style="font-size:60px; margin-bottom:10px;">⛑️</div>
+        
+        <button class="btn" onclick="goToNameInput()">開始遊戲</button>
+        <button class="btn" onclick="retryGame()">再來一次</button>
+        <button class="btn" onclick="showLeaderboard()">積分排行</button>
+        <button class="btn" style="background-color: #e0f7fa;" onclick="toggleQRCode()">📱 顯示 QR Code</button>
+
+        <div id="qr-container">
+            <p style="font-size:14px; margin:5px 0;">請掃描加入遊戲</p>
+            <img id="qr-image" src="" alt="QR Code" width="150" height="150">
+        </div>
+    </div>
+
+    <div id="screen-name" class="screen">
+        <h2>請輸入訓練家姓名</h2>
+        <input type="text" id="player-name" placeholder="你的名字" maxlength="10">
+        <button class="btn" onclick="startGame(false)">出發！</button>
+        <button class="btn" onclick="goHome()">返回</button>
+    </div>
+
+    <div id="screen-game" class="screen">
+        <div style="display:flex; justify-content:space-between; width:90%; font-size:16px; margin-bottom:10px; font-weight:bold;">
+            <span id="q-progress">題目: 1/21</span>
+            <span id="score-display">得分: 0</span>
+        </div>
+        <div class="question-box">
+            <div id="question-type" style="color:var(--pk-blue); margin-bottom:10px;"></div>
+            <div id="question-text">題目載入中...</div>
+        </div>
+        
+        <div id="options-area" class="options-grid"></div>
+        <div id="checkbox-area" class="checkbox-group" style="display:none;"></div>
+        <button id="submit-check-btn" class="btn" style="display:none; margin: 0 auto;" onclick="checkCheckboxAnswer()">決定就是你了！</button>
+    </div>
+
+    <div id="screen-result" class="screen">
+        <h2>挑戰結束！</h2>
+        <p>訓練家：<span id="result-name"></span></p>
+        <p>最終得分：<span id="result-score" style="color:var(--pk-red); font-size: 36px; font-weight:bold;"></span></p>
+        <p>耗時：<span id="result-time"></span></p>
+        <div style="margin-top:30px;">
+            <button class="btn" onclick="showLeaderboard()">查看積分排行</button>
+            <button class="btn" onclick="goHome()">回到首頁</button>
+        </div>
+    </div>
+
+    <div id="screen-leaderboard" class="screen">
+        <h2>名人堂 (積分排行)</h2>
+        <div style="height: 350px; overflow-y: auto; width: 100%;">
+            <table id="leaderboard-table">
+                <thead>
+                    <tr><th>名次</th><th>訓練家</th><th>分數</th><th>時間</th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <button class="btn" style="margin-top:20px;" onclick="goHome()">返回</button>
+    </div>
+
+    <div id="feedback-modal" class="feedback-modal">
+        <div class="feedback-content">
+            <h2 id="feedback-title"></h2>
+            <div id="feedback-detail" style="font-size: 18px; line-height: 1.6; margin: 20px 0;"></div>
+            <button class="btn" style="width: 100%;" onclick="nextQuestion()">繼續冒險</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// --- 錯誤攔截 ---
+window.onerror = function(msg, url, line) {
+   alert("程式發生錯誤：\n" + msg);
+   return true;
+};
+
+// --- 全域變數 ---
+var gameState = {
+    playerName: "訓練家",
+    currentQuestions: [],
+    currentIndex: 0,
+    score: 0,
+    startTime: 0,
+    endTime: 0
+};
+
+// --- QR Code 功能 ---
+function toggleQRCode() {
+    var qrContainer = document.getElementById('qr-container');
+    var qrImage = document.getElementById('qr-image');
+    
+    // 如果目前是隱藏的，就顯示並產生
+    if (qrContainer.style.display === 'none' || qrContainer.style.display === '') {
+        var currentUrl = window.location.href;
+        
+        // 檢查是否為本機檔案
+        if (currentUrl.startsWith("file://")) {
+            alert("⚠️ 老師請注意：\n您目前是在電腦硬碟中開啟此檔案。\n\n這個 QR Code 掃描後，學生的手機將無法連線！\n\n請務必將此網頁上傳到網站空間，QR Code 才能正常運作喔！");
+        }
+        
+        // 使用免費 API 產生 QR Code
+        qrImage.src = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(currentUrl);
+        qrContainer.style.display = 'block';
+    } else {
+        qrContainer.style.display = 'none';
+    }
+}
+
+// --- 介面切換 ---
+function showScreen(screenId) {
+    var screens = document.querySelectorAll('.screen');
+    for(var i=0; i<screens.length; i++) {
+        screens[i].classList.remove('active');
+    }
+    document.getElementById(screenId).classList.add('active');
+    
+    // 切換畫面時，把 QR Code 藏起來
+    document.getElementById('qr-container').style.display = 'none';
+}
+
+function goToNameInput() { showScreen('screen-name'); }
+function goHome() { showScreen('screen-home'); }
+
+function retryGame() {
+    if (gameState.playerName && gameState.playerName !== "訓練家") {
+        startGame(true);
+    } else {
+        goToNameInput();
+    }
+}
+
+// --- 遊戲邏輯 ---
+function startGame(skipInput) {
+    if (!skipInput) {
+        var nameInput = document.getElementById('player-name').value.trim();
+        if (!nameInput) {
+            alert("請輸入訓練家姓名！");
+            return;
+        }
+        gameState.playerName = nameInput;
+        try { localStorage.setItem('lastPlayer', nameInput); } catch(e){}
+    }
+
+    gameState.score = 0;
+    gameState.currentIndex = 0;
+    gameState.startTime = new Date();
+    
+    generateQuiz();
+    showScreen('screen-game');
+    renderQuestion();
+}
+
+function generateQuiz() {
+    // 隨機選 10 題是非
+    var shuffledTF = poolTF.sort(function() { return 0.5 - Math.random(); }).slice(0, 10);
+    // 隨機選 10 題選擇
+    var shuffledMC = poolMC.sort(function() { return 0.5 - Math.random(); }).slice(0, 10);
+    
+    // 標記類型
+    for(var i=0; i<shuffledTF.length; i++) shuffledTF[i].type = 'TF';
+    for(var i=0; i<shuffledMC.length; i++) shuffledMC[i].type = 'MC';
+    var qCheck = Object.assign({}, fixedCheckQ); 
+    qCheck.type = 'CHECK';
+
+    var allQ = shuffledTF.concat(shuffledMC);
+    allQ.sort(function() { return 0.5 - Math.random(); });
+    allQ.push(qCheck);
+    
+    gameState.currentQuestions = allQ;
+}
+
+function renderQuestion() {
+    var q = gameState.currentQuestions[gameState.currentIndex];
+    var total = gameState.currentQuestions.length;
+    
+    document.getElementById('q-progress').innerText = "題目: " + (gameState.currentIndex + 1) + "/" + total;
+    document.getElementById('score-display').innerText = "得分: " + gameState.score;
+    
+    var typeText = "";
+    if (q.type === 'TF') typeText = "【是非題】";
+    if (q.type === 'MC') typeText = "【選擇題】";
+    if (q.type === 'CHECK') typeText = "【多重勾選題】";
+    
+    document.getElementById('question-type').innerText = typeText;
+    document.getElementById('question-text').innerText = q.q;
+
+    var optionsArea = document.getElementById('options-area');
+    var checkArea = document.getElementById('checkbox-area');
+    var checkBtn = document.getElementById('submit-check-btn');
+
+    optionsArea.innerHTML = '';
+    checkArea.innerHTML = '';
+    checkArea.style.display = 'none';
+    checkBtn.style.display = 'none';
+    optionsArea.style.display = 'grid';
+
+    if (q.type === 'TF') {
+        optionsArea.innerHTML = 
+            '<button class="btn option-btn" onclick="answer(true)">⭕ 正確 (O)</button>' +
+            '<button class="btn option-btn" onclick="answer(false)">❌ 錯誤 (X)</button>';
+    } else if (q.type === 'MC') {
+        q.options.forEach(function(opt, idx) {
+            var btn = document.createElement('button');
+            btn.className = 'btn option-btn';
+            btn.innerText = (idx+1) + ". " + opt;
+            btn.onclick = function() { answer(idx); };
+            optionsArea.appendChild(btn);
+        });
+    } else if (q.type === 'CHECK') {
+        optionsArea.style.display = 'none';
+        checkArea.style.display = 'grid';
+        checkBtn.style.display = 'block';
+        q.options.forEach(function(opt, idx) {
+            checkArea.innerHTML += 
+                '<label class="checkbox-item">' +
+                '<input type="checkbox" value="' + idx + '"> ' + opt +
+                '</label>';
+        });
+    }
+}
+
+function answer(userAns) {
+    var q = gameState.currentQuestions[gameState.currentIndex];
+    var isCorrect = false;
+
+    if (q.type === 'TF') {
+        isCorrect = (userAns === q.a);
+    } else if (q.type === 'MC') {
+        isCorrect = (userAns === q.ans);
+    }
+    processResult(isCorrect, q);
+}
+
+function checkCheckboxAnswer() {
+    var q = gameState.currentQuestions[gameState.currentIndex];
+    var checkboxes = document.querySelectorAll('#checkbox-area input:checked');
+    var checked = [];
+    for(var i=0; i<checkboxes.length; i++) {
+        checked.push(parseInt(checkboxes[i].value));
+    }
+    checked.sort();
+    var correctArr = q.ans.slice().sort();
+    
+    var isCorrect = JSON.stringify(checked) === JSON.stringify(correctArr);
+    processResult(isCorrect, q);
+}
+
+function processResult(isCorrect, q) {
+    var title = isCorrect ? "✨ 效果絕佳！答對了！" : "💥 攻擊失誤！答錯了！";
+    var color = isCorrect ? "green" : "#ff1c1c";
+    if (isCorrect) gameState.score += 5;
+
+    var modal = document.getElementById('feedback-modal');
+    var fDetail = document.getElementById('feedback-detail');
+    
+    document.getElementById('feedback-title').innerText = title;
+    document.getElementById('feedback-title').style.color = color;
+    
+    fDetail.innerHTML = 
+        '<strong>解析：</strong><br>' + q.detail + '<br><br>' +
+        '<span style="color:#555">目前得分：' + gameState.score + '</span>';
+        
+    modal.style.display = 'flex';
+}
+
+function nextQuestion() {
+    document.getElementById('feedback-modal').style.display = 'none';
+    gameState.currentIndex++;
+    if (gameState.currentIndex < gameState.currentQuestions.length) {
+        renderQuestion();
+    } else {
+        endGame();
+    }
+}
+
+function endGame() {
+    gameState.endTime = new Date();
+    var timeDiff = Math.floor((gameState.endTime - gameState.startTime) / 1000);
+    
+    showScreen('screen-result');
+    document.getElementById('result-name').innerText = gameState.playerName;
+    document.getElementById('result-score').innerText = gameState.score;
+    document.getElementById('result-time').innerText = formatTime(timeDiff);
+
+    saveScore(gameState.playerName, gameState.score, timeDiff);
+}
+
+function formatTime(seconds) {
+    var m = Math.floor(seconds / 60);
+    var s = seconds % 60;
+    return m + "分" + s + "秒";
+}
+
+function saveScore(name, score, time) {
+    try {
+        var board = JSON.parse(localStorage.getItem('healthGameLeaderboard')) || [];
+        board.push({ name: name, score: score, time: time, date: new Date().toLocaleDateString() });
+        board.sort(function(a, b) {
+            if (b.score !== a.score) return b.score - a.score;
+            return a.time - b.time;
+        });
+        if (board.length > 10) board = board.slice(0, 10);
+        localStorage.setItem('healthGameLeaderboard', JSON.stringify(board));
+    } catch(e) {}
+}
+
+function showLeaderboard() {
+    showScreen('screen-leaderboard');
+    var tbody = document.querySelector('#leaderboard-table tbody');
+    tbody.innerHTML = '';
+    var board = [];
+    try { board = JSON.parse(localStorage.getItem('healthGameLeaderboard')) || []; } catch(e){}
+
+    if (board.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4">目前沒有紀錄，快去挑戰吧！</td></tr>';
+        return;
+    }
+
+    board.forEach(function(entry, index) {
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + (index + 1) + '</td><td>' + entry.name + '</td><td>' + entry.score + '</td><td>' + formatTime(entry.time) + '</td>';
+        tbody.appendChild(tr);
+    });
+}
+
+try {
+    var lastPlayer = localStorage.getItem('lastPlayer');
+    if (lastPlayer) { document.getElementById('player-name').value = lastPlayer; }
+} catch(e) {}
+
+// ================= 題庫資料 =================
+var fixedCheckQ = {
+    q: "嚼檳榔可能對健康造成哪些危害？(請勾選正確選項)",
+    options: ["牙周病", "近視", "口腔癌", "腸病毒", "流感", "磨損口腔內部"],
+    ans: [0, 2, 5], 
+    detail: "詳解：檳榔纖維粗糙會磨損口腔，且含有致癌物，容易導致牙周病、口腔癌及口腔黏膜病變。"
+};
+
+var poolTF = [
+    { q: "起司是乳品類食物，有較豐富的蛋白質。", a: true, detail: "詳解：沒錯！起司和鮮乳一樣，含有豐富的蛋白質和鈣質。" },
+    { q: "有些人患有「酒精不耐症」，身體無法代謝酒精裡的致癌物質，所以喝酒容易出現臉紅、心跳加快。", a: true, detail: "詳解：這是一種基因遺傳，這類人喝酒對身體傷害更大。" },
+    { q: "尼古丁具有興奮、提神的作用，長期使用會令人上癮。", a: true, detail: "詳解：尼古丁是菸品中主要的成癮物質。" },
+    { q: "南瓜比起牛肉有較豐富的膳食纖維。", a: true, detail: "詳解：南瓜是植物（全榖雜糧類），牛肉是肉類，肉類沒有膳食纖維。" },
+    { q: "根據《菸害防制法》規定，在大眾運輸交通工具禁止吸菸。", a: true, detail: "詳解：公車、捷運等大眾運輸工具全面禁菸。" },
+    { q: "一氧化碳會降低血液中紅血球運送氧氣的能力，讓人體缺氧。", a: true, detail: "詳解：這就是一氧化碳中毒的原理。" },
+    { q: "不論駕駛何種交通工具，只要酒測值達到一定的濃度都算是酒駕。", a: true, detail: "詳解：腳踏車、機車、汽車酒駕都是違法的。" },
+    { q: "油鍋起火時，應立刻蓋上鍋蓋，杜絕火焰繼續燃燒。", a: true, detail: "詳解：絕對不能用水，用水會讓火勢擴大。" },
+    { q: "番茄比西瓜含有更豐富的膳食纖維。", a: true, detail: "詳解：番茄（蔬菜/水果）的纖維質通常比瓜類水果高。" },
+    { q: "小孩大量飲酒會造成腦部發展受損。", a: true, detail: "詳解：酒精會傷害正在發育的腦細胞。" },
+    { q: "二手菸、三手菸對人體都會造成危害。", a: true, detail: "詳解：三手菸是附著在衣物環境的毒素，一樣有害。" },
+    { q: "空心菜都是含有豐富膳食纖維的食物。", a: true, detail: "詳解：深綠色蔬菜是很好的纖維來源。" },
+    { q: "為了避免吸入過多有害物質，盡量進入有菸味的場所。", a: false, detail: "詳解：應該是「避免」進入有菸味的場所。" },
+    { q: "牛肉比南瓜含有更豐富的膳食纖維。", a: false, detail: "詳解：肉類（牛肉）不含膳食纖維。" },
+    { q: "菠菜、蘆筍、青花菜都是含維生素A的食物。", a: true, detail: "詳解：深綠色蔬菜通常富含維生素A。" },
+    { q: "搭乘公車等大眾運輸交通工具可以吸菸。", a: false, detail: "詳解：大眾運輸工具全面禁菸。" },
+    { q: "醫療機構、加油站、學校等場所禁止吸菸。", a: true, detail: "詳解：這些都是法定禁菸場所。" },
+    { q: "魚、雞蛋、鮮乳都是含維生素B群的食物。", a: true, detail: "詳解：這些動物性食物富含B群。" },
+    { q: "電子煙的煙油裡有各種調味劑，加熱後會有香味。", a: true, detail: "詳解：雖然有香味，但依然含有害物質，是吸引青少年的陷阱。" },
+    { q: "西瓜、小黃瓜、大番茄都是含水食物。", a: true, detail: "詳解：瓜類和番茄水分含量很高。" },
+    { q: "使用緩降機逃生時，要將安全帶套於腋下。", a: true, detail: "詳解：套在腋下並束緊，避免滑落。" },
+    { q: "使用緩降機逃生時，要將安全帶套於手腕上，並束緊束帶。", a: false, detail: "詳解：一定要套在「腋下」才安全。" },
+    { q: "尼古丁會降低血液中紅血球運送氧氣的能力，讓人體缺氧。", a: false, detail: "詳解：會造成缺氧的是「一氧化碳」，尼古丁是讓人上癮。" },
+    { q: "即使酒測值超過一定的濃度也可以騎腳踏車，只有飲酒後駕駛汽車、機車才算是酒駕。", a: false, detail: "詳解：騎腳踏車酒駕一樣違法，會被處罰。" },
+    { q: "油比水輕，油鍋起火時，水會浮在油之上，因此不可滅火。", a: true, detail: "詳解：水碰到熱油會瞬間汽化爆炸，非常危險。" },
+    { q: "菸油的主要成分包含尼古丁、焦油、一氧化碳等。", a: false, detail: "詳解：這通常是傳統紙菸的成分，電子煙油主要是尼古丁、丙二醇、甘油、調味劑等（雖然還是有害）。" },
+    { q: "火災時若身處鐵皮屋中，門外濃煙密布，應立即關門並塞住門縫。", a: true, detail: "詳解：防止濃煙進入，並尋找其他有窗戶的地方求救。" },
+    { q: "紅莧菜比起核桃含有更豐富的脂肪。", a: false, detail: "詳解：紅莧菜是蔬菜（無脂肪），核桃是堅果種子類（富含脂肪）。" },
+    { q: "使用緩降機逃生時，在丟下輪盤前應先確認下方沒有障礙物。", a: true, detail: "詳解：避免繩索纏繞或人撞到障礙物。" },
+    { q: "火災逃生避難房間的門為玻璃且無法阻擋濃煙，應立即採低姿勢逃出。", a: true, detail: "詳解：如果不耐熱或無法擋煙，就不能關門避難，要快逃。" },
+    { q: "紅蘿蔔、南瓜、空心菜都是含維生素A的食物。", a: true, detail: "詳解：紅橘色和深綠色蔬果多含維生素A。" },
+    { q: "辣椒、柑橘、芭樂都是含維生素C的食物。", a: true, detail: "詳解：芭樂是維生素C之王。" },
+    { q: "燕麥、南瓜、空心菜都是含膳食纖維的食物。", a: true, detail: "詳解：全榖雜糧和蔬菜都富含纖維。" },
+    { q: "使用緩降機逃生時，身體應背向牆面。", a: false, detail: "詳解：應「面向牆面」，雙手輕推牆壁避免磨擦受傷。" },
+    { q: "酒駕不僅違法，還會造成自己和他人的生命危險。", a: true, detail: "詳解：安全是回家的路。" },
+    { q: "依據健康餐盤原則，豆魚蛋肉類食物每天都要吃 3 個掌心大。", a: true, detail: "詳解：這是建議的攝取量。" },
+    { q: "生乳是經過冷卻且未經其他處理的乳汁。", a: true, detail: "詳解：生乳未經殺菌，不建議直接飲用。" },
+    { q: "攝取蛋白質時，可依照「豆類、魚類、蛋類、肉類」的順序選擇食物。", a: true, detail: "詳解：豆類脂肪較低，紅肉脂肪較高，所以有此優先順序。" },
+    { q: "如果身處鐵皮屋、木造屋中，因不耐高溫，就不適合關門避難，要設法逃離現場。", a: true, detail: "詳解：這類建材容易燒穿，關門也擋不住火。" },
+    { q: "肥胖容易引發健康問題。", a: true, detail: "詳解：如心臟病、高血壓、糖尿病等。" },
+    { q: "依據健康餐盤原則，水果類食物每天都要吃 3 個拳頭大。", a: false, detail: "詳解：水果建議每天「2」個拳頭大。" },
+    { q: "鮮乳有較多鈣且糖含量較少，是較健康的選擇。", a: true, detail: "詳解：比起調味乳（有加糖），鮮乳更好。" },
+    { q: "紅灰或白灰會使口腔環境變成鹼性，唾液變成暗紅色。", a: true, detail: "詳解：這是嚼檳榔的特徵。" },
+    { q: "玉米是全榖雜糧類食物，有較豐富的醣類。", a: true, detail: "詳解：玉米不是蔬菜，是主食喔！" },
+    { q: "核桃是油脂與堅果種子類食物，有較豐富的脂肪。", a: true, detail: "詳解：適量吃堅果對身體好，但熱量高。" },
+    { q: "如果逃生通道無煙，應快步逃離。", a: true, detail: "詳解：沒有煙的時候不用爬行，快步離開即可。" },
+    { q: "身體應面向牆面使用緩降機。", a: true, detail: "詳解：保護身體正面，雙手推牆保持距離。" }
+];
+
+var poolMC = [
+    { q: "下列關於酒駕的敘述何者錯誤？", options: ["只飲酒過量才會罰錢", "會造成自己和他人危險", "只要喝酒就不該開車", "腳踏車酒駕也算違法"], ans: 0, detail: "詳解：酒駕判定是依據酒精濃度，不是看有沒有「過量」，且超標就會處罰。" },
+    { q: "鮮乳是乳品類食物，主要營養素為？", options: ["蛋白質、鈣", "脂肪、維生素C", "醣類、鐵", "纖維、水"], ans: 0, detail: "詳解：鮮乳最重要的就是蛋白質和鈣質。" },
+    { q: "草莓是水果類，馬鈴薯是全榖雜糧類，那豆腐是什麼類？", options: ["蔬菜類", "水果類", "豆魚蛋肉類", "油脂類"], ans: 2, detail: "詳解：豆腐由黃豆製成，屬於豆魚蛋肉類。" },
+    { q: "偵煙式住宅用火災警報器適合裝設在哪裡？", options: ["廚房", "浴室", "寢室、樓梯、走廊", "陽台"], ans: 2, detail: "詳解：廚房適合「定溫式」（怕炒菜煙霧誤報），寢室適合「偵煙式」。" },
+    { q: "運用大量的高溫油來烹調食材，會使蛋白質、油脂變質，並且容易攝取過多熱量，這是哪種烹調法？", options: ["清蒸", "油炸", "水煮", "涼拌"], ans: 1, detail: "詳解：油炸食物屬於紅燈食物，不健康。" },
+    { q: "灼燙傷發生時，若不急救處理直接送醫，會如何？", options: ["沒關係", "延遲傷口降溫時間，可能讓傷勢加重", "醫生會處理就好", "比較不會痛"], ans: 1, detail: "詳解：第一時間「沖」水降溫最重要，能減少皮膚深層傷害。" },
+    { q: "火災時應循著什麼移動？", options: ["避難方向指示燈", "直覺", "風向", "人群尖叫聲"], ans: 0, detail: "詳解：綠色的避難方向指示燈會指引安全出口。" },
+    { q: "火災時易斷電，使用電梯逃生可能因斷電而受困，應走哪裡逃生？", options: ["樓梯", "窗戶跳下去", "躲衣櫃", "搭手扶梯"], ans: 0, detail: "詳解：樓梯（安全梯）是最安全的逃生路徑。" },
+    { q: "逃生時不可用塑膠袋套頭，因為？", options: ["塑膠袋很髒", "看不清楚路", "塑膠袋遇熱即融化，可能因此燙傷顏面", "會窒息"], ans: 2, detail: "詳解：火場高溫會讓塑膠袋融化黏在皮膚上，造成嚴重燒傷。" },
+    { q: "如果身處鐵皮屋中發生火災，門外濃煙密布，應該？", options: ["躲在床下", "關門塞門縫", "大叫", "衝出去"], ans: 1, detail: "詳解：鐵皮屋不耐熱，若無法逃出應暫時關門擋煙並尋找其他出口（如窗戶）。" },
+    { q: "濃厚的電子煙一樣含多種有害物質，會對健康造成？", options: ["嚴重危害", "沒有影響", "幫助消化", "改善視力"], ans: 0, detail: "詳解：電子煙絕對不是無害的。" },
+    { q: "摸門測試溫度時如果門發燙，表示逃生通道不安全，應？", options: ["用力開門", "潑水降溫", "立即關門並塞住門縫，改往離火煙熱最遠的陽台或房間求救", "放棄希望"], ans: 2, detail: "詳解：這是「關門避難」的重要原則。" },
+    { q: "下列何者是「紅燈食物」？", options: ["炸雞", "水煮蛋", "蘋果", "鮮乳"], ans: 0, detail: "詳解：炸雞高油高熱量，是紅燈食物。" },
+    { q: "下列何者是富含膳食纖維的食物？", options: ["礦泉水", "南瓜", "雞肉", "白糖"], ans: 1, detail: "詳解：南瓜（全榖雜糧類）含有豐富纖維。" },
+    { q: "鮮乳是乳品類，有較多？", options: ["蛋白質", "脂肪", "澱粉", "纖維"], ans: 0, detail: "詳解：乳品是優質蛋白質來源。" },
+    { q: "長期使用尼古丁會導致腦細胞？", options: ["更聰明", "麻痺", "再生", "變大"], ans: 1, detail: "詳解：尼古丁會損害神經系統。" },
+    { q: "紅燈食物大多加工複雜且？", options: ["高纖", "高油、高糖", "清淡", "低熱量"], ans: 1, detail: "詳解：這就是為什麼要少吃的原因。" },
+    { q: "如果身處木造屋中發生火災，應該？", options: ["關門避難", "躲在浴室", "設法以正確方式移動，迅速逃離現場", "原地不動"], ans: 2, detail: "詳解：木造屋易燃，不適合關門避難，要盡快逃出。" },
+    { q: "芭樂是水果類食物，有較多？", options: ["脂肪", "維生素C", "蛋白質", "澱粉"], ans: 1, detail: "詳解：芭樂含有豐富的維生素C。" },
+    { q: "火災時應大聲示警，提醒所有人？", options: ["吃飯了", "失火了", "地震了", "下課了"], ans: 1, detail: "詳解：大叫「失火了」喚醒或通知家人逃生。" },
+    { q: "優酪乳是乳品類食物，有較多？", options: ["鈣", "鐵", "油", "纖維"], ans: 0, detail: "詳解：優酪乳也是補鈣的好選擇。" },
+    { q: "沒有證據能證明電子煙安全且能幫助？", options: ["長高", "減肥", "戒菸", "美白"], ans: 2, detail: "詳解：電子煙無法幫助戒菸，反而造成多重成癮。" },
+    { q: "用冷水沖洗燙傷傷口，不能用？", options: ["冰水", "自來水", "生理食鹽水", "冷開水"], ans: 0, detail: "詳解：冰水會導致血管收縮，加重組織傷害，應用一般流動冷水。" },
+    { q: "想喝牛乳補充鈣，下列何者含糖量較少，是較健康的選擇？", options: ["鮮乳", "調味乳", "保久乳", "巧克力牛奶"], ans: 0, detail: "詳解：鮮乳最天然，沒有添加糖。" },
+    { q: "下列哪一種食物攝取不足，可以吃地瓜或馬鈴薯來補充？", options: ["蔬菜", "全榖雜糧", "水果", "肉類"], ans: 1, detail: "詳解：地瓜、馬鈴薯跟米飯一樣，都是全榖雜糧類。" },
+    { q: "小峻在家中奔跑，不小心撞到手臂紅腫，媽媽應先怎麼處理？", options: ["熱敷", "推拿", "冰敷", "貼布"], ans: 2, detail: "詳解：撞傷初期（紅腫熱痛）應先冰敷消腫。" },
+    { q: "哪種營養素分解後無法被人體吸收，但能幫助排便？", options: ["蛋白質", "纖維", "維生素A", "脂肪"], ans: 1, detail: "詳解：膳食纖維雖不被吸收，卻是腸道的清道夫。" },
+    { q: "預防觸電，手潮濕時應？", options: ["趕快插插頭", "避免觸碰電器開關", "穿雨衣", "戴墨鏡"], ans: 1, detail: "詳解：水會導電，濕手摸電器非常危險。" },
+    { q: "想吃點心，哪一個是比較健康的選擇？", options: ["炸臭豆腐", "水炒豬肉", "滷肉", "蒸豆腐"], ans: 3, detail: "詳解：蒸豆腐少油清淡，比炸物或肥肉健康。" },
+    { q: "下列何者含鈣，且糖含量較少？", options: ["鮮乳", "可樂", "奶茶", "果汁"], ans: 0, detail: "詳解：鮮乳是補鈣首選。" },
+    { q: "嚼檳榔會磨損牙齒，容易形成？", options: ["牙結石", "蛀牙", "美白", "整齊"], ans: 0, detail: "詳解：檳榔殘渣和粗纖維容易堆積形成牙結石，導致牙周病。" },
+    { q: "火災時，如果門把溫度很高，表示門外有火，應該？", options: ["開門逃生", "關門塞門縫", "潑水開門", "用力踢門"], ans: 1, detail: "詳解：不可開門，應阻擋濃煙並尋找第二逃生口。" },
+    { q: "身上著火時，應該？", options: ["停、躺、滾", "跑、跳、碰", "沖、脫、泡", "叫、叫、伸"], ans: 0, detail: "詳解：停下來、躺下、左右滾動以壓熄火苗。" },
+    { q: "小薰想喝牛乳，選哪一種比較好？", options: ["鮮乳", "巧克力牛乳", "果汁牛乳", "麥芽牛乳"], ans: 0, detail: "詳解：調味乳糖分高，原味鮮乳最健康。" }
+];
+
+</script>
+</body>
+</html>
