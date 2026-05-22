@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生字小達人 - 趣味練習網</title>
+    
+    <!-- 引入 Tailwind CSS 進行美化排版 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 引入 Google 字體 -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Nunito', 'Noto Sans TC', sans-serif; }
+        
+        /* 嚴格指定台灣標準標楷體 */
+        .kai-font { 
+            font-family: 'TW-Kai', 'Kaiti TC', 'BiauKai', 'DFKai-SB', '楷體-繁', '楷體', serif; 
+        }
+
+        /* 答錯時的震動動畫 */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+        }
+        .animate-shake { animation: shake 0.4s ease-in-out; }
+        
+        /* 提示圖示的漂浮動畫 */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-3px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+
+        /* 自訂捲軸讓畫面更精緻 */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="m-0 p-0 h-screen w-screen bg-emerald-50 text-gray-800 flex flex-col overflow-hidden">
+
+    <header class="h-16 bg-white shadow-sm flex items-center justify-between px-4 sm:px-6 shrink-0 z-20 w-full">
+        <div class="flex items-center gap-2 sm:gap-3">
+            <span class="text-2xl sm:text-3xl">🎒</span>
+            <h1 class="text-xl sm:text-2xl font-black text-emerald-600 tracking-wider">生字小達人</h1>
+        </div>
+        
+        <!-- 學習進度條 -->
+        <div id="progressContainer" style="display: none;" class="flex-col items-end">
+            <span class="text-[10px] sm:text-xs font-bold text-gray-500 mb-1">本課進度</span>
+            <div class="w-24 sm:w-40 bg-gray-200 rounded-full h-3 sm:h-4 overflow-hidden shadow-inner">
+                <div id="progressBar" class="bg-yellow-400 h-full w-0 transition-all duration-500 flex items-center justify-end px-1">
+                    <div class="w-1.5 h-1.5 bg-white rounded-full opacity-50"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 網格排版，強迫分割為 35% 與 65%，絕對不換行 -->
+    <main id="learningMode" style="display: grid; grid-template-columns: 35% 65%; flex: 1; height: 100%; overflow: hidden; width: 100%;">
+        
+        <!-- 左側面板：選單與生字列表 -->
+        <aside style="grid-column: 1 / 2; overflow-y: auto; background-color: #f9fafb; border-right: 2px solid #e5e7eb; display: flex; flex-direction: column;">
+            <div class="p-3 sm:p-5 border-b border-gray-100 bg-white sticky top-0 z-20 shadow-sm">
+                <h2 class="text-sm sm:text-lg font-bold text-gray-700 mb-2 sm:mb-3 flex items-center gap-2">
+                    <span>📖</span> <span class="hidden sm:inline">選擇課次</span>
+                </h2>
+                <select id="lessonSelect" class="w-full bg-white border-2 border-emerald-200 text-gray-700 py-1.5 px-2 sm:py-2 sm:px-3 rounded-xl focus:outline-none focus:border-emerald-500 font-bold shadow-sm transition-colors cursor-pointer text-sm sm:text-base">
+                    <!-- 課次選項由 JS 動態產生 -->
+                </select>
+            </div>
+            
+            <div id="wordList" class="flex-1 overflow-y-auto p-3 sm:p-5 flex flex-wrap gap-2 sm:gap-4 content-start bg-gray-50 justify-center sm:justify-start">
+                <!-- 生字按鈕由 JS 動態產生 -->
+            </div>
+
+            <div id="startGameContainer" style="display: none;" class="p-3 sm:p-5 border-t-2 border-emerald-100 bg-emerald-50 sticky bottom-0 z-20 mt-auto">
+                <p class="text-xs sm:text-sm text-emerald-600 font-bold mb-2 text-center">🎉 學完囉！</p>
+                <button id="startGameBtn" class="w-full bg-gradient-to-b from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 text-white font-black py-2 sm:py-3 rounded-xl shadow-lg transform transition hover:-translate-y-1 flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-lg">
+                    <span>🎮</span> <span>進入遊戲</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- 右側面板：生字展示與教學區 -->
+        <section style="grid-column: 2 / 3; overflow-y: auto; background-color: #ecfdf5; position: relative; padding: 1rem; display: flex; align-items: center; justify-content: center;">
+            
+            <!-- 預設提示畫面 -->
+            <div id="defaultPlaceholder" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+                <span class="text-5xl sm:text-7xl mb-4 animate-float text-emerald-300">👈</span>
+                <p class="text-lg sm:text-2xl font-bold tracking-widest text-emerald-600/50">請點選左側生字<br>開始學習</p>
+            </div>
+            
+            <!-- 🌟 選中生字展示區 -->
+            <div id="selectedWordDisplay" style="display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
+                
+                <div class="bg-white rounded-[2rem] sm:rounded-[3rem] shadow-xl p-4 sm:p-8 border-4 sm:border-8 border-emerald-100 flex flex-col items-center max-w-sm w-full relative overflow-hidden">
+                    
+                    <div class="absolute top-0 left-0 w-full h-2 sm:h-4 bg-gradient-to-r from-emerald-300 via-teal-400 to-emerald-300"></div>
+                    
+                    <!-- 注音顯示 -->
+                    <div class="text-2xl sm:text-4xl font-bold text-emerald-600 mb-4 sm:mb-6 tracking-widest bg-emerald-50 px-4 sm:px-8 py-2 sm:py-3 rounded-full border-2 border-emerald-100 shadow-sm mt-2">
+                        <span id="pinyinShowcase">注音</span>
+                    </div>
+                    
+                    <!-- 【完美置中微調】十字格背景與生字置中：完全捨棄任何外層干擾，用 padding 強制推動 -->
+                    <!-- 老師，我把這裡的海綿從 28px 削薄到 26px 了！毫米級調整！ -->
+                    <div class="border-4 border-gray-300 rounded-2xl mb-4 sm:mb-8 shi-zi-ge shrink-0 shadow-inner" style="width: 170px; height: 170px; display: flex; align-items: center; justify-content: center; padding-left: 26px;">
+                        
+                        <span id="wordShowcase" class="kai-font text-gray-800 select-none" 
+                              style="font-size: 110px; line-height: 110px;">
+                            字
+                        </span>
+                    </div>
+                    
+                    <!-- 部首顯示 -->
+                    <div class="text-lg sm:text-2xl font-bold text-yellow-700 mb-4 sm:mb-8 tracking-widest bg-yellow-50 px-4 sm:px-6 py-1 sm:py-2 rounded-full border-2 border-yellow-200 shadow-sm">
+                        部首：<span id="radicalShowcase">部</span>部
+                    </div>
+                    
+                    <!-- 筆順網按鈕 -->
+                    <button id="moeLinkBtn" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-black py-3 sm:py-4 px-2 sm:px-4 rounded-xl shadow-lg transform transition hover:-translate-y-1 flex items-center justify-center gap-2 text-sm sm:text-lg">
+                        <span class="text-lg sm:text-2xl">✍️</span> 
+                        <span>前往教育部筆順網</span>
+                    </button>
+                    <p class="mt-3 text-[10px] sm:text-xs text-gray-400 font-bold text-center">
+                        (將於新視窗開啟標準筆順動畫)
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 遊戲模式 -->
+    <main id="gameMode" style="display: none;" class="absolute inset-0 bg-gradient-to-br from-blue-100 to-indigo-100 z-50 w-full h-full flex-col">
+        <div class="p-3 sm:p-6 flex justify-between items-center bg-white/50 backdrop-blur-md shadow-sm shrink-0">
+            <h2 class="text-xl sm:text-3xl font-black text-indigo-600 flex items-center gap-2"><span>🏆</span> 挑戰賽</h2>
+            <div class="flex items-center gap-2 sm:gap-4">
+                <div class="text-sm sm:text-xl font-bold text-gray-600 bg-white px-3 sm:px-6 py-1.5 sm:py-2 rounded-full shadow-sm">
+                    目標：<span class="text-indigo-600">10</span> 題
+                </div>
+                <button id="backToLearnBtn" class="px-3 sm:px-6 py-1.5 sm:py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-full transition-colors">
+                    返回
+                </button>
+            </div>
+        </div>
+
+        <div class="flex-1 flex flex-col items-center justify-center p-4 overflow-y-auto">
+            <div id="streakDisplay" class="flex flex-wrap gap-1 sm:gap-2 mb-4 sm:mb-8 min-h-[2.5rem] items-center justify-center bg-white/60 px-4 sm:px-6 py-2 sm:py-3 rounded-full shadow-sm">
+                <span class="text-sm sm:text-base text-gray-400 font-bold mr-1">連勝：</span>
+            </div>
+
+            <div class="bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-5 sm:p-10 max-w-2xl w-full text-center border-b-4 sm:border-b-8 border-indigo-200 relative">
+                <h3 id="questionType" class="text-lg sm:text-2xl font-bold text-gray-500 mb-4 sm:mb-6 tracking-widest">題型</h3>
+                <div id="questionContent" class="text-4xl sm:text-7xl font-black text-gray-800 mb-6 sm:mb-10 kai-font" style="min-height: 80px;">題目</div>
+                
+                <div id="optionsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <!-- 選項由 JS 產生 -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 遊戲過關提示視窗 -->
+    <div id="winModal" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center; padding: 1rem;">
+        <div class="bg-white rounded-3xl p-8 sm:p-10 max-w-sm w-full text-center shadow-2xl">
+            <div class="text-6xl sm:text-8xl mb-4 animate-float">🏆</div>
+            <h2 class="text-2xl sm:text-3xl font-black text-yellow-500 mb-2">太棒了！</h2>
+            <p class="text-base sm:text-lg text-gray-600 font-bold mb-8">你完成了 10 連勝，成功過關！</p>
+            <button id="playAgainBtn" class="w-full py-3 sm:py-4 bg-indigo-500 hover:bg-indigo-400 text-white font-black text-lg sm:text-xl rounded-xl shadow-lg transition-transform hover:-translate-y-1">
+                再玩一次
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 👇 【老師改這裡：生字庫設定區】 👇
+        // ==========================================
+        // 老師您好！我已經直接幫您把第十一課與第十二課的生字、注音、部首和造詞都設定好了！
+        // 如果未來需要修改內容，可以直接在下方做新增或調整喔！
+        // ==========================================
+        const lessonData = [
+            {
+                lesson: 11,
+                title: "第十一課：生字學習",
+                words: [
+                    { word: '租', pinyin: 'ㄗㄨ', radical: '禾', phrases: ['出租', '房租'] },
+                    { word: '蒙', pinyin: 'ㄇㄥˊ', radical: '艸', phrases: ['啟蒙', '蒙面'] },
+                    { word: '瘦', pinyin: 'ㄕㄡˋ', radical: '疒', phrases: ['瘦肉', '瘦小'] },
+                    { word: '肺', pinyin: 'ㄈㄟˋ', radical: '肉', phrases: ['肺炎', '肺部'] },
+                    { word: '炎', pinyin: 'ㄧㄢˊ', radical: '火', phrases: ['發炎', '炎熱'] },
+                    { word: '咳', pinyin: 'ㄎㄜˊ', radical: '口', phrases: ['咳嗽', '乾咳'] },
+                    { word: '醫', pinyin: 'ㄧ', radical: '酉', phrases: ['醫生', '醫院'] },
+                    { word: '危', pinyin: 'ㄨㄟˊ', radical: '卩', phrases: ['危險', '危急'] },
+                    { word: '嚴', pinyin: 'ㄧㄢˊ', radical: '口', phrases: ['嚴格', '嚴重'] },
+                    { word: '藤', pinyin: 'ㄊㄥˊ', radical: '艸', phrases: ['藤蔓', '藤椅'] },
+                    { word: '磚', pinyin: 'ㄓㄨㄢ', radical: '石', phrases: ['紅磚', '磚塊'] },
+                    { word: '薄', pinyin: 'ㄅㄛˊ', radical: '艸', phrases: ['薄弱', '單薄'] },
+                    { word: '賺', pinyin: 'ㄓㄨㄢˋ', radical: '貝', phrases: ['賺錢', '賺取'] },
+                    { word: '搬', pinyin: 'ㄅㄢ', radical: '手', phrases: ['搬家', '搬運'] },
+                    { word: '梯', pinyin: 'ㄊㄧ', radical: '木', phrases: ['樓梯', '電梯'] }
+                ]
+            },
+            {
+                lesson: 12,
+                title: "第十二課：生字學習",
+                words: [
+                    { word: '閱', pinyin: 'ㄩㄝˋ', radical: '門', phrases: ['閱讀', '閱覽'] },
+                    { word: '扶', pinyin: 'ㄈㄨˊ', radical: '手', phrases: ['扶手', '扶持'] },
+                    { word: '捐', pinyin: 'ㄐㄩㄢ', radical: '手', phrases: ['捐款', '捐贈'] },
+                    { word: '烈', pinyin: 'ㄌㄧㄝˋ', radical: '火', phrases: ['熱烈', '強烈'] },
+                    { word: '犧', pinyin: 'ㄒㄧ', radical: '牛', phrases: ['犧牲', '犧牛'] },
+                    { word: '牲', pinyin: 'ㄕㄥ', radical: '牛', phrases: ['犧牲', '牲畜'] },
+                    { word: '踴', pinyin: 'ㄩㄥˇ', radical: '足', phrases: ['踴躍', '一踴'] },
+                    { word: '穫', pinyin: 'ㄏㄨㄛˋ', radical: '禾', phrases: ['收穫', '秋穫'] },
+                    { word: '任', pinyin: 'ㄖㄣˋ', radical: '人', phrases: ['任務', '任何'] },
+                    { word: '務', pinyin: 'ㄨˋ', radical: '力', phrases: ['任務', '服務'] },
+                    { word: '鐘', pinyin: 'ㄓㄨㄥ', radical: '金', phrases: ['時鐘', '鬧鐘'] },
+                    { word: '響', pinyin: 'ㄒㄧㄤˇ', radical: '音', phrases: ['響亮', '影響'] },
+                    { word: '欄', pinyin: 'ㄌㄢˊ', radical: '木', phrases: ['欄杆', '專欄'] }
+                ]
+            }
+        ];
+        // ==========================================
+        // 👆 【老師改這裡：生字庫設定區 結束】 👆
+        // ==========================================
+
+
+        let currentLessonIndex = 0;
+        let learnedWords = new Set();
+        let currentWordData = null;
+        let streak = 0;
+        const WIN_STREAK = 10;
+        let currentCorrectAnswer = "";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initLessonSelect();
+            renderWordList();
+            
+            // 切換課次
+            document.getElementById('lessonSelect').addEventListener('change', (e) => {
+                currentLessonIndex = parseInt(e.target.value, 10);
+                resetLearningProgress();
+                renderWordList();
+                hideRightPanel();
+            });
+
+            // 連結到教育部筆順網 (強制另開新視窗)
+            document.getElementById('moeLinkBtn').addEventListener('click', () => {
+                if (currentWordData) {
+                    const moeUrl = `https://stroke-order.learningweb.moe.edu.tw/searchW.jsp?WORD=${encodeURIComponent(currentWordData.word)}`;
+                    window.open(moeUrl, '_blank');
+                }
+            });
+
+            // 綁定遊戲按鈕
+            document.getElementById('startGameBtn').addEventListener('click', enterGameMode);
+            document.getElementById('backToLearnBtn').addEventListener('click', exitGameMode);
+            document.getElementById('playAgainBtn').addEventListener('click', () => {
+                document.getElementById('winModal').style.display = 'none';
+                enterGameMode();
+            });
+        });
+
+        function initLessonSelect() {
+            const select = document.getElementById('lessonSelect');
+            select.innerHTML = '';
+            lessonData.forEach((lesson, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = lesson.title;
+                select.appendChild(option);
+            });
+        }
+
+        function renderWordList() {
+            const wordListDiv = document.getElementById('wordList');
+            wordListDiv.innerHTML = '';
+            const words = lessonData[currentLessonIndex].words;
+
+            words.forEach((item) => {
+                const btn = document.createElement('button');
+                const isLearned = learnedWords.has(item.word);
+                
+                btn.className = `text-xl sm:text-3xl w-12 h-12 sm:w-16 sm:h-16 rounded-xl font-bold shadow-sm transition-all transform hover:scale-105 kai-font border-2 flex items-center justify-center shrink-0 ${
+                    isLearned 
+                    ? 'bg-emerald-500 text-white border-emerald-600 shadow-emerald-200' 
+                    : 'bg-white text-gray-700 border-gray-200 hover:border-emerald-300'
+                }`;
+                btn.textContent = item.word;
+                
+                btn.onclick = () => {
+                    showRightPanel(item);
+                    if (!learnedWords.has(item.word)) {
+                        learnedWords.add(item.word);
+                        btn.classList.remove('bg-white', 'text-gray-700', 'border-gray-200');
+                        btn.classList.add('bg-emerald-500', 'text-white', 'border-emerald-600', 'shadow-emerald-200');
+                        updateProgress();
+                    }
+                };
+                wordListDiv.appendChild(btn);
+            });
+            updateProgress();
+        }
+
+        function showRightPanel(itemData) {
+            currentWordData = itemData;
+            document.getElementById('defaultPlaceholder').style.display = 'none';
+            document.getElementById('selectedWordDisplay').style.display = 'flex';
+            
+            document.getElementById('wordShowcase').textContent = itemData.word;
+            document.getElementById('pinyinShowcase').textContent = itemData.pinyin;
+            document.getElementById('radicalShowcase').textContent = itemData.radical;
+        }
+
+        function hideRightPanel() {
+            currentWordData = null;
+            document.getElementById('defaultPlaceholder').style.display = 'flex';
+            document.getElementById('selectedWordDisplay').style.display = 'none';
+        }
+
+        function resetLearningProgress() {
+            learnedWords.clear();
+            document.getElementById('startGameContainer').style.display = 'none';
+        }
+
+        function updateProgress() {
+            const totalWords = lessonData[currentLessonIndex].words.length;
+            const learnedCount = learnedWords.size;
+            const percentage = totalWords === 0 ? 0 : (learnedCount / totalWords) * 100;
+            
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            
+            progressContainer.style.display = 'flex';
+            progressBar.style.width = `${percentage}%`;
+
+            if (learnedCount === totalWords && totalWords > 0) {
+                document.getElementById('startGameContainer').style.display = 'block';
+            }
+        }
+
+        function enterGameMode() {
+            document.getElementById('learningMode').style.display = 'none';
+            document.getElementById('gameMode').style.display = 'flex';
+            streak = 0;
+            generateQuestion();
+            updateStreakDisplay();
+        }
+
+        function exitGameMode() {
+            document.getElementById('gameMode').style.display = 'none';
+            document.getElementById('learningMode').style.display = 'grid';
+        }
+
+        function generateQuestion() {
+            const words = lessonData[currentLessonIndex].words;
+            if (words.length === 0) return;
+
+            const targetWord = words[Math.floor(Math.random() * words.length)];
+            const questionType = Math.floor(Math.random() * 3);
+            
+            const typeTitle = document.getElementById('questionType');
+            const content = document.getElementById('questionContent');
+            let options = [];
+
+            if (questionType === 0) {
+                typeTitle.textContent = "請問這個字的「注音」是？";
+                content.textContent = targetWord.word;
+                currentCorrectAnswer = targetWord.pinyin;
+                options = generateOptions(words, 'pinyin', targetWord.pinyin);
+            } else if (questionType === 1) {
+                typeTitle.textContent = "請問這個字的「部首」是？";
+                content.textContent = targetWord.word;
+                currentCorrectAnswer = targetWord.radical;
+                options = generateOptions(words, 'radical', targetWord.radical);
+            } else {
+                typeTitle.textContent = "請選出正確的生字完成造詞：";
+                const phrase = targetWord.phrases[Math.floor(Math.random() * targetWord.phrases.length)];
+                const displayPhrase = phrase.replace(targetWord.word, '（？）');
+                content.textContent = displayPhrase;
+                currentCorrectAnswer = targetWord.word;
+                options = generateOptions(words, 'word', targetWord.word);
+            }
+
+            renderOptions(options);
+        }
+
+        function generateOptions(wordsPool, key, correctAnswer) {
+            let optionsSet = new Set([correctAnswer]);
+            let attempts = 0;
+            while (optionsSet.size < 4 && attempts < 50) {
+                const randomWord = wordsPool[Math.floor(Math.random() * wordsPool.length)];
+                optionsSet.add(randomWord[key]);
+                attempts++;
+            }
+            
+            const dummyData = {
+                'pinyin': ['ㄉㄚˋ', 'ㄒㄧㄠˇ', 'ㄇㄧㄥˊ', 'ㄊㄧㄢ'],
+                'radical': ['人', '木', '水', '火'],
+                'word': ['大', '小', '上', '下']
+            };
+            
+            let dummyIndex = 0;
+            while(optionsSet.size < 4 && dummyIndex < dummyData[key].length) {
+                optionsSet.add(dummyData[key][dummyIndex]);
+                dummyIndex++;
+            }
+
+            return Array.from(optionsSet).sort(() => Math.random() - 0.5);
+        }
+
+        function renderOptions(options) {
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "bg-gray-50 hover:bg-indigo-50 border-2 border-gray-200 hover:border-indigo-300 text-gray-700 text-xl sm:text-3xl font-bold py-4 sm:py-6 rounded-xl transition-all hover:scale-105 shadow-sm kai-font";
+                btn.textContent = opt;
+                btn.onclick = () => checkAnswer(opt, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedAnswer, btnElement) {
+            if (selectedAnswer === currentCorrectAnswer) {
+                btnElement.classList.remove('bg-gray-50', 'border-gray-200', 'text-gray-700');
+                btnElement.classList.add('bg-green-500', 'border-green-600', 'text-white');
+                streak++;
+                updateStreakDisplay();
+                
+                if (streak >= WIN_STREAK) {
+                    setTimeout(() => {
+                        document.getElementById('winModal').style.display = 'flex';
+                    }, 300);
+                } else {
+                    setTimeout(generateQuestion, 600);
+                }
+            } else {
+                btnElement.classList.remove('bg-gray-50', 'border-gray-200');
+                btnElement.classList.add('bg-red-500', 'border-red-600', 'text-white', 'animate-shake');
+                streak = 0;
+                updateStreakDisplay();
+                setTimeout(generateQuestion, 1000);
+            }
+        }
+
+        function updateStreakDisplay() {
+            const display = document.getElementById('streakDisplay');
+            display.innerHTML = '<span class="text-sm sm:text-base text-gray-500 font-bold mr-1 shrink-0">連續答對：</span>';
+            
+            if (streak === 0) {
+                const zeroText = document.createElement('span');
+                zeroText.className = "text-gray-400 font-bold text-sm sm:text-base";
+                zeroText.textContent = "0";
+                display.appendChild(zeroText);
+                return;
+            }
+
+            for (let i = 0; i < streak; i++) {
+                const star = document.createElement('span');
+                star.textContent = '⭐';
+                star.className = 'text-lg sm:text-2xl';
+                display.appendChild(star);
+            }
+        }
+    </script>
+</body>
+</html>
