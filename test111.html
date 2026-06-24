@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>考試計時電子看板</title>
+  <title>考試計時電子看板 (全自動升級版)</title>
   
   <!-- 引入 Tailwind CSS (這是一個讓我們可以快速排版的魔法棒) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -34,7 +34,7 @@
 </head>
 <body class="bg-gradient-to-br from-blue-50 via-slate-50 to-indigo-100 transition-colors duration-1000 font-sans min-h-screen flex flex-col text-slate-800" id="app-body">
 
-  <!-- 頂部資訊列 (現在時間) -->
+  <!-- 頂部資訊列 -->
   <header class="w-full px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-md shadow-sm z-10 relative">
     <div class="flex items-center space-x-3">
       <div class="bg-blue-600 p-2 rounded-lg text-white">
@@ -55,7 +55,7 @@
   <main class="flex-grow flex flex-col items-center justify-center p-4 md:p-8 relative">
     
     <!-- === 控制中心 (排程設定) === -->
-    <div id="schedule-view" class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-8 fade-in absolute z-20">
+    <div id="schedule-view" class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-8 fade-in absolute z-20">
       
       <!-- 左側：新增考試 -->
       <div class="md:col-span-1 bg-white p-6 rounded-3xl shadow-xl border border-slate-100 h-fit">
@@ -71,14 +71,27 @@
               type="text" 
               id="new-subject"
               class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-lg"
-              placeholder="例如：第三節 自然"
+              placeholder="例如：第一節 國語"
               required
             >
           </div>
 
           <div>
             <label class="block text-slate-600 font-bold mb-2 text-sm flex justify-between">
-              <span>時間 (分鐘)</span>
+              <span>開始時間</span>
+              <span class="text-blue-500 cursor-pointer hover:underline" onclick="setNowTime()">現在時間</span>
+            </label>
+            <input 
+              type="time" 
+              id="new-start-time"
+              class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-lg"
+              required
+            >
+          </div>
+
+          <div>
+            <label class="block text-slate-600 font-bold mb-2 text-sm flex justify-between">
+              <span>考試時間 (分鐘)</span>
               <span class="text-blue-500 cursor-pointer hover:underline" onclick="document.getElementById('new-duration').value = 40">預設 40 分</span>
             </label>
             <input 
@@ -91,7 +104,25 @@
             >
           </div>
 
-          <div class="flex gap-2">
+          <div>
+            <label class="block text-slate-600 font-bold mb-2 text-sm flex justify-between">
+              <span>考後休息 (推算下節用)</span>
+              <div class="space-x-3">
+                <span class="text-blue-500 cursor-pointer hover:underline" onclick="document.getElementById('new-rest-time').value = 10">10分</span>
+                <span class="text-amber-500 cursor-pointer hover:underline font-bold" onclick="document.getElementById('new-rest-time').value = 20">大下課20分</span>
+              </div>
+            </label>
+            <input 
+              type="number" 
+              id="new-rest-time"
+              value="10"
+              class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-lg"
+              min="0"
+              required
+            >
+          </div>
+
+          <div class="flex gap-2 pt-2">
             <button 
               type="submit"
               id="submit-btn"
@@ -112,8 +143,8 @@
       </div>
 
       <!-- 右側：今日考程清單 -->
-      <div class="md:col-span-2 bg-white p-6 md:p-8 rounded-3xl shadow-xl border border-slate-100">
-        <div class="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
+      <div class="md:col-span-2 bg-white p-6 md:p-8 rounded-3xl shadow-xl border border-slate-100 flex flex-col h-[75vh]">
+        <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-4">
           <div class="flex items-center text-indigo-600">
             <i class="ph-fill ph-list-dashes text-3xl mr-3"></i>
             <h2 class="text-2xl font-bold text-slate-800">今日考程表</h2>
@@ -123,16 +154,55 @@
           </span>
         </div>
 
-        <div id="schedule-list" class="space-y-4 max-h-[50vh] overflow-y-auto pr-2">
+        <div id="schedule-list" class="space-y-4 overflow-y-auto pr-2 flex-grow">
           <!-- 考程列表會由 JavaScript 動態產生 -->
         </div>
+
+        <div class="mt-6 pt-4 border-t border-slate-100">
+          <button 
+            onclick="startAutoMode()"
+            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl text-2xl transition-all shadow-lg hover:shadow-indigo-500/50 flex justify-center items-center group relative overflow-hidden"
+          >
+            <i class="ph-fill ph-magic-wand text-3xl mr-3 group-hover:animate-bounce"></i>
+            啟動全自動排程 
+            <span class="text-sm font-normal bg-indigo-800/50 px-3 py-1 rounded-full ml-4 hidden md:inline">時間到會自動切換</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- === 休息/待命畫面 (自動模式專用) === -->
+    <div id="standby-view" class="flex flex-col items-center w-full text-center hidden opacity-0 transition-opacity duration-500 absolute z-10">
+      <h2 class="text-5xl md:text-6xl font-black text-slate-600 mb-8 tracking-wide">
+        現在是下課 / 休息時間
+      </h2>
+      <div class="text-[8rem] md:text-[14rem] leading-none font-black tabular-nums tracking-tighter text-blue-500 drop-shadow-md transition-colors duration-500 my-4" id="standby-time">
+        --:--:--
+      </div>
+      <div id="standby-next" class="mt-8 text-3xl md:text-4xl font-bold text-emerald-600 bg-emerald-50 px-10 py-5 rounded-full border border-emerald-200 shadow-sm">
+        下一節準備：--
+      </div>
+      <div class="mt-16 absolute bottom-[-8rem] opacity-30 hover:opacity-100 transition-opacity duration-300">
+        <button 
+          onclick="stopAutoMode()"
+          class="bg-white hover:bg-red-50 border border-slate-200 text-slate-600 hover:text-red-600 font-bold py-3 px-8 rounded-2xl text-xl flex items-center transition-all shadow-lg group"
+        >
+          <i class="ph-fill ph-stop-circle text-2xl mr-3 group-hover:text-red-500"></i>
+          停止自動排程並返回設定
+        </button>
       </div>
     </div>
 
     <!-- === 考試進行中畫面 (大螢幕專注模式) === -->
     <div id="exam-view" class="flex flex-col items-center w-full text-center hidden opacity-0 transition-opacity duration-500 absolute z-10">
       
-      <div class="bg-white/60 backdrop-blur-sm px-8 py-4 rounded-full mb-8 shadow-sm border border-white">
+      <!-- 新增：明顯的現在時間 -->
+      <div class="text-3xl md:text-4xl font-bold text-slate-500 mb-6 tracking-widest flex items-center bg-white/60 px-8 py-3 rounded-full shadow-sm border border-slate-100">
+        <i class="ph-fill ph-clock mr-3 text-blue-500"></i>現在時間 
+        <span id="exam-current-time" class="text-blue-700 ml-3 tabular-nums">--:--:--</span>
+      </div>
+
+      <div class="bg-white/70 backdrop-blur-sm px-10 py-5 rounded-full mb-6 shadow-sm border border-white">
         <h1 id="display-subject" class="text-5xl md:text-7xl font-black text-slate-800 tracking-wide">
           --
         </h1>
@@ -142,6 +212,13 @@
         00:00
       </div>
 
+      <!-- 新增：溫馨小語輪播區 -->
+      <div class="mt-6 h-12">
+        <div id="rotating-messages" class="text-4xl md:text-5xl font-black text-indigo-600 transition-opacity duration-500 drop-shadow-sm tracking-widest">
+          專心作答，發揮實力！
+        </div>
+      </div>
+
       <div id="warning-message" class="h-20 mt-4 transition-opacity duration-500 opacity-0">
         <div class="flex items-center text-4xl font-bold text-amber-600 animate-pulse bg-amber-100/80 px-8 py-3 rounded-full">
           <i class="ph-fill ph-warning-circle text-5xl mr-3"></i>
@@ -149,7 +226,8 @@
         </div>
       </div>
 
-      <div class="mt-12 absolute bottom-[-5rem] opacity-30 hover:opacity-100 transition-opacity duration-300">
+      <!-- 結束資訊與手動停止按鈕 -->
+      <div id="exam-stop-btn-container" class="mt-12 absolute bottom-[-4rem] opacity-30 hover:opacity-100 transition-opacity duration-300">
         <div class="bg-white px-8 py-4 rounded-2xl shadow-lg flex items-center gap-8 border border-slate-100">
             <div class="text-xl font-bold text-slate-600">
             預計結束時間：<span id="display-end-time">--:--</span>
@@ -159,7 +237,7 @@
             class="bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 font-bold py-2 px-6 rounded-xl text-lg flex items-center transition-all"
             >
             <i class="ph-fill ph-stop-circle text-2xl mr-2 group-hover:text-red-500"></i>
-            結束本科並返回
+            手動結束本科
             </button>
         </div>
       </div>
@@ -169,20 +247,32 @@
 
   <script>
     // --- 狀態與資料 ---
-    // 我幫您預設好了兩科，您可以隨時刪除或新增
+    // 我幫您預設好了一個範例，您可以全部刪除重新排
     let schedule = [
-      { id: 1, subject: '第一節：國語期中考', duration: 40, status: 'pending' },
-      { id: 2, subject: '第二節：數學期中考', duration: 40, status: 'pending' }
+      { id: 1, subject: '第一節：國語期中考', startTime: '08:40', duration: 40, status: 'pending' },
+      { id: 2, subject: '第二節：數學期中考', startTime: '09:30', duration: 40, status: 'pending' }
     ];
     let activeExamId = null;
     let examTimerInterval = null;
     let targetEndTime = null;
-    let editingId = null; // 新增：用來記錄目前正在編輯的考試 ID
+    let editingId = null; 
+    let isAutoMode = false; // 是否進入全自動排程模式
+
+    // 鼓勵標語清單
+    const messages = [
+      "專心作答，發揮實力！", 
+      "仔細檢查，不要粗心！", 
+      "注意時間，把握節奏！", 
+      "深呼吸，放輕鬆！",
+      "字體端正，保持卷面整潔！"
+    ];
+    let messageIndex = 0;
 
     // --- DOM 元件 ---
     const appBody = document.getElementById('app-body');
     const scheduleView = document.getElementById('schedule-view');
     const examView = document.getElementById('exam-view');
+    const standbyView = document.getElementById('standby-view');
     const settingsLabel = document.getElementById('settings-label');
     const scheduleListEl = document.getElementById('schedule-list');
     const examCountEl = document.getElementById('exam-count');
@@ -191,26 +281,73 @@
     const displayTimer = document.getElementById('display-timer');
     const displayEndTime = document.getElementById('display-end-time');
     const warningMessage = document.getElementById('warning-message');
+    const examCurrentTime = document.getElementById('exam-current-time');
+    const standbyTime = document.getElementById('standby-time');
+    const standbyNext = document.getElementById('standby-next');
+    const rotatingMessages = document.getElementById('rotating-messages');
+    const examStopBtnContainer = document.getElementById('exam-stop-btn-container');
 
-    // --- 時鐘邏輯 ---
+    // --- 初始化時間欄位 (預設顯示現在時間) ---
+    function setNowTime() {
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('new-start-time').value = `${hh}:${mm}`;
+    }
+    // 網頁載入時設定一次
+    document.addEventListener("DOMContentLoaded", setNowTime);
+
+    // --- 時鐘邏輯 (全域核心) ---
     function updateClock() {
       const now = new Date();
-      document.getElementById('current-time-display').innerText = 
-        now.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const timeStr = now.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+      
+      // 更新畫面上所有需要現在時間的地方
+      document.getElementById('current-time-display').innerText = timeStr;
+      if (examCurrentTime) examCurrentTime.innerText = timeStr;
+      if (standbyTime) standbyTime.innerText = timeStr;
+
+      // 如果在自動模式，交給自動控制中心判斷
+      if (isAutoMode) {
+        checkAutoSchedule(now);
+      }
     }
     setInterval(updateClock, 1000);
     updateClock();
 
+    // --- 溫馨標語輪播器 ---
+    setInterval(() => {
+      // 只有在考試畫面，或是全自動模式正在考試時才輪播
+      if (activeExamId || (isAutoMode && !standbyView.classList.contains('hidden'))) {
+        rotatingMessages.classList.add('opacity-0');
+        setTimeout(() => {
+          messageIndex = (messageIndex + 1) % messages.length;
+          rotatingMessages.innerText = messages[messageIndex];
+          rotatingMessages.classList.remove('opacity-0');
+        }, 500); // 配合淡出動畫時間
+      }
+    }, 10000); // 每 10 秒換一句
+
+    // --- 輔助函數：計算結束時間字串 (如 08:40 + 40分 = 09:20) ---
+    function getEndTimeStr(startTime, duration) {
+      const [h, m] = startTime.split(':').map(Number);
+      const end = new Date(1970, 0, 1, h, m + duration);
+      return `${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`;
+    }
+
     // --- 排程清單渲染邏輯 ---
     function renderSchedule() {
+      // 自動依照開始時間排序
+      schedule.sort((a, b) => a.startTime.localeCompare(b.startTime));
+
       examCountEl.innerText = `共 ${schedule.length} 節`;
       
       if (schedule.length === 0) {
         scheduleListEl.innerHTML = `
-          <div class="text-center py-12 text-slate-400 flex flex-col items-center">
-            <i class="ph ph-timer text-6xl mb-4 opacity-50"></i>
-            <p class="text-lg">目前沒有安排考試喔！</p>
-            <p class="text-sm mt-2">請從左側新增您今天要考的科目</p>
+          <div class="text-center py-16 text-slate-400 flex flex-col items-center">
+            <i class="ph ph-calendar-plus text-7xl mb-4 opacity-50"></i>
+            <p class="text-xl font-bold">目前清單空空的喔！</p>
+            <p class="text-md mt-2">請從左側輸入今天的所有考試科目</p>
           </div>
         `;
         return;
@@ -218,6 +355,8 @@
 
       scheduleListEl.innerHTML = schedule.map(exam => {
         const isCompleted = exam.status === 'completed';
+        const endTimeStr = getEndTimeStr(exam.startTime, exam.duration);
+        
         return `
           <div class="flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${
             isCompleted 
@@ -226,14 +365,16 @@
           }">
             <div class="flex items-center gap-4">
               ${isCompleted 
-                ? `<i class="ph-fill ph-check-circle text-4xl text-emerald-500"></i>` 
-                : `<div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg">${exam.duration}</div>`
+                ? `<i class="ph-fill ph-check-circle text-5xl text-emerald-500"></i>` 
+                : `<div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xl"><i class="ph-bold ph-clock"></i></div>`
               }
               <div>
                 <h3 class="text-xl font-bold ${isCompleted ? 'text-slate-500 line-through' : 'text-slate-800'}">
                   ${exam.subject}
                 </h3>
-                <p class="text-sm text-slate-500">${exam.duration} 分鐘</p>
+                <p class="text-sm mt-1 font-bold ${isCompleted ? 'text-slate-400' : 'text-blue-600'} bg-blue-50 px-3 py-1 rounded-full inline-block">
+                  🕒 ${exam.startTime} ~ ${endTimeStr} (${exam.duration} 分鐘)
+                </p>
               </div>
             </div>
 
@@ -242,17 +383,17 @@
                 <button 
                   onclick="handleStartExam(${exam.id})"
                   class="bg-emerald-500 hover:bg-emerald-600 text-white p-3 rounded-xl font-bold flex items-center transition-colors shadow-sm"
-                  title="開始這節考試"
+                  title="手動立即開始 (不按照排程時間)"
                 >
                   <i class="ph-fill ph-play-circle text-xl md:mr-1"></i>
-                  <span class="hidden md:inline">開始</span>
+                  <span class="hidden md:inline">單科手動開始</span>
                 </button>
                 <button 
                   onclick="handleEditExam(${exam.id})"
                   class="p-3 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-xl transition-colors"
                   title="編輯"
                 >
-                  <i class="ph ph-pencil-simple text-xl"></i>
+                  <i class="ph-bold ph-pencil-simple text-xl"></i>
                 </button>
               ` : ''}
               <button 
@@ -260,7 +401,7 @@
                 class="p-3 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
                 title="刪除"
               >
-                <i class="ph ph-trash text-xl"></i>
+                <i class="ph-bold ph-trash text-xl"></i>
               </button>
             </div>
           </div>
@@ -268,67 +409,74 @@
       }).join('');
     }
 
-    // --- 新增 / 刪除考試 ---
+    // --- 新增 / 編輯 / 刪除考試 ---
     function handleAddExam(e) {
       e.preventDefault();
       const subjectInput = document.getElementById('new-subject');
+      const startTimeInput = document.getElementById('new-start-time');
       const durationInput = document.getElementById('new-duration');
       
-      if (!subjectInput.value.trim()) return;
+      if (!subjectInput.value.trim() || !startTimeInput.value) return;
 
       if (editingId) {
-        // 編輯模式：更新現有資料
         const exam = schedule.find(e => e.id === editingId);
         if (exam) {
           exam.subject = subjectInput.value.trim();
+          exam.startTime = startTimeInput.value;
           exam.duration = parseInt(durationInput.value) || 40;
+          exam.status = 'pending'; 
         }
-        cancelEdit(); // 儲存後重置表單為新增模式
+        cancelEdit(); 
       } else {
-        // 新增模式：加入新資料
         const newExam = {
           id: Date.now(),
           subject: subjectInput.value.trim(),
+          startTime: startTimeInput.value,
           duration: parseInt(durationInput.value) || 40,
           status: 'pending'
         };
         schedule.push(newExam);
-        subjectInput.value = ''; // 清空輸入框
+        subjectInput.value = ''; 
+        
+        // 【老師神助手】自動推算下一節課的開始時間 (上一節結束時間 + 休息時間)
+        const restTimeInput = document.getElementById('new-rest-time');
+        const restTime = parseInt(restTimeInput.value) || 10;
+        const [h, m] = newExam.startTime.split(':').map(Number);
+        const nextTime = new Date(1970, 0, 1, h, m + newExam.duration + restTime);
+        startTimeInput.value = `${String(nextTime.getHours()).padStart(2, '0')}:${String(nextTime.getMinutes()).padStart(2, '0')}`;
         durationInput.value = '40';
+        restTimeInput.value = '10'; // 加完後自動切回預設的 10 分鐘
       }
       
       renderSchedule();
     }
 
-    // 啟動編輯模式
     function handleEditExam(id) {
       const exam = schedule.find(e => e.id === id);
       if (!exam) return;
       
       editingId = id;
       document.getElementById('new-subject').value = exam.subject;
+      document.getElementById('new-start-time').value = exam.startTime;
       document.getElementById('new-duration').value = exam.duration;
       
-      // 改變左側表單外觀為「編輯模式」
       document.getElementById('form-title').innerText = '編輯考程';
       document.getElementById('form-icon').className = 'ph-bold ph-pencil-simple text-2xl mr-2';
       document.getElementById('submit-btn').innerText = '儲存修改';
-      // 換成橘黃色按鈕比較有提醒作用
       document.getElementById('submit-btn').className = 'flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-xl text-lg transition-all shadow-md hover:shadow-amber-500/40 flex justify-center items-center';
       document.getElementById('cancel-btn').classList.remove('hidden');
     }
 
-    // 取消編輯模式
     function cancelEdit() {
       editingId = null;
       document.getElementById('new-subject').value = '';
+      setNowTime(); // 恢復為現在時間
       document.getElementById('new-duration').value = '40';
+      document.getElementById('new-rest-time').value = '10';
       
-      // 恢復左側表單外觀為「新增模式」
       document.getElementById('form-title').innerText = '新增考程';
       document.getElementById('form-icon').className = 'ph-bold ph-plus text-2xl mr-2';
       document.getElementById('submit-btn').innerText = '加入清單';
-      // 換回原本的藍色按鈕
       document.getElementById('submit-btn').className = 'flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-lg transition-all shadow-md hover:shadow-blue-500/40 flex justify-center items-center';
       document.getElementById('cancel-btn').classList.add('hidden');
     }
@@ -338,93 +486,248 @@
       renderSchedule();
     }
 
-    // --- 開始 / 結束考試邏輯 ---
-    function handleStartExam(id) {
-      const exam = schedule.find(e => e.id === id);
-      if (!exam) return;
-
-      activeExamId = id;
-      displaySubject.innerText = exam.subject;
+    // ==========================================
+    // --- 全自動排程系統 (核心大腦) ---
+    // ==========================================
+    function startAutoMode() {
+      if (schedule.length === 0) {
+        alert("老師，請先在左邊新增至少一堂考試科目喔！");
+        return;
+      }
+      isAutoMode = true;
+      // 啟動時確保未考完的都是 pending
+      schedule.forEach(e => {
+          if(e.status !== 'completed') e.status = 'pending';
+      }); 
       
-      const now = new Date();
-      targetEndTime = new Date(now.getTime() + exam.duration * 60000);
-      displayEndTime.innerText = targetEndTime.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
-
-      // 切換畫面
+      // 隱藏設定介面
       scheduleView.classList.add('opacity-0');
       settingsLabel.classList.add('opacity-0');
       
       setTimeout(() => {
         scheduleView.classList.add('hidden');
-        examView.classList.remove('hidden');
-        setTimeout(() => examView.classList.remove('opacity-0'), 50);
+        // 第一次強制檢查並切換畫面
+        checkAutoSchedule(new Date(), true);
       }, 500);
-
-      updateExamTimer();
-      examTimerInterval = setInterval(updateExamTimer, 1000);
     }
 
-    function handleStopExam() {
-      clearInterval(examTimerInterval);
-      
-      // 標記該考試為已完成
+    function stopAutoMode() {
+      isAutoMode = false;
       if (activeExamId) {
-        const exam = schedule.find(e => e.id === activeExamId);
-        if (exam) exam.status = 'completed';
+        handleStopExam(true); // 停止時不要標記該科為完成
       }
-      activeExamId = null;
-      targetEndTime = null;
-
-      // 切換回設定畫面
+      
+      standbyView.classList.add('opacity-0');
       examView.classList.add('opacity-0');
       
       setTimeout(() => {
+        standbyView.classList.add('hidden');
         examView.classList.add('hidden');
+        
         scheduleView.classList.remove('hidden');
         setTimeout(() => {
           scheduleView.classList.remove('opacity-0');
           settingsLabel.classList.remove('opacity-0');
         }, 50);
         
-        // 重置背景顏色
+        // 重置背景為設定畫面
+        appBody.className = "bg-gradient-to-br from-blue-50 via-slate-50 to-indigo-100 transition-colors duration-1000 font-sans min-h-screen flex flex-col text-slate-800";
+        renderSchedule();
+      }, 500);
+    }
+
+    // 每秒被呼叫一次，檢查現在時間該做什麼
+    function checkAutoSchedule(now, isInitial = false) {
+      let foundActive = false;
+      let nextExam = null;
+
+      for (let i = 0; i < schedule.length; i++) {
+        const exam = schedule[i];
+        if (exam.status === 'completed') continue;
+
+        const [hours, minutes] = exam.startTime.split(':').map(Number);
+        // 將考試時間轉換為今天的實際 Date 物件
+        const startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
+        const endTime = new Date(startTime.getTime() + exam.duration * 60000);
+
+        if (now >= startTime && now < endTime) {
+          // 🎉 目前時間落在這個考試區間內！
+          foundActive = true;
+          if (activeExamId !== exam.id) {
+             // 如果還沒切換，就切換到考試畫面
+             switchToExamView(exam, endTime);
+          } else {
+             // 如果已經在考了，只更新倒數計時數字
+             updateExamTimerDisplay(now, endTime);
+          }
+          break; // 一次只考一科
+        } else if (now < startTime) {
+          // 📝 找到未來的下一個考試
+          if (!nextExam) nextExam = exam;
+        } else if (now >= endTime && exam.status === 'pending') {
+          // ✅ 時間已經過了，自動標記為完成打勾
+          exam.status = 'completed';
+        }
+      }
+
+      // ☕ 如果目前沒有正在進行的考試 (表示在休息時間)
+      if (!foundActive) {
+        if (activeExamId) {
+          // 剛剛有一科考完了，標記完成
+          const prevExam = schedule.find(e => e.id === activeExamId);
+          if (prevExam) prevExam.status = 'completed';
+          activeExamId = null;
+        }
+        // 顯示休息待命大時鐘畫面
+        switchToStandbyView(nextExam, isInitial);
+      }
+    }
+
+    // 切換至「休息待命畫面」
+    function switchToStandbyView(nextExam, isInitial) {
+      // 避免重複執行導致畫面閃爍
+      if (!standbyView.classList.contains('hidden') && !isInitial) {
+         // 只更新文字
+         if (nextExam) {
+            standbyNext.innerHTML = `下一節準備：<span class="text-emerald-700">${nextExam.subject}</span> (${nextExam.startTime} 開始)`;
+         } else {
+            standbyNext.innerHTML = `今日所有考程已圓滿結束！💯`;
+         }
+         return;
+      }
+
+      examView.classList.add('opacity-0');
+      if (nextExam) {
+        standbyNext.innerHTML = `下一節準備：<span class="text-emerald-700">${nextExam.subject}</span> (${nextExam.startTime} 開始)`;
+      } else {
+        standbyNext.innerHTML = `今日所有考程已圓滿結束！💯`;
+      }
+
+      setTimeout(() => {
+        examView.classList.add('hidden');
+        standbyView.classList.remove('hidden');
+        // 休息時間的背景色 (柔和灰色)
+        appBody.className = "bg-slate-50 transition-colors duration-1000 font-sans min-h-screen flex flex-col text-slate-800";
+        setTimeout(() => standbyView.classList.remove('opacity-0'), 50);
+      }, isInitial ? 0 : 500);
+    }
+
+    // 切換至「考試進行中畫面」
+    function switchToExamView(exam, endTime) {
+      activeExamId = exam.id;
+      targetEndTime = endTime;
+      
+      displaySubject.innerText = exam.subject;
+      displayEndTime.innerText = endTime.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false });
+      
+      // 自動模式下，隱藏手動停止按鈕，避免老師不小心按到
+      if (isAutoMode) {
+        examStopBtnContainer.classList.add('hidden');
+      } else {
+        examStopBtnContainer.classList.remove('hidden');
+      }
+
+      standbyView.classList.add('opacity-0');
+      scheduleView.classList.add('opacity-0');
+      
+      setTimeout(() => {
+        standbyView.classList.add('hidden');
+        scheduleView.classList.add('hidden');
+        examView.classList.remove('hidden');
+        setTimeout(() => examView.classList.remove('opacity-0'), 50);
+      }, 500);
+    }
+
+
+    // ==========================================
+    // --- 傳統單科手動模式 (保留給臨時需要用) ---
+    // ==========================================
+    function handleStartExam(id) {
+      if (isAutoMode) return; 
+      
+      const exam = schedule.find(e => e.id === id);
+      if (!exam) return;
+
+      scheduleView.classList.add('opacity-0');
+      settingsLabel.classList.add('opacity-0');
+      
+      const now = new Date();
+      // 手動模式不看設定的「開始時間」，而是從「現在」往後加分鐘數
+      const endTime = new Date(now.getTime() + exam.duration * 60000);
+      
+      setTimeout(() => switchToExamView(exam, endTime), 500);
+      
+      examTimerInterval = setInterval(() => {
+        updateExamTimerDisplay(new Date(), targetEndTime);
+      }, 1000);
+    }
+
+    function handleStopExam(forceCancel = false) {
+      clearInterval(examTimerInterval);
+      
+      if (activeExamId && !forceCancel) {
+        const exam = schedule.find(e => e.id === activeExamId);
+        if (exam) exam.status = 'completed';
+      }
+      activeExamId = null;
+      targetEndTime = null;
+
+      examView.classList.add('opacity-0');
+      
+      setTimeout(() => {
+        examView.classList.add('hidden');
+        if (!isAutoMode) {
+          scheduleView.classList.remove('hidden');
+          setTimeout(() => {
+            scheduleView.classList.remove('opacity-0');
+            settingsLabel.classList.remove('opacity-0');
+          }, 50);
+        }
+        
         appBody.className = "bg-gradient-to-br from-blue-50 via-slate-50 to-indigo-100 transition-colors duration-1000 font-sans min-h-screen flex flex-col text-slate-800";
         displayTimer.className = "text-[10rem] md:text-[18rem] leading-none font-black tabular-nums tracking-tighter text-emerald-500 drop-shadow-md transition-colors duration-500";
         warningMessage.classList.add('opacity-0');
         
-        renderSchedule(); // 重新渲染清單以顯示打勾狀態
+        renderSchedule(); 
       }, 500);
     }
 
-    // --- 倒數計時與變色 ---
-    function updateExamTimer() {
-      if (!activeExamId) return;
+    // ==========================================
+    // --- 考試倒數計時與變色 ---
+    // ==========================================
+    function updateExamTimerDisplay(now, endTime) {
+      let differenceInSeconds = Math.floor((endTime.getTime() - now.getTime()) / 1000);
 
-      const now = new Date();
-      let differenceInSeconds = Math.floor((targetEndTime.getTime() - now.getTime()) / 1000);
-
+      // 時間到！
       if (differenceInSeconds <= 0) {
         differenceInSeconds = 0;
-        clearInterval(examTimerInterval);
-        displayTimer.innerText = "時間到";
+        if (!isAutoMode) clearInterval(examTimerInterval);
         
-        displayTimer.className = "text-[10rem] md:text-[18rem] leading-none font-black tabular-nums tracking-tighter text-red-500 drop-shadow-md transition-colors duration-500";
+        displayTimer.innerText = "時間到";
+        displayTimer.className = "text-[10rem] md:text-[18rem] leading-none font-black tabular-nums tracking-tighter text-red-600 drop-shadow-md transition-colors duration-500";
         appBody.className = "bg-red-50 transition-colors duration-1000 font-sans min-h-screen flex flex-col text-slate-800";
         warningMessage.classList.add('opacity-0'); 
+        rotatingMessages.innerText = "請停止作答，放下筆！";
+        rotatingMessages.classList.replace('text-indigo-600', 'text-red-600');
         return;
       }
 
+      // 更新數字顯示
       const m = Math.floor(differenceInSeconds / 60).toString().padStart(2, '0');
       const s = (differenceInSeconds % 60).toString().padStart(2, '0');
       displayTimer.innerText = `${m}:${s}`;
 
-      if (differenceInSeconds <= 600) {
+      // 顏色變化邏輯 (綠色 -> 橘黃提醒 -> 紅色時間到)
+      if (differenceInSeconds <= 600) { // 剩餘 10 分鐘
         displayTimer.className = "text-[10rem] md:text-[18rem] leading-none font-black tabular-nums tracking-tighter text-amber-500 drop-shadow-md transition-colors duration-500";
         appBody.className = "bg-amber-50 transition-colors duration-1000 font-sans min-h-screen flex flex-col text-slate-800";
         warningMessage.classList.remove('opacity-0'); 
+        rotatingMessages.classList.replace('text-red-600', 'text-indigo-600'); // 確保恢復顏色
       } else {
         displayTimer.className = "text-[10rem] md:text-[18rem] leading-none font-black tabular-nums tracking-tighter text-emerald-500 drop-shadow-md transition-colors duration-500";
         appBody.className = "bg-emerald-50 transition-colors duration-1000 font-sans min-h-screen flex flex-col text-slate-800";
         warningMessage.classList.add('opacity-0');
+        rotatingMessages.classList.replace('text-red-600', 'text-indigo-600'); 
       }
     }
 
