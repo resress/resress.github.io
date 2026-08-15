@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>三日聯絡簿</title>
+  <title>三日聯絡簿檢視板</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -11,7 +11,7 @@
   <script src="https://unpkg.com/@babel/standalone@7.23.10/babel.min.js"></script>
 
   <style>
-    body { margin: 0; padding: 0; overflow-x: auto; background-color: #1e2923; color: white; }
+    body { margin: 0; padding: 0; overflow: hidden; background-color: #2b3a2f; }
     .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
@@ -28,18 +28,32 @@
     /* @jsx React.createElement */
     /* @jsxFrag React.Fragment */
 
-    const { useState, useEffect } = React;
+    const { useState, useEffect, useMemo } = React;
 
-    // 您的專屬 Google 雲端資料庫網址
+    // 您的雲端資料庫網址
     const CLOUD_URL = "https://script.google.com/macros/s/AKfycbyFCoOsxIX4sigNXacF8FpPpo4YfMWkJQNMUDo52wrHuYsj5b3oNdl9qbMKQdIeJi2h/exec";
 
     const Star = ({ size = 16, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>;
     const Loader = ({ size = 24, className = "" }) => <svg className={`animate-spin ${className}`} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>;
+    const Calendar = ({ size = 16, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>;
 
-    function ContactBookViewer() {
+    function ThreeDayViewer() {
       const [isLoaded, setIsLoaded] = useState(false);
-      const [data, setData] = useState({ contactBookData: {}, settings: {} });
+      const [contactBookData, setContactBookData] = useState({});
+      const [settings, setSettings] = useState({ cbDirection: 'horizontal', cbFont: 'sans', cbFontSize: 32, showListNumber: true });
+      
+      // 0 = 今天, 1 = 昨天, 2 = 前天
       const [activeIndex, setActiveIndex] = useState(0);
+
+      // 計算三天的日期
+      const dates = useMemo(() => {
+        const getPastDate = (daysAgo) => {
+          const d = new Date();
+          d.setDate(d.getDate() - daysAgo);
+          return d;
+        };
+        return [getPastDate(0), getPastDate(1), getPastDate(2)];
+      }, []);
 
       const formatDateKey = (date) => {
         const d = new Date(date);
@@ -55,25 +69,14 @@
           .then(text => {
             if (!text || text === "{}") return;
             try {
-              const parsedData = JSON.parse(text);
-              setData(parsedData);
+              const data = JSON.parse(text);
+              if (data.settings) setSettings(data.settings);
+              if (data.contactBookData) setContactBookData(data.contactBookData);
             } catch(e) { console.error("解析雲端資料失敗", e); }
           })
           .catch(err => console.error("無法連線至雲端", err))
           .finally(() => setIsLoaded(true));
       }, []);
-
-      if (!isLoaded) {
-        return (
-          <div className="h-screen w-screen flex flex-col items-center justify-center text-white/70">
-            <Loader size={48} className="mb-4 text-[#ffd54f]" />
-            <h2 className="text-xl font-bold tracking-widest">正在讀取聯絡簿資料...</h2>
-          </div>
-        );
-      }
-
-      const settings = data.settings || { cbDirection: 'horizontal', cbFont: 'sans', cbFontSize: 32, showListNumber: true };
-      const cbData = data.contactBookData || {};
 
       const getFontClass = () => {
         if (settings.cbFont === 'bopomofo') return "font-bopomofo";
@@ -132,64 +135,67 @@
         });
       };
 
-      // 產生三天日期 (今天、昨天、前天)
-      const dates = [0, 1, 2].map(offset => {
-        const d = new Date();
-        d.setDate(d.getDate() - offset);
-        return d;
-      });
+      if (!isLoaded) {
+        return (
+          <div className="h-screen w-screen flex flex-col items-center justify-center text-white/70 bg-[#2b3a2f]">
+            <Loader size={48} className="mb-4 text-[#ffd54f]" />
+            <h2 className="text-xl font-bold tracking-widest">正在讀取聯絡簿資料...</h2>
+          </div>
+        );
+      }
 
-      // 取得標籤樣式 (今天顯示特別明顯)
-      const getLabelStyle = (offset) => {
-        if (offset === 0) return "bg-pink-500 text-white shadow-lg border-2 border-pink-300 scale-105 z-10";
-        if (offset === 1) return "bg-blue-500/80 text-white/90 border border-blue-400/50";
-        return "bg-slate-600/80 text-white/80 border border-slate-500/50";
-      };
+      const activeDate = dates[activeIndex];
+      const activeKey = formatDateKey(activeDate);
+      const activeItems = parseListContent(contactBookData[activeKey]);
 
-      const getLabelText = (offset) => {
-        if (offset === 0) return "☀️ 今天";
-        if (offset === 1) return "◀️ 昨天";
+      const getLabelText = (index) => {
+        if (index === 0) return "☀️ 今天";
+        if (index === 1) return "◀️ 昨天";
         return "⏪ 前天";
       };
 
-      const activeDate = dates[activeIndex];
-      const activeDateKey = formatDateKey(activeDate);
-      const activeItems = parseListContent(cbData[activeDateKey]);
+      const getLabelStyle = (index) => {
+        if (index === 0) return "bg-[#ffd54f] text-[#6b4423]";
+        if (index === 1) return "bg-[#9ccc65] text-[#1b5e20]";
+        return "bg-[#81d4fa] text-[#01579b]";
+      };
 
       return (
-        <div className="h-screen w-screen flex flex-col relative overflow-hidden bg-[#1e2923]">
-          <div className="absolute inset-0 opacity-20 pointer-events-none mix-blend-screen bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] z-0"></div>
-          
-          {/* 頁籤切換區 */}
-          <div className="flex justify-center gap-2 md:gap-4 pt-6 pb-2 px-4 z-20 shrink-0">
-            {dates.map((date, idx) => {
-              const labels = ["☀️ 今天", "◀️ 昨天", "⏪ 前天"];
-              const isActive = activeIndex === idx;
+        <div className="h-screen w-screen flex flex-col overflow-hidden bg-slate-900 font-sans">
+          {/* 上方切換頁籤 */}
+          <div className="flex justify-center gap-2 md:gap-4 p-3 md:p-4 shrink-0 bg-[#1e2a22] border-b border-white/10 shadow-md z-20">
+            {dates.map((d, i) => {
+              const isActive = activeIndex === i;
               return (
                 <button
-                  key={idx}
-                  onClick={() => setActiveIndex(idx)}
-                  className={`px-4 py-2 md:px-6 md:py-3 rounded-full font-black text-sm md:text-lg transition-all shadow-md ${
-                    isActive
-                      ? "bg-[#ffd54f] text-[#4a3018] scale-105 border-[3px] border-[#ffd54f]"
-                      : "bg-slate-800/80 text-white/80 hover:bg-slate-700 border-[3px] border-transparent"
+                  key={i}
+                  onClick={() => setActiveIndex(i)}
+                  className={`flex items-center gap-2 px-4 md:px-6 py-2 md:py-2.5 rounded-full font-bold text-sm md:text-base transition-all duration-300 shadow-sm ${
+                    isActive 
+                      ? 'bg-[#ffd54f] text-[#4a3018] scale-105 shadow-[0_0_15px_rgba(255,213,79,0.4)] ring-2 ring-[#ffd54f]/50' 
+                      : 'bg-black/40 text-white/70 hover:bg-white/10 hover:text-white'
                   }`}
                 >
-                  {labels[idx]} <span className="hidden sm:inline ml-1 text-xs md:text-sm opacity-80">({date.getMonth() + 1}/{date.getDate()})</span>
+                  <span className="hidden md:inline"><Calendar size={16} /></span>
+                  {getLabelText(i)} 
+                  <span className="opacity-80 text-xs ml-1 tracking-wider">({d.getMonth()+1}/{d.getDate()})</span>
                 </button>
               );
             })}
           </div>
 
-          {/* 聯絡簿黑板區 */}
-          <div className="flex-1 w-full max-w-6xl mx-auto p-4 md:p-6 pb-8 flex flex-col z-10 overflow-hidden relative">
-            <div className="flex-1 w-full flex flex-col bg-[#2b3a2f] border-[12px] md:border-[20px] border-[#7d5030] rounded-3xl shadow-2xl relative overflow-hidden">
-               <div className="absolute inset-0 opacity-30 pointer-events-none bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/20 to-transparent"></div>
+          {/* 黑板主體 */}
+          <div className="flex-1 flex flex-col p-2 md:p-4 md:pt-4 box-border bg-[#2b3a2f]">
+            <div className="flex-1 border-[10px] md:border-[16px] border-[#7d5030] rounded-2xl md:rounded-3xl relative overflow-hidden flex flex-col shadow-2xl">
                
+               {/* 黑板粉筆灰特效 */}
+               <div className="absolute inset-0 opacity-20 pointer-events-none mix-blend-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/30 to-transparent"></div>
+               
+               {/* 黑板標題 */}
                <div className="p-4 md:p-6 pb-2 shrink-0 z-10 flex flex-col gap-3">
                   <div className="flex items-center justify-between">
-                     <div className={`px-4 py-1.5 rounded-full font-black text-sm tracking-wide ${getLabelStyle(activeIndex)}`}>
-                        {getLabelText(activeIndex)}
+                     <div className={`px-4 py-1.5 rounded-full font-black text-sm tracking-wide shadow-sm border border-black/10 ${getLabelStyle(activeIndex)}`}>
+                        {getLabelText(activeIndex)}的聯絡簿
                      </div>
                      <div className="text-[#ffd54f] font-black text-xl md:text-2xl drop-shadow-md tracking-wide">
                         {activeDate.getMonth() + 1}/{activeDate.getDate()} (星{getWeekdayString(activeDate)})
@@ -198,38 +204,48 @@
                   <div className="border-b-[3px] border-solid rounded-full border-white/20 mt-1"></div>
                </div>
 
+               {/* 聯絡簿內容區 */}
                <div className={`flex-1 flex overflow-hidden z-10 relative ${settings.cbDirection === 'vertical' ? 'flex-row-reverse' : 'flex-col'}`}>
-                  <div className={`flex-1 overflow-auto custom-scrollbar relative ${settings.cbDirection === 'vertical' ? 'px-8 py-6' : 'px-10 py-6'}`}>
+                  {/* 使用 overflow-auto 允許滾動 */}
+                  <div className={`flex-1 overflow-auto custom-scrollbar relative ${settings.cbDirection === 'vertical' ? 'px-6 md:px-8 py-6' : 'px-6 md:px-10 py-6'}`}>
+                    
+                    {/* min-h-full 與 手機版 flex-col / 電腦版 md:grid 修復手機資料被切掉的問題 */}
                     <div 
-                      className={`text-[#f8f9fa] w-full h-full ${getFontClass()}`}
+                      className={`text-[#f8f9fa] w-full min-h-full ${getFontClass()} ${settings.cbDirection === 'horizontal' ? 'flex flex-col md:grid md:grid-cols-2 gap-y-6 md:gap-x-12 pb-12' : 'pb-12'}`}
                       style={{ 
-                        fontSize: `${settings.cbFontSize * (window.innerWidth < 768 ? 0.7 : 1)}px`, 
+                        fontSize: `${settings.cbFontSize * (window.innerWidth < 768 ? 0.85 : 1)}px`, 
                         writingMode: settings.cbDirection === 'vertical' ? 'vertical-rl' : 'horizontal-tb',
                         lineHeight: (settings.cbDirection === 'vertical' && settings.cbFont === 'bopomofo') ? 2.5 : 1.8,
-                        textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
-                        ...(settings.cbDirection === 'horizontal' ? { display: 'grid', gridTemplateRows: 'repeat(6, auto)', gridAutoFlow: 'column', columnGap: '2rem', rowGap: '1.5rem', alignContent: 'start' } : {})
+                        textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
                       }}
                     >
                       {activeItems.map((item, index) => (
-                        <div key={index} className={`flex break-inside-avoid ${settings.cbDirection === 'vertical' ? 'items-center ml-10 mb-0' : 'items-start gap-3'}`}>
+                        <div key={index} className={`flex break-inside-avoid ${settings.cbDirection === 'vertical' ? 'items-center ml-10 mb-0' : 'items-start gap-3 w-full'}`}>
                           {settings.showListNumber && (
                             <div className="shrink-0 rounded-full bg-[#ffd54f] text-[#2b3a2f] flex items-center justify-center font-black shadow-sm font-sans"
-                              style={{ width: `${settings.cbFontSize * (window.innerWidth < 768 ? 0.7 : 1) * 1.2}px`, height: `${settings.cbFontSize * (window.innerWidth < 768 ? 0.7 : 1) * 1.2}px`, fontSize: `${settings.cbFontSize * (window.innerWidth < 768 ? 0.7 : 1) * 0.7}px`, marginTop: settings.cbDirection === 'horizontal' ? '0.2em' : '0', marginBottom: settings.cbDirection === 'vertical' ? '0.5em' : '0', writingMode: 'horizontal-tb', letterSpacing: 'normal' }}>
+                              style={{ width: `${settings.cbFontSize * (window.innerWidth < 768 ? 0.85 : 1) * 1.2}px`, height: `${settings.cbFontSize * (window.innerWidth < 768 ? 0.85 : 1) * 1.2}px`, fontSize: `${settings.cbFontSize * (window.innerWidth < 768 ? 0.85 : 1) * 0.7}px`, marginTop: settings.cbDirection === 'horizontal' ? '0.2em' : '0', marginBottom: settings.cbDirection === 'vertical' ? '0.5em' : '0', writingMode: 'horizontal-tb', letterSpacing: 'normal' }}>
                               {index + 1}
                             </div>
                           )}
                           <div className="leading-snug" style={{ letterSpacing: settings.cbFont === 'bopomofo' ? '0.1em' : '0.05em' }}>{renderText(item)}</div>
                         </div>
                       ))}
-                      {activeItems.length === 0 && <div className="text-white/40 italic font-bold tracking-widest mt-10 w-full" style={{ fontSize: `${settings.cbFontSize * 0.8}px` }}>本日無聯絡簿</div>}
+                      
+                      {activeItems.length === 0 && (
+                        <div className="text-white/40 italic font-bold tracking-widest pt-4 md:col-span-2 text-center md:text-left" style={{ fontSize: `${settings.cbFontSize * 0.8}px` }}>
+                           這一天沒有發布聯絡簿內容喔！
+                        </div>
+                      )}
                     </div>
+
                   </div>
                </div>
-               
-               <div className="absolute bottom-0 left-0 right-0 h-6 md:h-8 bg-[#4a3018] border-t-[4px] border-[#3a2010] flex items-end px-12 pb-1.5 gap-6 z-20 shadow-[inset_0_4px_6px_rgba(0,0,0,0.4)] pointer-events-none">
-                  <div className="w-12 h-2.5 bg-white rounded-full shadow-sm opacity-90 rotate-1"></div>
-                  <div className="w-8 h-2.5 bg-pink-300 rounded-full shadow-sm opacity-90 -rotate-2"></div>
-                  <div className="w-10 h-2.5 bg-sky-300 rounded-full shadow-sm opacity-90 rotate-1"></div>
+
+               {/* 粉筆槽裝飾 */}
+               <div className="absolute bottom-0 left-0 right-0 h-6 bg-[#4a3018] border-t-[3px] border-[#3a2010] flex items-end px-12 pb-1 gap-6 z-20 shadow-[inset_0_4px_6px_rgba(0,0,0,0.4)] pointer-events-none">
+                   <div className="w-12 h-2 bg-white rounded-full shadow-sm opacity-90 rotate-1"></div>
+                   <div className="w-8 h-2 bg-pink-300 rounded-full shadow-sm opacity-90 -rotate-2"></div>
+                   <div className="w-10 h-2 bg-sky-300 rounded-full shadow-sm opacity-90 rotate-1"></div>
                </div>
             </div>
           </div>
@@ -238,7 +254,7 @@
     }
 
     const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<ContactBookViewer />);
+    root.render(<ThreeDayViewer />);
   </script>
 </body>
 </html>
