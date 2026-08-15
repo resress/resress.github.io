@@ -48,6 +48,14 @@
       // 0 = 今天, 1 = 昨天, 2 = 前天
       const [activeIndex, setActiveIndex] = useState(0);
 
+      // 偵測是否為手機螢幕 (寬度小於 768px)
+      const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+      useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+      }, []);
+
       // 計算三天的日期
       const dates = useMemo(() => {
         const getPastDate = (daysAgo) => {
@@ -92,8 +100,8 @@
         return text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
       };
 
-      const renderText = (text) => {
-        const isVertical = settings.cbDirection === 'vertical';
+      const renderText = (text, effectiveDir) => {
+        const isVertical = effectiveDir === 'vertical';
         const isZhuyinOnly = settings.cbFont === 'zhuyinOnly';
         const isBopomofo = settings.cbFont === 'bopomofo';
         const regex = /([a-zA-Z]+[\.\-]?[0-9]+[\.\)]?|[a-zA-Z0-9]+[\.\)]?|[\-\/]|數)/;
@@ -164,7 +172,10 @@
       };
 
       // 計算出基礎字體大小，並針對手機做稍微縮放
-      const baseFontSize = window.innerWidth < 768 ? settings.cbFontSize * 0.8 : settings.cbFontSize;
+      const baseFontSize = isMobile ? settings.cbFontSize * 0.85 : settings.cbFontSize;
+
+      // 判斷最終的顯示方向：如果是手機，一律強制轉為「橫式 (horizontal)」
+      const effectiveDirection = isMobile ? 'horizontal' : settings.cbDirection;
 
       return (
         /* 使用 min-h-screen 取代 h-screen，允許整體頁面在內容過多時自然往下長 */
@@ -208,8 +219,8 @@
                            {getLabelText(activeIndex)}的聯絡簿
                         </div>
                      </div>
-                     {/* 修復了星期顯示的問題，給予足夠的寬度不換行 */}
-                     <div className="text-[#ffd54f] font-black text-xl md:text-3xl drop-shadow-md tracking-wide whitespace-nowrap">
+                     {/* 修復了星期顯示的問題，給予足夠的寬度不換行，縮小一點字體適應手機 */}
+                     <div className="text-[#ffd54f] font-black text-lg md:text-3xl drop-shadow-md tracking-wide whitespace-nowrap shrink-0">
                         {activeDate.getMonth() + 1} 月 {activeDate.getDate()} 日 (星期{getWeekdayString(activeDate)})
                      </div>
                   </div>
@@ -217,39 +228,38 @@
                </div>
 
                {/* 聯絡簿內容顯示區 - 移除 overflow，讓他完全展示 */}
-               <div className={`p-4 md:p-8 z-10 relative flex-1 flex ${settings.cbDirection === 'vertical' ? 'flex-row-reverse justify-start' : 'flex-col'}`}>
+               <div className={`p-4 md:p-8 z-10 relative flex-1 flex ${effectiveDirection === 'vertical' ? 'flex-row-reverse justify-start' : 'flex-col'}`}>
                   
                   <div 
                     className={`text-[#f8f9fa] w-full min-h-full ${getFontClass()} pb-16 md:pb-20`}
                     style={{ 
                       fontSize: `${baseFontSize}px`, 
-                      writingMode: settings.cbDirection === 'vertical' ? 'vertical-rl' : 'horizontal-tb',
-                      lineHeight: (settings.cbDirection === 'vertical' && settings.cbFont === 'bopomofo') ? 2.5 : 1.8,
+                      writingMode: effectiveDirection === 'vertical' ? 'vertical-rl' : 'horizontal-tb',
+                      lineHeight: (effectiveDirection === 'vertical' && settings.cbFont === 'bopomofo') ? 2.5 : 1.8,
                       textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
-                      // 橫式排列時，使用 Flex 換行或是 Grid 來避免擠成一坨
-                      display: settings.cbDirection === 'horizontal' ? 'flex' : 'block',
+                      display: effectiveDirection === 'horizontal' ? 'flex' : 'block',
                       flexDirection: 'column',
-                      gap: settings.cbDirection === 'horizontal' ? '1.5rem' : '0'
+                      gap: effectiveDirection === 'horizontal' ? '1.5rem' : '0'
                     }}
                   >
                     {activeItems.map((item, index) => (
-                      <div key={index} className={`flex break-inside-avoid ${settings.cbDirection === 'vertical' ? 'items-center ml-8 md:ml-12 mb-0' : 'items-start gap-3 w-full'}`}>
+                      <div key={index} className={`flex break-inside-avoid ${effectiveDirection === 'vertical' ? 'items-center ml-8 md:ml-12 mb-0' : 'items-start gap-3 w-full'}`}>
                         {settings.showListNumber && (
                           <div className="shrink-0 rounded-full bg-[#ffd54f] text-[#2b3a2f] flex items-center justify-center font-black shadow-sm font-sans"
                             style={{ 
                                width: `${baseFontSize * 1.2}px`, 
                                height: `${baseFontSize * 1.2}px`, 
                                fontSize: `${baseFontSize * 0.7}px`, 
-                               marginTop: settings.cbDirection === 'horizontal' ? '0.2em' : '0', 
-                               marginBottom: settings.cbDirection === 'vertical' ? '0.5em' : '0', 
+                               marginTop: effectiveDirection === 'horizontal' ? '0.2em' : '0', 
+                               marginBottom: effectiveDirection === 'vertical' ? '0.5em' : '0', 
                                writingMode: 'horizontal-tb', 
                                letterSpacing: 'normal' 
                             }}>
                             {index + 1}
                           </div>
                         )}
-                        <div className="leading-snug" style={{ letterSpacing: settings.cbFont === 'bopomofo' ? '0.1em' : '0.05em' }}>
-                           {renderText(item)}
+                        <div className="leading-snug w-full" style={{ letterSpacing: settings.cbFont === 'bopomofo' ? '0.1em' : '0.05em' }}>
+                           {renderText(item, effectiveDirection)}
                         </div>
                       </div>
                     ))}
