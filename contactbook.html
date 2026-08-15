@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>今日聯絡簿</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.23.10/babel.min.js"></script>
+
+  <style>
+    body { margin: 0; padding: 0; overflow: hidden; background-color: #2b3a2f; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+    .tate-chu-yoko { text-combine-upright: all; -webkit-text-combine: horizontal; display: inline-block; }
+    .font-bopomofo { font-family: '王漢宗中楷體注音', '文鼎中楷注音', '全字庫注音體', 'BPMF', serif; }
+    .font-zhuyin-only { font-family: '文鼎注音寬字', 'BPMF', serif; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    /* @jsxRuntime classic */
+    /* @jsx React.createElement */
+    /* @jsxFrag React.Fragment */
+
+    const { useState, useEffect } = React;
+
+    // 這裡使用您剛才建立的同一個雲端資料庫網址
+    const CLOUD_URL = "https://script.google.com/macros/s/AKfycbyFCoOsxIX4sigNXacF8FpPpo4YfMWkJQNMUDo52wrHuYsj5b3oNdl9qbMKQdIeJi2h/exec";
+
+    const Star = ({ size = 16, className = "" }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>;
+    const Loader = ({ size = 24, className = "" }) => <svg className={`animate-spin ${className}`} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>;
+
+    function ContactBookViewer() {
+      const [isLoaded, setIsLoaded] = useState(false);
+      const [todayData, setTodayData] = useState({ cbText: '', taskText: '' });
+      const [settings, setSettings] = useState({ cbDirection: 'horizontal', cbFont: 'sans', cbFontSize: 32, showTasks: true, showListNumber: true });
+      const [viewDate, setViewDate] = useState(new Date());
+
+      const formatDateKey = (date) => {
+        const d = new Date(date);
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        return d.toISOString().split('T')[0];
+      };
+
+      const getWeekdayString = (date) => ['日', '一', '二', '三', '四', '五', '六'][date.getDay()];
+
+      useEffect(() => {
+        fetch(CLOUD_URL)
+          .then(res => res.text())
+          .then(text => {
+            if (!text || text === "{}") return;
+            try {
+              const data = JSON.parse(text);
+              if (data.settings) setSettings(data.settings);
+              
+              const currentViewDateKey = formatDateKey(viewDate);
+              const cbText = data.contactBookData ? (data.contactBookData[currentViewDateKey] || '') : '';
+              const taskText = data.taskData ? (data.taskData[currentViewDateKey] || '') : '';
+              
+              setTodayData({ cbText, taskText });
+            } catch(e) { console.error("解析雲端資料失敗", e); }
+          })
+          .catch(err => console.error("無法連線至雲端", err))
+          .finally(() => setIsLoaded(true));
+      }, [viewDate]); // 當日期改變時重新讀取
+
+      if (!isLoaded) {
+        return (
+          <div className="h-screen w-screen flex flex-col items-center justify-center text-white/70">
+            <Loader size={48} className="mb-4 text-[#ffd54f]" />
+            <h2 className="text-xl font-bold tracking-widest">正在讀取今日聯絡簿...</h2>
+          </div>
+        );
+      }
+
+      const getFontClass = () => {
+        if (settings.cbFont === 'bopomofo') return "font-bopomofo";
+        if (settings.cbFont === 'zhuyinOnly') return "font-zhuyin-only";
+        return "font-sans";
+      };
+
+      const parseListContent = (text) => {
+        if (!text) return [];
+        return text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+      };
+
+      const renderText = (text) => {
+        const isVertical = settings.cbDirection === 'vertical';
+        const isZhuyinOnly = settings.cbFont === 'zhuyinOnly';
+        const isBopomofo = settings.cbFont === 'bopomofo';
+        const regex = /([a-zA-Z]+[\.\-]?[0-9]+[\.\)]?|[a-zA-Z0-9]+[\.\)]?|[\-\/]|數)/;
+        const testRegex = /^([a-zA-Z]+[\.\-]?[0-9]+[\.\)]?|[a-zA-Z0-9]+[\.\)]?|[\-\/])$/;
+        
+        const parts = text.split(regex);
+        return parts.map((part, i) => {
+          if (!part) return null;
+          if (part === '數' && (isZhuyinOnly || isBopomofo)) {
+            if (isZhuyinOnly) {
+              return <span key={i} style={{ fontSize: '1.65em', lineHeight: '1', verticalAlign: 'middle', textAlign: 'center' }}>述</span>;
+            } else if (isBopomofo && isVertical) {
+              return (
+                <span key={i} style={{ display: 'inline-block', position: 'relative', width: '1em', height: '1em', verticalAlign: 'middle', fontFamily: '"標楷體", "DFKai-SB", "BiauKai", serif' }}>
+                  <span style={{ position: 'absolute', top: '50%', left: '28%', transform: 'translate(-50%, -50%)', fontSize: '0.95em', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: '1', letterSpacing: 'normal' }}>數</span>
+                  <div style={{ position: 'absolute', top: '50%', left: '98%', transform: 'translate(-50%, -50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: '0.38em', lineHeight: '1.1', fontFamily: 'sans-serif', writingMode: 'horizontal-tb', letterSpacing: 'normal' }}>
+                    <span style={{ marginBottom: '0.05em' }}>ㄕ</span>
+                    <span style={{ position: 'relative', display: 'inline-block' }}>ㄨ<span style={{ position: 'absolute', top: '-0.15em', left: '100%', marginLeft: '0.05em', fontSize: '0.9em', fontWeight: 'bold', lineHeight: '1' }}>ˋ</span></span>
+                  </div>
+                </span>
+              );
+            } else if (isBopomofo) {
+              return (
+                <span key={i} style={{ display: 'inline-flex', alignItems: 'center', position: 'relative', verticalAlign: 'middle', fontFamily: '"標楷體", "DFKai-SB", "BiauKai", serif', marginRight: '0.1em' }}>
+                  <span className="leading-none" style={{ letterSpacing: 'normal' }}>數</span> 
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: '0.45em', lineHeight: '1.1', paddingLeft: '0.02em', fontFamily: 'sans-serif', writingMode: 'horizontal-tb', letterSpacing: 'normal' }}>
+                    <span style={{ marginBottom: '0.05em' }}>ㄕ</span>
+                    <span style={{ position: 'relative', display: 'inline-block' }}>ㄨ<span style={{ position: 'absolute', top: '-0.15em', left: '100%', marginLeft: '0.05em', fontSize: '0.9em', fontWeight: 'bold', lineHeight: '1' }}>ˋ</span></span>
+                  </div>
+                </span>
+              );
+            }
+          } else if (testRegex.test(part) && part.length <= 6) {
+            const isDash = part === '-';
+            return (
+              <span key={i} className={`${isVertical ? 'tate-chu-yoko' : ''} inline-block font-sans`} style={{ margin: (isBopomofo && !isVertical) ? '0 0.1em 0 0.2em' : '0 0.1em', fontWeight: isZhuyinOnly ? '900' : 'normal', verticalAlign: 'middle', fontSize: isZhuyinOnly ? '1.4em' : '1em', letterSpacing: 'normal', transform: (isVertical && isDash) ? 'rotate(90deg)' : 'none' }}>
+                {part}
+              </span>
+            );
+          }
+          return <span key={i} style={isZhuyinOnly ? { fontSize: '1.65em', lineHeight: '1', verticalAlign: 'middle', textAlign: 'center' } : { verticalAlign: 'middle', lineHeight: '1.2' }}>{part}</span>;
+        });
+      };
+
+      const cbItems = parseListContent(todayData.cbText);
+      const taskItems = parseListContent(todayData.taskText);
+
+      return (
+        <div className="h-screen w-screen flex flex-col box-border border-[12px] md:border-[20px] border-[#7d5030] relative overflow-hidden bg-[#2b3a2f]">
+          <div className="absolute inset-0 opacity-30 pointer-events-none bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/20 to-transparent"></div>
+          
+          <div className="px-4 md:px-8 pt-6 pb-3 flex flex-col md:flex-row md:items-center justify-between gap-4 z-10 shrink-0">
+            <h2 className="text-3xl md:text-4xl font-black text-white flex items-center gap-3 drop-shadow-md tracking-wider">
+              <Star className="text-[#ffd54f] w-8 h-8 md:w-10 md:h-10" /> 聯絡簿
+            </h2>
+            <div className="flex items-center bg-black/20 rounded-full p-1.5 border border-white/10 shadow-inner w-fit">
+              <button onClick={() => setViewDate(new Date(viewDate.setDate(viewDate.getDate()-1)))} className="px-4 py-1.5 rounded-full hover:bg-white/20 text-white/90 text-sm md:text-base font-bold transition-colors">前一天</button>
+              <div className="text-[#ffd54f] font-black text-xl md:text-2xl px-4 drop-shadow-md tracking-wide whitespace-nowrap">
+                {viewDate.getMonth() + 1}月{viewDate.getDate()}日 (星期{getWeekdayString(viewDate)})
+              </div>
+              <button onClick={() => setViewDate(new Date(viewDate.setDate(viewDate.getDate()+1)))} className="px-4 py-1.5 rounded-full hover:bg-white/20 text-white/90 text-sm md:text-base font-bold transition-colors">後一天</button>
+            </div>
+          </div>
+
+          <div className="mx-8 md:mx-12 border-b-[3px] border-solid rounded-full border-white/20 my-2 z-10 shrink-0"></div>
+
+          <div className={`flex-1 flex overflow-hidden z-10 relative ${settings.cbDirection === 'vertical' ? 'flex-row-reverse' : 'flex-col'}`}>
+            <div className={`flex-1 overflow-auto custom-scrollbar relative ${settings.cbDirection === 'vertical' ? 'px-8 md:px-12 py-6' : 'px-8 md:px-12 py-6'}`}>
+              <div 
+                className={`text-[#f8f9fa] w-full h-full ${getFontClass()}`}
+                style={{ 
+                  fontSize: `${settings.cbFontSize * (window.innerWidth < 768 ? 0.7 : 1)}px`, // 手機版自動縮小字體
+                  writingMode: settings.cbDirection === 'vertical' ? 'vertical-rl' : 'horizontal-tb',
+                  lineHeight: (settings.cbDirection === 'vertical' && settings.cbFont === 'bopomofo') ? 2.5 : 1.8,
+                  textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
+                  ...(settings.cbDirection === 'horizontal' ? { display: 'grid', gridTemplateRows: 'repeat(4, auto)', gridAutoFlow: 'column', columnGap: '4rem', rowGap: '1.5rem', alignContent: 'start' } : {})
+                }}
+              >
+                {cbItems.map((item, index) => (
+                  <div key={index} className={`flex break-inside-avoid ${settings.cbDirection === 'vertical' ? 'items-center ml-10 mb-0' : 'items-start gap-3'}`}>
+                    {settings.showListNumber && (
+                      <div className="shrink-0 rounded-full bg-[#ffd54f] text-[#2b3a2f] flex items-center justify-center font-black shadow-sm font-sans"
+                        style={{ width: `${settings.cbFontSize * (window.innerWidth < 768 ? 0.7 : 1) * 1.2}px`, height: `${settings.cbFontSize * (window.innerWidth < 768 ? 0.7 : 1) * 1.2}px`, fontSize: `${settings.cbFontSize * (window.innerWidth < 768 ? 0.7 : 1) * 0.7}px`, marginTop: settings.cbDirection === 'horizontal' ? '0.2em' : '0', marginBottom: settings.cbDirection === 'vertical' ? '0.5em' : '0', writingMode: 'horizontal-tb', letterSpacing: 'normal' }}>
+                        {index + 1}
+                      </div>
+                    )}
+                    <div className="leading-snug" style={{ letterSpacing: settings.cbFont === 'bopomofo' ? '0.1em' : '0.05em' }}>{renderText(item)}</div>
+                  </div>
+                ))}
+                {cbItems.length === 0 && <div className="text-white/40 italic font-bold tracking-widest" style={{ fontSize: `${settings.cbFontSize * 0.8}px` }}>老師尚未發布聯絡簿喔！</div>}
+              </div>
+            </div>
+
+            {settings.showTasks && (
+              <div className={`${settings.cbDirection === 'vertical' ? 'w-1 h-[80%] my-auto bg-white/10 rounded-full' : 'h-1 w-[80%] mx-auto bg-white/10 rounded-full'} shrink-0 z-30`}></div>
+            )}
+
+            {settings.showTasks && (
+              <div 
+                className={`flex flex-col relative shrink-0 ${settings.cbDirection === 'vertical' ? 'pl-8 pr-4 pt-6 pb-12 w-[35%]' : 'px-8 md:px-12 pt-4 pb-12 h-[35%]'}`} 
+              >
+                  <div className="inline-flex items-center bg-[#b89947] text-[#fff8e1] px-4 py-1.5 rounded-lg text-sm md:text-base font-bold mb-5 shadow-sm w-fit gap-2 border border-[#ffd54f]/30 shrink-0 font-sans whitespace-nowrap">
+                    <Star size={16} className="text-[#ffd54f]"/> 早自習任務
+                  </div>
+
+                  <div className={`text-white/90 w-full h-full overflow-auto custom-scrollbar ${getFontClass()}`}
+                        style={{ fontSize: `${settings.cbFontSize * (window.innerWidth < 768 ? 0.7 : 1) * 0.9}px`, textShadow: '1px 1px 2px rgba(0,0,0,0.5)', writingMode: settings.cbDirection === 'vertical' ? 'vertical-rl' : 'horizontal-tb', lineHeight: (settings.cbDirection === 'vertical' && settings.cbFont === 'bopomofo') ? 2.5 : 1.8, ...(settings.cbDirection === 'horizontal' ? { display: 'flex', flexWrap: 'wrap', columnGap: '2rem', rowGap: '1rem', alignContent: 'start', } : {}) }}>
+                    {taskItems.map((item, index) => (
+                        <div key={index} className={`flex break-inside-avoid ${settings.cbDirection === 'vertical' ? 'items-center ml-8 mb-0' : 'items-center gap-2'}`}>
+                          <div className="w-4 h-4 md:w-5 md:h-5 border-[3px] border-[#ffd54f] rounded-sm shrink-0" style={{ marginTop: settings.cbDirection === 'horizontal' ? '0.125rem' : '0', marginBottom: settings.cbDirection === 'vertical' ? '0.5rem' : '0' }}></div>
+                          <span className="leading-snug" style={{ letterSpacing: settings.cbFont === 'bopomofo' ? '0.1em' : '0.05em' }}>{renderText(item)}</span>
+                        </div>
+                    ))}
+                    {taskItems.length === 0 && <div className="text-white/30 italic font-sans" style={{ fontSize: `${settings.cbFontSize * 0.6}px` }}>目前沒有任務</div>}
+                  </div>
+              </div>
+            )}
+          </div>
+
+          <div className="absolute bottom-0 left-0 right-0 h-8 bg-[#4a3018] border-t-[4px] border-[#3a2010] flex items-end px-12 pb-1.5 gap-8 z-20 shadow-[inset_0_4px_6px_rgba(0,0,0,0.4)] pointer-events-none">
+              <div className="w-16 h-2.5 bg-white rounded-full shadow-sm opacity-90 rotate-1"></div>
+              <div className="w-10 h-2.5 bg-pink-300 rounded-full shadow-sm opacity-90 -rotate-2"></div>
+              <div className="w-12 h-2.5 bg-sky-300 rounded-full shadow-sm opacity-90 rotate-1"></div>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<ContactBookViewer />);
+  </script>
+</body>
+</html>
