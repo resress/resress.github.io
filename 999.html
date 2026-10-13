@@ -1,0 +1,2489 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>十十乘法戰隊大對抗</title>
+  <!-- 載入 Tailwind CSS 與優質字體 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700;800&family=Noto+Sans+TC:wght@700;900&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    html, body {
+      height: 100%;
+      height: 100dvh;
+      max-height: 100dvh;
+      width: 100%;
+      overflow: hidden;
+      font-family: 'Fredoka', 'Noto Sans TC', sans-serif;
+    }
+
+    /* ── 鍵盤按鈕：輕量快速反饋 ── */
+    .key-btn {
+      transition: transform 0.04s ease, background-color 0.04s ease;
+      box-shadow: 0 3px 0 rgba(0, 0, 0, 0.15);
+      will-change: transform;
+    }
+    .key-btn:active {
+      transform: translateY(2px) scale(0.98);
+      box-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);
+    }
+
+    /* ── 倒數緊迫閃爍 ── */
+    @keyframes urgent-pulse {
+      0%, 100% { transform: scale(1); filter: brightness(1); }
+      50% { transform: scale(1.04); filter: brightness(1.15); }
+    }
+    .urgent-anim {
+      animation: urgent-pulse 0.75s infinite ease-in-out;
+    }
+
+    /* ── 勝利 Modal 溫暖金光流光（安靜發亮、完全不跳動） ── */
+    @keyframes glow-win {
+      0%, 100% { box-shadow: 0 0 16px 4px rgba(245, 158, 11, 0.7), 0 0 40px 10px rgba(251, 191, 36, 0.4); }
+      50%      { box-shadow: 0 0 30px 8px rgba(245, 158, 11, 0.9), 0 0 65px 18px rgba(251, 191, 36, 0.6); }
+    }
+    .victory-glow {
+      animation: glow-win 1.6s ease-in-out infinite;
+    }
+
+    /* ── 平手 Modal 低調邊框 ── */
+    @keyframes glow-draw {
+      0%, 100% { box-shadow: 0 0 10px 2px rgba(148, 163, 184, 0.6); }
+      50%      { box-shadow: 0 0 20px 6px rgba(203, 213, 225, 0.8); }
+    }
+    .draw-glow {
+      animation: glow-draw 1.8s ease-in-out infinite;
+    }
+
+    /* ── 彈窗遮罩：純黑色半透明，極速秒開無延遲 ── */
+    .modal-overlay {
+      background-color: rgba(0, 0, 0, 0.65);
+    }
+
+    /* ── 輕量紙花 Canvas ── */
+    #confettiCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 55;
+    }
+
+    :root {
+      --ink: #12233f;
+      --stage-ink: #0b1b34;
+      --stage-blue: #3d78e8;
+      --stage-red: #e95363;
+      --stage-gold: #f5c85b;
+    }
+
+    body {
+      background: #08162d;
+      color: var(--ink);
+    }
+
+    header {
+      background: linear-gradient(110deg, #ffffff 0%, #f9fbff 58%, #edf4ff 100%) !important;
+      border-bottom-color: #c9d7e9 !important;
+      box-shadow: 0 6px 18px rgba(18, 35, 63, 0.12) !important;
+    }
+
+    header > div:nth-child(1) > div {
+      background: #eaf1fb !important;
+      border-color: #cbd9ec !important;
+      box-shadow: inset 0 1px 2px rgba(30, 64, 175, 0.08);
+    }
+
+    #modeBtnPvP,
+    #modeBtnSolo {
+      min-height: 28px;
+      border: 0 !important;
+      letter-spacing: 0.01em;
+      transition: transform 0.18s ease, background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    #modeBtnPvP:hover,
+    #modeBtnSolo:hover {
+      transform: translateY(-1px);
+    }
+
+    #modeBtnPvP.bg-amber-500,
+    #modeBtnSolo.bg-emerald-500 {
+      color: #ffffff !important;
+      box-shadow: 0 3px 8px rgba(30, 64, 175, 0.2) !important;
+    }
+
+    #modeBtnPvP.bg-amber-500 {
+      background: linear-gradient(135deg, #f4b63f, #e88832) !important;
+    }
+
+    #modeBtnSolo.bg-emerald-500 {
+      background: linear-gradient(135deg, #18b98a, #078b83) !important;
+    }
+
+    header > div:last-child > button,
+    #btnPause,
+    #btnStartRestart {
+      border-radius: 12px !important;
+      border-color: #cbd9ec !important;
+      box-shadow: 0 2px 0 rgba(26, 52, 93, 0.08);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+    }
+
+    header > div:last-child > button:hover,
+    #btnPause:hover,
+    #btnStartRestart:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(26, 52, 93, 0.14);
+    }
+
+    #btnStartRestart.bg-emerald-500 {
+      background: linear-gradient(135deg, #22c993, #07987d) !important;
+    }
+
+    #btnStartRestart.bg-rose-500 {
+      background: linear-gradient(135deg, #f06a71, #d93e5d) !important;
+    }
+
+    #ropeScoreBadge,
+    #soloScoreBadge {
+      border-color: #d3dfef !important;
+      background: rgba(248, 251, 255, 0.94) !important;
+      box-shadow: 0 2px 7px rgba(37, 67, 112, 0.08);
+    }
+
+    #timerDisplay {
+      background: linear-gradient(135deg, #f4b63f, #e6812c) !important;
+      border: 1px solid rgba(180, 91, 16, 0.32);
+      box-shadow: 0 4px 10px rgba(217, 119, 6, 0.22) !important;
+    }
+
+    #tugSection {
+      isolation: isolate;
+      background: var(--stage-ink) !important;
+      border-bottom-color: #d4e2f2 !important;
+      box-shadow: inset 0 -10px 22px rgba(2, 12, 30, 0.25), 0 6px 18px rgba(8, 22, 45, 0.22);
+    }
+
+    #tugSection::before,
+    #tugSection::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    #tugSection::before {
+      background:
+        radial-gradient(circle at 17% 12%, rgba(255, 255, 255, 0.2) 0 1px, transparent 2px),
+        radial-gradient(circle at 78% 18%, rgba(255, 255, 255, 0.16) 0 1px, transparent 2px),
+        radial-gradient(circle at 48% 23%, rgba(245, 200, 91, 0.18) 0 2px, transparent 3px),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 45%);
+      background-size: 83px 52px, 97px 67px, 121px 89px, 100% 100%;
+      opacity: 0.8;
+    }
+
+    #tugSection::after {
+      background: linear-gradient(90deg, rgba(233, 83, 99, 0.11), transparent 38%, transparent 62%, rgba(61, 120, 232, 0.12));
+      mix-blend-mode: screen;
+    }
+
+    #tugCanvas {
+      position: relative;
+      z-index: 0;
+    }
+
+    .stage-topbar {
+      position: absolute;
+      z-index: 4;
+      top: 8px;
+      left: 12px;
+      right: 12px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: start;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .stage-team-card {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 14px;
+      color: #ffffff;
+      background: rgba(8, 25, 51, 0.62);
+      box-shadow: 0 4px 12px rgba(3, 11, 27, 0.18);
+      backdrop-filter: blur(5px);
+    }
+
+    .stage-team-card-blue {
+      justify-content: flex-end;
+      text-align: right;
+    }
+
+    .stage-team-card-red { border-color: rgba(255, 154, 164, 0.52); }
+    .stage-team-card-blue { border-color: rgba(147, 194, 255, 0.58); }
+
+    .stage-team-dot {
+      flex: 0 0 auto;
+      width: 10px;
+      height: 10px;
+      border: 2px solid rgba(255, 255, 255, 0.82);
+      border-radius: 999px;
+      box-shadow: 0 0 10px currentColor;
+    }
+
+    .stage-team-dot-red { color: #ff6877; background: #ff6877; }
+    .stage-team-dot-blue { color: #5da0ff; background: #5da0ff; }
+
+    .stage-team-copy {
+      min-width: 0;
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .stage-team-name {
+      max-width: 22vw;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: clamp(0.7rem, 1.7vw, 0.94rem);
+      font-weight: 900;
+      letter-spacing: 0.03em;
+    }
+
+    .stage-team-score {
+      color: #fff4c7;
+      font-size: clamp(0.65rem, 1.45vw, 0.8rem);
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .stage-center-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
+      padding: 5px 13px 6px;
+      border: 1px solid rgba(255, 230, 147, 0.6);
+      border-radius: 999px;
+      color: #fff7d0;
+      background: rgba(61, 42, 21, 0.72);
+      box-shadow: 0 4px 12px rgba(3, 11, 27, 0.18), inset 0 1px rgba(255, 255, 255, 0.12);
+      white-space: nowrap;
+    }
+
+    .stage-title-badge {
+      position: absolute;
+      z-index: 4;
+      top: 52px;
+      left: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1px;
+      padding: 4px 10px 5px;
+      border: 1px solid rgba(255, 230, 147, 0.55);
+      border-radius: 12px;
+      color: #fff7d0;
+      background: rgba(61, 42, 21, 0.64);
+      box-shadow: 0 4px 12px rgba(3, 11, 27, 0.16), inset 0 1px rgba(255, 255, 255, 0.12);
+      pointer-events: none;
+      backdrop-filter: blur(4px);
+    }
+
+    .stage-center-title {
+      font-size: clamp(0.64rem, 1.55vw, 0.82rem);
+      font-weight: 900;
+      letter-spacing: 0.08em;
+    }
+
+    .stage-status-pill {
+      font-size: clamp(0.58rem, 1.3vw, 0.72rem);
+      font-weight: 900;
+    }
+
+    .stage-status-neutral { color: #fff4c7; }
+    .stage-status-red { color: #ffb3bc; }
+    .stage-status-blue { color: #abd0ff; }
+
+    .stage-center-score {
+      position: absolute;
+      z-index: 4;
+      left: 50%;
+      bottom: 7px;
+      transform: translateX(-50%);
+      padding: 3px 11px;
+      border: 1px solid rgba(255, 255, 255, 0.38);
+      border-radius: 999px;
+      color: #ffffff;
+      background: rgba(8, 25, 51, 0.62);
+      box-shadow: 0 3px 10px rgba(3, 11, 27, 0.2);
+      font-size: clamp(0.62rem, 1.45vw, 0.78rem);
+      font-weight: 900;
+      white-space: nowrap;
+      pointer-events: none;
+      backdrop-filter: blur(4px);
+    }
+
+    .stage-score-chip {
+      z-index: 4 !important;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      box-shadow: 0 3px 10px rgba(3, 11, 27, 0.18) !important;
+    }
+
+    #pvpContainer > div:first-child,
+    #pvpContainer > div:last-child {
+      position: relative;
+      overflow: hidden;
+      border-top: 4px solid transparent;
+      box-shadow: inset 0 1px rgba(255, 255, 255, 0.8);
+    }
+
+    #pvpContainer > div:first-child {
+      border-top-color: #e95363;
+      background: linear-gradient(180deg, #fff2f2 0%, #fffafb 44%, #f8fbff 100%) !important;
+    }
+
+    #pvpContainer > div:last-child {
+      border-top-color: #3d78e8;
+      background: linear-gradient(180deg, #eef6ff 0%, #f7fbff 44%, #ffffff 100%) !important;
+    }
+
+    #pvpContainer > div:first-child::before,
+    #pvpContainer > div:last-child::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.5;
+      background-image: radial-gradient(rgba(21, 47, 83, 0.1) 0.75px, transparent 0.75px);
+      background-size: 13px 13px;
+      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.32), transparent 55%);
+    }
+
+    #pvpContainer > div:first-child > div:first-child,
+    #pvpContainer > div:last-child > div:first-child {
+      position: relative;
+      z-index: 1;
+      padding-bottom: 7px !important;
+      border-bottom-width: 2px !important;
+    }
+
+    #pvpContainer > div:first-child > div:last-child,
+    #pvpContainer > div:last-child > div:last-child {
+      position: relative;
+      z-index: 1;
+      padding: 5px 3px 3px;
+    }
+
+    #pvpContainer .key-btn {
+      border-width: 2px !important;
+      box-shadow: 0 3px 0 rgba(21, 47, 83, 0.13), 0 5px 10px rgba(35, 61, 98, 0.06);
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+    }
+
+    #pvpContainer > div:first-child .key-btn:not(.bg-red-500) { border-color: #f5c2c7 !important; }
+    #pvpContainer > div:last-child .key-btn:not(.bg-blue-500) { border-color: #b9d2f9 !important; }
+
+    #pvpContainer .key-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 0 rgba(21, 47, 83, 0.13), 0 7px 12px rgba(35, 61, 98, 0.1);
+    }
+
+    #redQuestionCard,
+    #blueQuestionCard,
+    #soloQuestionCard {
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 18px rgba(26, 52, 93, 0.12) !important;
+    }
+
+    #redQuestionCard::before,
+    #blueQuestionCard::before,
+    #soloQuestionCard::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 34%;
+      height: 100%;
+      pointer-events: none;
+      background: linear-gradient(105deg, rgba(255, 255, 255, 0.65), transparent);
+    }
+
+    #soloContainer {
+      background: radial-gradient(circle at 50% 0%, #ffffff 0%, #effcf9 45%, #e8f8f4 100%) !important;
+    }
+
+    @media (max-width: 640px) {
+      .stage-topbar { left: 7px; right: 7px; gap: 4px; }
+      .stage-team-card { padding: 5px 6px; gap: 4px; }
+      .stage-team-copy { display: block; }
+      .stage-team-score { display: block; font-size: 0.6rem; }
+      .stage-center-label { padding-left: 8px; padding-right: 8px; }
+      .stage-title-badge { top: 48px; left: 7px; padding-left: 8px; padding-right: 8px; }
+      .stage-center-title { letter-spacing: 0.03em; }
+      .stage-center-score { bottom: 5px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #modeBtnPvP,
+      #modeBtnSolo,
+      header > div:last-child > button,
+      #btnPause,
+      #btnStartRestart,
+      #pvpContainer .key-btn { transition: none; }
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-800 flex flex-col h-full overflow-hidden">
+
+  <!-- 輕量紙花 Canvas -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- ════════════════ 頂部導覽列 ════════════════ -->
+  <header class="h-12 sm:h-14 flex-shrink-0 bg-white border-b border-slate-300 px-2 sm:px-4 flex items-center justify-between gap-1 sm:gap-2 z-30 shadow-sm">
+    <!-- 左側：標題、模式切換膠囊、段數標章 -->
+    <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+      <span class="text-2xl leading-none">🚩</span>
+      <h1 class="text-base sm:text-lg lg:text-xl font-black text-slate-800 tracking-tight leading-none hidden sm:inline">
+        十十乘法
+      </h1>
+
+      <!-- 模式切換膠囊（雙人拔河 / 單人挑戰） -->
+      <div class="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-300">
+        <button id="modeBtnPvP" class="px-2 sm:px-2.5 py-1 rounded-lg text-xs font-black transition bg-amber-500 text-white shadow-sm" onclick="switchGameMode('pvp')">
+          👥 雙人拔河
+        </button>
+        <button id="modeBtnSolo" class="px-2 sm:px-2.5 py-1 rounded-lg text-xs font-black transition text-slate-600 hover:text-slate-900" onclick="switchGameMode('solo')">
+          👤 單人挑戰
+        </button>
+      </div>
+
+      <span id="tableRangeBadge" class="inline-block text-[11px] sm:text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-black border border-amber-300">
+        全段 1~10
+      </span>
+    </div>
+
+    <!-- 中央：狀態比數 / 單人進度 & 倒數計時 -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      <!-- 雙人模式拔河比數 -->
+      <div id="ropeScoreBadge" class="hidden sm:flex items-center text-xs sm:text-sm font-black bg-slate-100 text-slate-700 px-3 py-1 rounded-full border border-slate-300 shadow-sm whitespace-nowrap">
+        ⚖️ 勢均力敵 (0)
+      </div>
+
+      <!-- 單人模式積分徽章 -->
+      <div id="soloScoreBadge" class="hidden items-center gap-1.5 text-xs sm:text-sm font-black bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full border border-emerald-300 shadow-sm whitespace-nowrap">
+        ⭐ 得分: <span id="soloScoreNum" class="text-base text-emerald-700">0</span>
+      </div>
+
+      <!-- 計時器 -->
+      <div id="timerDisplay" class="flex items-center gap-1.5 bg-amber-500 text-white font-black px-3 py-1 rounded-xl shadow text-base sm:text-xl leading-none">
+        <span>⏱️</span>
+        <span id="timerNumber">60</span><span class="text-xs uppercase font-bold mt-0.5">s</span>
+      </div>
+    </div>
+
+    <!-- 右側：控制按鈕群（戰隊設定、比賽設定、歷史戰績、開始、全螢幕、音效） -->
+    <div class="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
+      <!-- 🛡️ 戰隊設定按鈕 -->
+      <button id="btnClanManageTop" class="bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs sm:text-sm font-black px-2 sm:px-2.5 py-1.5 rounded-xl border border-amber-200 flex items-center gap-1 transition" onclick="openClanModal()">
+        🛡️ <span class="hidden md:inline">戰隊管理</span>
+      </button>
+
+      <button id="btnSetTime" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-black px-2 sm:px-2.5 py-1.5 rounded-xl border border-slate-300 flex items-center gap-1 transition">
+        ⚙️ <span class="hidden md:inline">設定</span>
+      </button>
+
+      <!-- 隨時查詢歷史戰績 -->
+      <button id="btnShowHistoryTop" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs sm:text-sm font-black px-2 sm:px-2.5 py-1.5 rounded-xl border border-indigo-200 flex items-center gap-1 transition">
+        📋 <span class="hidden md:inline">戰隊成效</span>
+      </button>
+
+      <button id="btnPause" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-black px-2.5 sm:px-3 py-1.5 rounded-xl border border-slate-300 hidden transition">
+        ⏸ 暫停
+      </button>
+
+      <button id="btnStartRestart" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs sm:text-sm font-black px-3 sm:px-4 py-1.5 rounded-xl shadow transition">
+        ▶ 開始
+      </button>
+
+      <button id="btnFullscreen" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-black px-2 py-1.5 rounded-xl border border-slate-300" title="切換全螢幕">
+        ⛶
+      </button>
+
+      <button id="btnSoundToggle" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-black px-2 py-1.5 rounded-xl border border-slate-300" title="音效開關">
+        <span id="soundIcon">🔊</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ════════════════ 雙人拔河舞台區（雙人模式專屬，明確高度） ════════════════ -->
+  <section id="tugSection" class="relative w-full flex-shrink-0 h-[23vh] min-h-[150px] max-h-[230px] bg-slate-900 overflow-hidden border-b-2 border-slate-300" aria-label="雙人拔河競賽舞台">
+    <canvas id="tugCanvas" class="w-full h-full block"></canvas>
+
+    <div class="stage-topbar">
+      <div class="stage-team-card stage-team-card-red">
+        <span class="stage-team-dot stage-team-dot-red"></span>
+        <div class="stage-team-copy">
+          <span id="stageRedName" class="stage-team-name">紅隊</span>
+          <span class="stage-team-score"><span id="stageRedCorrect">0</span> 題答對</span>
+        </div>
+      </div>
+      <div class="stage-team-card stage-team-card-blue">
+        <div class="stage-team-copy">
+          <span id="stageBlueName" class="stage-team-name">藍隊</span>
+          <span class="stage-team-score"><span id="stageBlueCorrect">0</span> 題答對</span>
+        </div>
+        <span class="stage-team-dot stage-team-dot-blue"></span>
+      </div>
+    </div>
+
+    <div class="stage-title-badge">
+      <span class="stage-center-title">十十拔河對決</span>
+      <span id="tugStatusText" class="stage-status-pill stage-status-neutral">中央拉鋸・先答對 8 題取勝</span>
+    </div>
+
+    <!-- 暫停遮罩 -->
+    <div id="pauseCover" class="absolute inset-0 bg-slate-950/80 flex items-center justify-center hidden z-20">
+      <div class="text-center text-white">
+        <div class="text-4xl mb-1">⏸️</div>
+        <div class="text-xl font-black">比賽暫停中</div>
+        <button id="btnResumeOverlay" class="mt-2 bg-amber-500 hover:bg-amber-600 px-5 py-1.5 rounded-xl text-sm font-black shadow transition">
+          繼續比賽
+        </button>
+      </div>
+    </div>
+
+    <!-- 雙方即時拔回格數小浮標 -->
+    <div class="stage-score-chip absolute bottom-1.5 left-3 bg-red-600/90 text-white text-[11px] sm:text-xs px-2.5 py-0.5 rounded-full font-black pointer-events-none shadow">
+      🔴 紅隊拔回：<span id="redPullScore">0</span> 格
+    </div>
+    <div class="stage-score-chip absolute bottom-1.5 right-3 bg-blue-600/90 text-white text-[11px] sm:text-xs px-2.5 py-0.5 rounded-full font-black pointer-events-none shadow">
+      🔵 藍隊拔回：<span id="bluePullScore">0</span> 格
+    </div>
+    <div id="stageCenterScore" class="stage-center-score">比分 0 : 0</div>
+  </section>
+
+  <!-- ════════════════ 單人闖關進度展示列（單人模式專屬） ════════════════ -->
+  <section id="soloSection" class="hidden relative w-full flex-shrink-0 h-[12vh] min-h-[80px] max-h-[110px] bg-gradient-to-r from-emerald-800 via-teal-900 to-slate-900 px-4 py-2 border-b-2 border-slate-300 items-center justify-around text-white">
+    <div class="text-center">
+      <div class="text-[11px] font-bold text-emerald-200">🎯 連續答對</div>
+      <div id="soloStreakText" class="text-2xl sm:text-3xl font-black text-amber-300 leading-none mt-0.5">0</div>
+    </div>
+    <div class="h-8 w-px bg-white/20"></div>
+    <div class="text-center">
+      <div class="text-[11px] font-bold text-emerald-200">⚡ 正確率</div>
+      <div id="soloAccText" class="text-2xl sm:text-3xl font-black text-emerald-300 leading-none mt-0.5">100%</div>
+    </div>
+    <div class="h-8 w-px bg-white/20"></div>
+    <div class="text-center">
+      <div class="text-[11px] font-bold text-emerald-200">🏆 本機最高分</div>
+      <div id="soloBestScore" class="text-2xl sm:text-3xl font-black text-amber-400 leading-none mt-0.5">0</div>
+    </div>
+  </section>
+
+  <!-- ════════════════ 主遊戲互動操作區 ════════════════ -->
+  <main class="flex-1 min-h-0 w-full overflow-hidden bg-slate-100">
+
+    <!-- ────────────────── A. 雙人對戰模式佈局（含戰隊選擇下拉選單） ────────────────── -->
+    <div id="pvpContainer" class="grid grid-cols-2 divide-x-2 sm:divide-x-4 divide-slate-300 h-full w-full">
+      <!-- 左側：紅隊（可選戰隊） -->
+      <div class="flex flex-col h-full min-h-0 p-2 sm:p-3 bg-gradient-to-b from-red-50 to-white justify-between">
+        <div class="flex-shrink-0 flex items-center justify-between pb-1 border-b border-red-200 gap-1">
+          <div class="flex items-center gap-1.5 flex-1 min-w-0">
+            <span class="w-3.5 h-3.5 rounded-full bg-red-500 shadow-sm flex-shrink-0"></span>
+            <!-- 戰隊選擇下拉選單 -->
+            <select id="selectClanRed" onchange="onClanSelected('red')" class="bg-white border border-red-300 text-red-700 text-xs sm:text-sm font-black rounded-lg px-2 py-0.5 focus:outline-none truncate max-w-[140px] sm:max-w-[200px]">
+              <option value="">🔴 紅隊 (預設隊伍 A)</option>
+            </select>
+          </div>
+          <div class="text-xs sm:text-sm font-black bg-red-100 text-red-700 px-2 py-0.5 rounded-lg leading-none whitespace-nowrap">
+            答對: <span id="redCorrectText">0</span>
+          </div>
+        </div>
+        <!-- 戰隊成員提示列 -->
+        <div id="redMembersTip" class="text-[11px] text-red-600 font-bold truncate px-1 hidden">
+          成員：<span id="redMembersNames"></span>
+        </div>
+
+        <div class="flex-shrink-0 my-1 flex flex-col items-center">
+          <div id="redQuestionCard" class="flex items-center justify-center gap-2 text-3xl sm:text-4xl lg:text-5xl font-black text-slate-800 bg-white border-2 sm:border-4 border-red-300 rounded-2xl px-4 py-1.5 shadow-md w-full max-w-lg">
+            <span id="redQuestionText">7 × 8 =</span>
+            <span id="redInputText" class="min-w-[60px] text-center text-red-600 border-b-4 border-red-500 pb-0.5">?</span>
+          </div>
+          <div id="redTipText" class="h-4 text-[11px] font-black text-slate-400 mt-0.5 leading-none">
+            答對往左拉・答錯換下一位
+          </div>
+        </div>
+
+        <div class="flex-1 min-h-0 w-full max-w-md mx-auto grid grid-cols-3 grid-rows-4 gap-1.5 sm:gap-2 p-1">
+          <button class="key-btn w-full h-full bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 rounded-xl font-black text-2xl sm:text-3xl flex items-center justify-center" onclick="pressKey('red', '1')">1</button>
+          <button class="key-btn w-full h-full bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 rounded-xl font-black text-2xl sm:text-3xl flex items-center justify-center" onclick="pressKey('red', '2')">2</button>
+          <button class="key-btn w-full h-full bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 rounded-xl font-black text-2xl sm:text-3xl flex items-center justify-center" onclick="pressKey('red', '3')">3</button>
+          <button class="key-btn w-full h-full bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 rounded-xl font-black text-2xl sm:text-3xl flex items-center justify-center" onclick="pressKey('red', '4')">4</button>
+          <button class="key-btn w-full h-full bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 rounded-xl font-black text-2xl sm:text-3xl flex items-center justify-center" onclick="pressKey('red', '5')">5</button>
+          <button class="key-btn w-full h-full bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 rounded-xl font-black text-2xl sm:text-3xl flex items-center justify-center" onclick="pressKey('red', '6')">6</button>
+          <button class="key-btn w-full h-full bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 rounded-xl font-black text-2xl sm:text-3xl flex items-center justify-center" onclick="pressKey('red', '7')">7</button>
+          <button class="key-btn w-full h-full bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 rounded-xl font-black text-2xl sm:text-3xl flex items-center justify-center" onclick="pressKey('red', '8')">8</button>
+          <button class="key-btn w-full h-full bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 rounded-xl font-black text-2xl sm:text-3xl flex items-center justify-center" onclick="pressKey('red', '9')">9</button>
+          <button class="key-btn w-full h-full bg-rose-200 hover:bg-rose-300 border border-rose-300 text-rose-800 rounded-xl font-black text-lg flex items-center justify-center" onclick="pressKey('red', 'clear')">清除</button>
+          <button class="key-btn w-full h-full bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 rounded-xl font-black text-2xl sm:text-3xl flex items-center justify-center" onclick="pressKey('red', '0')">0</button>
+          <button class="key-btn w-full h-full bg-red-500 hover:bg-red-600 text-white rounded-xl font-black text-lg flex items-center justify-center shadow" onclick="submitAnswer('red')">送出 ↵</button>
+        </div>
+      </div>
+
+      <!-- 右側：藍隊（可選戰隊） -->
+      <div class="flex flex-col h-full min-h-0 p-2 sm:p-3 bg-gradient-to-b from-blue-50 to-white justify-between">
+        <div class="flex-shrink-0 flex items-center justify-between pb-1 border-b border-blue-200 gap-1">
+          <div class="flex items-center gap-1.5 flex-1 min-w-0">
+            <span class="w-3.5 h-3.5 rounded-full bg-blue-500 shadow-sm flex-shrink-0"></span>
+            <!-- 戰隊選擇下拉選單 -->
+            <select id="selectClanBlue" onchange="onClanSelected('blue')" class="bg-white border border-blue-300 text-blue-700 text-xs sm:text-sm font-black rounded-lg px-2 py-0.5 focus:outline-none truncate max-w-[140px] sm:max-w-[200px]">
+              <option value="">🔵 藍隊 (預設隊伍 B)</option>
+            </select>
+          </div>
+          <div class="text-xs sm:text-sm font-black bg-blue-100 text-blue-700 px-2 py-0.5 rounded-lg leading-none whitespace-nowrap">
+            答對: <span id="blueCorrectText">0</span>
+          </div>
+        </div>
+        <!-- 戰隊成員提示列 -->
+        <div id="blueMembersTip" class="text-[11px] text-blue-600 font-bold truncate px-1 hidden">
+          成員：<span id="blueMembersNames"></span>
+        </div>
+
+        <div class="flex-shrink-0 my-1 flex flex-col items-center">
+          <div id="blueQuestionCard" class="flex items-center justify-center gap-2 text-3xl sm:text-4xl lg:text-5xl font-black text-slate-800 bg-white border-2 sm:border-4 border-blue-300 rounded-2xl px-4 py-1.5 shadow-md w-full max-w-lg">
+            <span id="blueQuestionText">9 × 6 =</span>
+            <span id="blueInputText" class="min-w-[60px] text-center text-blue-600 border-b-4 border-blue-500 pb-0.5">?</span>
+          </div>
+          <div id="blueTipText" class="h-4 text-[11px] font-black text-slate-400 mt-0.5 leading-none">
+            答對往右拉・答錯換下一位
+          </div>
+        </div>
+
+        <div class="flex-1 min-h-0 w-full max-w-md mx-auto grid grid-cols-3 grid-rows-4 gap-1.5 sm:gap-2 p-1">
+          <button class="key-btn w-full h-full bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 rounded-xl font-black text-2xl sm:text-3xl flex items-center justify-center" onclick="pressKey('blue', '1')">1</button>
+          <button class="key-btn w-full h-full bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 rounded-xl font-black text-2xl sm:text-3xl flex items-center justify-center" onclick="pressKey('blue', '2')">2</button>
+          <button class="key-btn w-full h-full bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 rounded-xl font-black text-2xl sm:text-3xl flex items-center justify-center" onclick="pressKey('blue', '3')">3</button>
+          <button class="key-btn w-full h-full bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 rounded-xl font-black text-2xl sm:text-3xl flex items-center justify-center" onclick="pressKey('blue', '4')">4</button>
+          <button class="key-btn w-full h-full bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 rounded-xl font-black text-2xl sm:text-3xl flex items-center justify-center" onclick="pressKey('blue', '5')">5</button>
+          <button class="key-btn w-full h-full bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 rounded-xl font-black text-2xl sm:text-3xl flex items-center justify-center" onclick="pressKey('blue', '6')">6</button>
+          <button class="key-btn w-full h-full bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 rounded-xl font-black text-2xl sm:text-3xl flex items-center justify-center" onclick="pressKey('blue', '7')">7</button>
+          <button class="key-btn w-full h-full bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 rounded-xl font-black text-2xl sm:text-3xl flex items-center justify-center" onclick="pressKey('blue', '8')">8</button>
+          <button class="key-btn w-full h-full bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 rounded-xl font-black text-2xl sm:text-3xl flex items-center justify-center" onclick="pressKey('blue', '9')">9</button>
+          <button class="key-btn w-full h-full bg-blue-200 hover:bg-blue-300 border border-blue-300 text-blue-800 rounded-xl font-black text-lg flex items-center justify-center" onclick="pressKey('blue', 'clear')">清除</button>
+          <button class="key-btn w-full h-full bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 rounded-xl font-black text-2xl sm:text-3xl flex items-center justify-center" onclick="pressKey('blue', '0')">0</button>
+          <button class="key-btn w-full h-full bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-black text-lg flex items-center justify-center shadow" onclick="submitAnswer('blue')">送出 ↵</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ────────────────── B. 單人挑戰模式佈局 ────────────────── -->
+    <div id="soloContainer" class="hidden flex-col h-full min-h-0 p-3 sm:p-5 bg-gradient-to-b from-emerald-50 via-teal-50 to-white justify-between max-w-2xl mx-auto">
+      <div class="flex-shrink-0 flex items-center justify-between pb-2 border-b border-emerald-200">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">👤</span>
+          <span class="font-black text-base sm:text-xl text-emerald-800">乘法極速挑戰</span>
+        </div>
+        <div class="text-xs sm:text-sm font-black bg-emerald-100 text-emerald-800 px-3 py-1 rounded-xl">
+          已答對: <span id="soloCorrectCount" class="text-base text-emerald-700">0</span> 題
+        </div>
+      </div>
+
+      <!-- 超大單人題目卡 -->
+      <div class="flex-shrink-0 my-2 flex flex-col items-center">
+        <div id="soloQuestionCard" class="flex items-center justify-center gap-3 text-4xl sm:text-6xl lg:text-7xl font-black text-slate-800 bg-white border-4 border-emerald-400 rounded-3xl px-6 py-3 shadow-lg w-full max-w-lg">
+          <span id="soloQuestionText">8 × 9 =</span>
+          <span id="soloInputText" class="min-w-[80px] text-center text-emerald-600 border-b-6 border-emerald-500 pb-0.5">?</span>
+        </div>
+        <div id="soloTipText" class="h-5 text-xs sm:text-sm font-black text-slate-400 mt-1 leading-none">
+          利用鍵盤數字或下方按鍵作答，爭取最高分！
+        </div>
+      </div>
+
+      <!-- 單人專用大鍵盤 -->
+      <div class="flex-1 min-h-0 w-full max-w-md mx-auto grid grid-cols-3 grid-rows-4 gap-2 p-1">
+        <button class="key-btn w-full h-full bg-white hover:bg-emerald-50 border-2 border-slate-300 text-slate-800 rounded-2xl font-black text-3xl flex items-center justify-center" onclick="pressKey('solo', '1')">1</button>
+        <button class="key-btn w-full h-full bg-white hover:bg-emerald-50 border-2 border-slate-300 text-slate-800 rounded-2xl font-black text-3xl flex items-center justify-center" onclick="pressKey('solo', '2')">2</button>
+        <button class="key-btn w-full h-full bg-white hover:bg-emerald-50 border-2 border-slate-300 text-slate-800 rounded-2xl font-black text-3xl flex items-center justify-center" onclick="pressKey('solo', '3')">3</button>
+        <button class="key-btn w-full h-full bg-white hover:bg-emerald-50 border-2 border-slate-300 text-slate-800 rounded-2xl font-black text-3xl flex items-center justify-center" onclick="pressKey('solo', '4')">4</button>
+        <button class="key-btn w-full h-full bg-white hover:bg-emerald-50 border-2 border-slate-300 text-slate-800 rounded-2xl font-black text-3xl flex items-center justify-center" onclick="pressKey('solo', '5')">5</button>
+        <button class="key-btn w-full h-full bg-white hover:bg-emerald-50 border-2 border-slate-300 text-slate-800 rounded-2xl font-black text-3xl flex items-center justify-center" onclick="pressKey('solo', '6')">6</button>
+        <button class="key-btn w-full h-full bg-white hover:bg-emerald-50 border-2 border-slate-300 text-slate-800 rounded-2xl font-black text-3xl flex items-center justify-center" onclick="pressKey('solo', '7')">7</button>
+        <button class="key-btn w-full h-full bg-white hover:bg-emerald-50 border-2 border-slate-300 text-slate-800 rounded-2xl font-black text-3xl flex items-center justify-center" onclick="pressKey('solo', '8')">8</button>
+        <button class="key-btn w-full h-full bg-white hover:bg-emerald-50 border-2 border-slate-300 text-slate-800 rounded-2xl font-black text-3xl flex items-center justify-center" onclick="pressKey('solo', '9')">9</button>
+        <button class="key-btn w-full h-full bg-rose-100 hover:bg-rose-200 border-2 border-rose-300 text-rose-800 rounded-2xl font-black text-xl flex items-center justify-center" onclick="pressKey('solo', 'clear')">清除</button>
+        <button class="key-btn w-full h-full bg-white hover:bg-emerald-50 border-2 border-slate-300 text-slate-800 rounded-2xl font-black text-3xl flex items-center justify-center" onclick="pressKey('solo', '0')">0</button>
+        <button class="key-btn w-full h-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-black text-xl flex items-center justify-center shadow" onclick="submitAnswer('solo')">送出 ↵</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ════════════════ 🛡️ 戰隊管理彈窗 ════════════════ -->
+  <div id="clanModal" class="fixed inset-0 modal-overlay flex items-center justify-center z-50 hidden p-3">
+    <div class="bg-white rounded-3xl p-5 sm:p-6 max-w-lg w-full text-center shadow-2xl border-4 border-amber-400 max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between border-b pb-2 mb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">🛡️</span>
+          <h3 class="text-xl font-black text-slate-800">戰隊與成員管理</h3>
+        </div>
+        <button type="button" onclick="closeClanModal()" class="text-slate-400 hover:text-slate-700 text-2xl font-bold px-1">✕</button>
+      </div>
+
+      <!-- 新增戰隊輸入表單 -->
+      <div class="bg-amber-50/70 border border-amber-200 rounded-2xl p-3 mb-3 text-left">
+        <p class="text-xs font-black text-amber-900 mb-1.5">➕ 建立新戰隊：</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+          <input id="inputNewClanName" type="text" placeholder="戰隊名稱 (例: 迅猛龍隊)" class="bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-amber-500">
+          <input id="inputNewClanMembers" type="text" placeholder="成員名單 (逗號分隔，例: 小明, 小華)" class="bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-amber-500">
+        </div>
+        <button type="button" onclick="addNewClan()" class="w-full bg-amber-500 hover:bg-amber-600 text-white text-xs font-black py-1.5 rounded-xl shadow-sm transition">
+          + 加入戰隊清單
+        </button>
+      </div>
+
+      <!-- 現有戰隊清單 -->
+      <div class="flex-1 overflow-y-auto space-y-2 pr-1 text-left min-h-[160px]" id="clanListContainer">
+        <!-- JS 動態生成戰隊卡片 -->
+      </div>
+
+      <div class="mt-3 pt-2 border-t border-slate-100 flex gap-2">
+        <button type="button" onclick="closeClanModal()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-black py-2.5 rounded-xl text-sm shadow transition">
+          完成設定並關閉
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════ 比賽設定彈窗 ════════════════ -->
+  <div id="timeModal" class="fixed inset-0 modal-overlay flex items-center justify-center z-50 hidden p-3">
+    <div class="bg-white rounded-3xl p-5 sm:p-6 max-w-md w-full text-center shadow-2xl border-4 border-amber-300 max-h-[92vh] overflow-y-auto">
+      <div class="text-4xl mb-1">⚙️</div>
+      <h3 class="text-2xl font-black text-slate-800 mb-1">比賽設定</h3>
+
+      <!-- 時間選擇 -->
+      <p class="text-xs sm:text-sm text-slate-500 font-bold mb-2 text-left">⏱️ 選擇比賽時間</p>
+      <div class="grid grid-cols-2 gap-2 mb-3">
+        <button class="preset-choice bg-slate-100 hover:bg-amber-100 border border-slate-300 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-black text-slate-700 transition" onclick="choosePresetTime(30, event)">
+          ⚡ 30 秒 (快速)
+        </button>
+        <button class="preset-choice bg-amber-500 text-white border border-amber-600 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-black transition" onclick="choosePresetTime(60, event)">
+          ⭐ 60 秒 (標準)
+        </button>
+        <button class="preset-choice bg-slate-100 hover:bg-amber-100 border border-slate-300 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-black text-slate-700 transition" onclick="choosePresetTime(90, event)">
+          🔥 90 秒 (車輪戰)
+        </button>
+        <button class="preset-choice bg-slate-100 hover:bg-amber-100 border border-slate-300 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-black text-slate-700 transition" onclick="choosePresetTime(120, event)">
+          🏆 120 秒 (馬拉松)
+        </button>
+      </div>
+
+      <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 mb-4 text-left">
+        <label class="block text-xs font-black text-slate-600 mb-1">自訂時間 (10 ~ 600 秒)：</label>
+        <div class="flex items-center gap-2">
+          <input id="inputCustomSeconds" type="number" min="10" max="600" value="60" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-center text-xl font-black text-slate-800 focus:outline-none focus:border-amber-500">
+          <span class="text-sm font-black text-slate-500">秒</span>
+        </div>
+      </div>
+
+      <!-- 出題段數任選設定 -->
+      <div class="border-t border-slate-200 pt-3 mb-4 text-left">
+        <p class="text-xs sm:text-sm font-black text-slate-700 mb-2">📚 出題段數任選（只出所選倍數的題目）</p>
+        <div class="grid grid-cols-5 gap-2 mb-2" id="tableCheckboxes"></div>
+
+        <div class="flex gap-2 mt-2">
+          <button type="button" onclick="selectAllTables()" class="flex-1 text-xs font-black bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 rounded-lg border border-slate-300 transition">
+            ✅ 全選 (1~10)
+          </button>
+          <button type="button" onclick="clearAllTables()" class="flex-1 text-xs font-black bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 rounded-lg border border-slate-300 transition">
+            🗑️ 全部取消 (自選)
+          </button>
+        </div>
+
+        <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-2.5 mt-2.5">
+          <div class="text-[11px] font-black text-amber-800 mb-0.5">💡 任選模式說明：</div>
+          <div id="tableRangeNote" class="text-xs text-amber-900 font-bold leading-relaxed"></div>
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <button id="btnCancelTimeModal" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-black py-2.5 rounded-xl text-sm sm:text-base transition">
+          取消
+        </button>
+        <button id="btnApplyTimeModal" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-black py-2.5 rounded-xl text-sm sm:text-base shadow transition">
+          確定套用
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════ 📋 戰績榜彈窗（包含：歷史總覽 / 戰隊獨立排行榜） ════════════════ -->
+  <div id="historyModal" class="fixed inset-0 modal-overlay flex items-center justify-center z-50 hidden p-3">
+    <div class="bg-white rounded-3xl p-5 sm:p-6 max-w-lg w-full text-center shadow-2xl border-4 border-indigo-300 max-h-[88vh] flex flex-col">
+      <div class="flex items-center justify-between border-b pb-2 mb-2">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">📋</span>
+          <h3 class="text-xl font-black text-slate-800">各戰隊成效與對戰</h3>
+        </div>
+        <button type="button" onclick="closeHistoryModal()" class="text-slate-400 hover:text-slate-700 text-2xl font-bold px-1">✕</button>
+      </div>
+
+      <!-- 切換頁籤：【近期對戰歷史】 / 【🛡️ 各戰隊成效排行榜】 -->
+      <div class="hidden flex bg-slate-100 p-1 rounded-xl mb-3 border border-slate-200">
+        <button id="tabBtnHistoryList" class="flex-1 py-1.5 text-xs font-black rounded-lg transition bg-white text-indigo-700 shadow-sm" onclick="switchHistoryTab('recent')">
+          🕒 近期比賽記錄
+        </button>
+        <button id="tabBtnClanStats" class="flex-1 py-1.5 text-xs font-black rounded-lg transition text-slate-500 hover:text-slate-800" onclick="switchHistoryTab('clans')">
+          🛡️ 各戰隊成效與對戰
+        </button>
+      </div>
+
+      <!-- 分頁 A：近期比賽記錄 -->
+      <div class="hidden flex-1 overflow-y-auto space-y-2 pr-1 text-left min-h-[160px]" id="recentHistoryPanel">
+        <div id="topHistoryList"></div>
+      </div>
+
+      <!-- 分頁 B：戰隊個別統計與對戰結果 -->
+      <div class="flex-1 overflow-y-auto space-y-2 pr-1 text-left min-h-[160px]" id="clanStatsPanel">
+        <div id="clanStatsList"></div>
+      </div>
+
+      <div class="flex gap-2 mt-3 pt-2 border-t border-slate-100">
+        <button type="button" onclick="clearAllHistoryRecords()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 font-black py-2.5 px-3 rounded-xl text-xs transition">
+          🗑️ 清除戰隊紀錄
+        </button>
+        <button type="button" onclick="closeHistoryModal()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-2.5 rounded-xl text-sm shadow transition">
+          關閉
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════ 比賽結算彈窗（金光發亮、不跳動） ════════════════ -->
+  <div id="resultModal" class="fixed inset-0 modal-overlay flex items-center justify-center z-50 hidden p-3">
+    <div id="resultModalBox" class="bg-white rounded-3xl p-5 sm:p-7 max-w-sm sm:max-w-md w-full text-center shadow-2xl border-4 border-amber-300 max-h-[92vh] overflow-y-auto">
+      <div id="resIcon" class="text-6xl mb-2">🏆</div>
+      <h2 id="resTitle" class="text-2xl sm:text-3xl font-black text-slate-800 mb-1">獲勝！</h2>
+      <p id="resDesc" class="text-xs sm:text-sm font-bold text-slate-500 mb-4">時間到！</p>
+
+      <!-- 雙人模式結果卡片 -->
+      <div id="resPvPStats" class="grid grid-cols-2 gap-3 mb-4 bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-200">
+        <div class="border-r border-slate-200 pr-2 text-left">
+          <div class="text-xs sm:text-sm font-black text-red-500" id="resRedTeamTitle">🔴 紅隊</div>
+          <div class="text-xs sm:text-sm text-slate-600 mt-1">答對：<span id="statRedCorrect" class="font-black text-slate-800">0</span> 題</div>
+          <div class="text-xs sm:text-sm text-slate-600">答錯：<span id="statRedWrong" class="font-black text-slate-800">0</span> 題</div>
+          <div class="text-xs sm:text-sm text-slate-600">成功率：<span id="statRedAcc" class="font-black text-emerald-600">0%</span></div>
+        </div>
+        <div class="pl-2 text-left">
+          <div class="text-xs sm:text-sm font-black text-blue-500" id="resBlueTeamTitle">🔵 藍隊</div>
+          <div class="text-xs sm:text-sm text-slate-600 mt-1">答對：<span id="statBlueCorrect" class="font-black text-slate-800">0</span> 題</div>
+          <div class="text-xs sm:text-sm text-slate-600">答錯：<span id="statBlueWrong" class="font-black text-slate-800">0</span> 題</div>
+          <div class="text-xs sm:text-sm text-slate-600">成功率：<span id="statBlueAcc" class="font-black text-emerald-600">0%</span></div>
+        </div>
+      </div>
+
+      <!-- 單人模式結果卡片 -->
+      <div id="resSoloStats" class="hidden mb-4 bg-slate-50 p-4 rounded-2xl border border-slate-200 text-left">
+        <div class="text-xs font-black text-emerald-600 mb-1">👤 個人挑戰結算</div>
+        <div class="text-sm text-slate-700">答對題數：<span id="statSoloCorrect" class="font-black text-emerald-600 text-lg">0</span> 題</div>
+        <div class="text-sm text-slate-700">答錯題數：<span id="statSoloWrong" class="font-black text-rose-600">0</span> 題</div>
+        <div class="text-sm text-slate-700">最終成功率：<span id="statSoloAcc" class="font-black text-slate-900">100%</span></div>
+        <div class="text-sm text-slate-700 mt-1">最佳連續答對：<span id="statSoloMaxStreak" class="font-black text-amber-600">0</span> 題</div>
+      </div>
+
+      <div class="flex">
+        <button id="btnModalAdjustTime" class="hidden flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-black py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm transition">
+          ⚙️ 設定
+        </button>
+        <button id="btnModalPlayAgain" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-2.5 sm:py-3 rounded-xl text-sm sm:text-base shadow transition">
+          關閉
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ════════════════════════════════════════════
+    //  Web Audio 音效系統
+    // ════════════════════════════════════════════
+    class WebAudioSound {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+      init() {
+        if (!this.ctx) {
+          const AC = window.AudioContext || window.webkitAudioContext;
+          if (AC) this.ctx = new AC();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+      playCorrect() {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, now);
+        osc.frequency.setValueAtTime(659.25, now + 0.05);
+        osc.frequency.setValueAtTime(783.99, now + 0.1);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        osc.start(now);
+        osc.stop(now + 0.26);
+      }
+      playWrong() {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(190, now);
+        osc.frequency.setValueAtTime(130, now + 0.06);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+        osc.start(now);
+        osc.stop(now + 0.17);
+      }
+      playWhistle() {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(2200, now);
+        osc.frequency.setValueAtTime(2600, now + 0.07);
+        gain.gain.setValueAtTime(0.16, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+        osc.start(now);
+        osc.stop(now + 0.33);
+      }
+    }
+
+    const sound = new WebAudioSound();
+
+    // ════════════════════════════════════════════
+    //  🛡️ 戰隊模型與管理 (localStorage)
+    // ════════════════════════════════════════════
+    const CLAN_KEY = 'tugClanList_v1';
+    let clanList = [
+      { id: 'clan_1', name: '猛虎戰隊', members: ['王小明', '李小華', '張大同'] },
+      { id: 'clan_2', name: '飛鷹戰隊', members: ['陳美麗', '林志遠', '吳雅婷'] }
+    ];
+
+    function loadClans() {
+      try {
+        const raw = localStorage.getItem(CLAN_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            clanList = parsed;
+          }
+        }
+      } catch (e) {}
+    }
+
+    function saveClans() {
+      try {
+        localStorage.setItem(CLAN_KEY, JSON.stringify(clanList));
+      } catch (e) {}
+      renderClanOptions();
+      renderClanManageList();
+    }
+
+    function renderClanOptions() {
+      const redSel = document.getElementById('selectClanRed');
+      const blueSel = document.getElementById('selectClanBlue');
+      const curRed = redSel.value;
+      const curBlue = blueSel.value;
+
+      let redHtml = '<option value="">🔴 紅隊 (預設隊伍 A)</option>';
+      let blueHtml = '<option value="">🔵 藍隊 (預設隊伍 B)</option>';
+
+      clanList.forEach(c => {
+        redHtml += `<option value="${c.id}">🛡️ ${c.name}</option>`;
+        blueHtml += `<option value="${c.id}">🛡️ ${c.name}</option>`;
+      });
+
+      redSel.innerHTML = redHtml;
+      blueSel.innerHTML = blueHtml;
+
+      redSel.value = curRed;
+      blueSel.value = curBlue;
+      onClanSelected('red');
+      onClanSelected('blue');
+    }
+
+    function onClanSelected(side) {
+      const sel = document.getElementById(side === 'red' ? 'selectClanRed' : 'selectClanBlue');
+      const tip = document.getElementById(side === 'red' ? 'redMembersTip' : 'blueMembersTip');
+      const names = document.getElementById(side === 'red' ? 'redMembersNames' : 'blueMembersNames');
+      const clanId = sel.value;
+
+      if (!clanId) {
+        tip.classList.add('hidden');
+      } else {
+        const clan = clanList.find(c => c.id === clanId);
+        if (clan && clan.members && clan.members.length > 0) {
+          names.textContent = clan.members.join('、');
+          tip.classList.remove('hidden');
+        } else {
+          tip.classList.add('hidden');
+        }
+      }
+      updateStageTeamLabels();
+    }
+
+    function openClanModal() {
+      renderClanManageList();
+      document.getElementById('clanModal').classList.remove('hidden');
+    }
+
+    function closeClanModal() {
+      document.getElementById('clanModal').classList.add('hidden');
+    }
+
+    function addNewClan() {
+      const nameInput = document.getElementById('inputNewClanName');
+      const memInput = document.getElementById('inputNewClanMembers');
+      const name = nameInput.value.trim();
+      if (!name) {
+        alert('請輸入戰隊名稱！');
+        return;
+      }
+      const rawMems = memInput.value.trim();
+      const members = rawMems ? rawMems.split(/[,，、\s]+/).filter(Boolean) : [];
+
+      clanList.push({
+        id: 'clan_' + Date.now(),
+        name,
+        members
+      });
+
+      nameInput.value = '';
+      memInput.value = '';
+      saveClans();
+    }
+
+    function deleteClan(id) {
+      if (confirm('確定要刪除此戰隊嗎？')) {
+        clanList = clanList.filter(c => c.id !== id);
+        saveClans();
+      }
+    }
+
+    function renderClanManageList() {
+      const container = document.getElementById('clanListContainer');
+      if (!clanList.length) {
+        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">目前沒有建立戰隊，可在上方新增！</p>';
+        return;
+      }
+      container.innerHTML = clanList.map(c => `
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between">
+          <div>
+            <div class="font-black text-slate-800 text-sm flex items-center gap-1">🛡️ ${c.name}</div>
+            <div class="text-xs text-slate-500 font-bold mt-0.5">成員：${c.members.length ? c.members.join('、') : '<span class="text-slate-400">尚未登記成員</span>'}</div>
+          </div>
+          <button type="button" onclick="deleteClan('${c.id}')" class="text-rose-500 hover:text-rose-700 text-xs font-black px-2 py-1 bg-rose-50 rounded-lg transition">
+            刪除
+          </button>
+        </div>
+      `).join('');
+    }
+
+    // ════════════════════════════════════════════
+    //  模式與遊戲狀態
+    // ════════════════════════════════════════════
+    let currentMode = 'pvp'; // 'pvp' 或 'solo'
+    let matchDuration = 60;
+    const MAX_PULL_SCORE = 8;
+
+    let isRunning = false;
+    let isPaused = false;
+    let remainTime = matchDuration;
+    let clockTimer = null;
+
+    let ropeOffset = 0;
+    let smoothedOffset = 0;
+
+    let selectedTables = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+    const teamState = {
+      red:  { n1: 0, n2: 0, input: '', correct: 0, wrong: 0, pullAnim: 0 },
+      blue: { n1: 0, n2: 0, input: '', correct: 0, wrong: 0, pullAnim: 0 },
+      solo: { n1: 0, n2: 0, input: '', correct: 0, wrong: 0, streak: 0, maxStreak: 0 }
+    };
+
+    let dusts = [];
+
+    function updateStageTeamLabels() {
+      const redSelect = document.getElementById('selectClanRed');
+      const blueSelect = document.getElementById('selectClanBlue');
+      const redClan = clanList.find(c => c.id === redSelect?.value);
+      const blueClan = clanList.find(c => c.id === blueSelect?.value);
+      const redName = redClan ? redClan.name : '紅隊';
+      const blueName = blueClan ? blueClan.name : '藍隊';
+
+      const redNameEl = document.getElementById('stageRedName');
+      const blueNameEl = document.getElementById('stageBlueName');
+      const redCorrectEl = document.getElementById('stageRedCorrect');
+      const blueCorrectEl = document.getElementById('stageBlueCorrect');
+      if (redNameEl) redNameEl.textContent = redName;
+      if (blueNameEl) blueNameEl.textContent = blueName;
+      if (redCorrectEl) redCorrectEl.textContent = teamState.red.correct;
+      if (blueCorrectEl) blueCorrectEl.textContent = teamState.blue.correct;
+
+      const centerScore = document.getElementById('stageCenterScore');
+      if (centerScore) {
+        centerScore.textContent = `比分 ${Math.max(0, -ropeOffset)} : ${Math.max(0, ropeOffset)}`;
+      }
+    }
+
+    function setStageStatus(message, tone = 'neutral') {
+      const status = document.getElementById('tugStatusText');
+      if (!status) return;
+      status.textContent = message;
+      status.classList.remove('stage-status-neutral', 'stage-status-red', 'stage-status-blue');
+      status.classList.add(`stage-status-${tone}`);
+    }
+
+    // ════════════════════════════════════════════
+    //  Canvas 拔河舞台尺寸同步
+    // ════════════════════════════════════════════
+    const canvas = document.getElementById('tugCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function syncCanvasDimensions() {
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.floor(rect.width * dpr);
+      canvas.height = Math.floor(rect.height * dpr);
+      ctx.resetTransform?.();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', syncCanvasDimensions);
+    window.addEventListener('orientationchange', syncCanvasDimensions);
+
+    // ════════════════════════════════════════════
+    //  模式切換（雙人拔河 vs 單人挑戰）
+    // ════════════════════════════════════════════
+    function switchGameMode(mode) {
+      if (isRunning) {
+        clearInterval(clockTimer);
+        isRunning = false;
+        isPaused = false;
+        document.getElementById('btnStartRestart').textContent = '▶ 開始';
+        document.getElementById('btnStartRestart').className = 'bg-emerald-500 hover:bg-emerald-600 text-white text-xs sm:text-sm font-black px-3 sm:px-4 py-1.5 rounded-xl shadow transition';
+        document.getElementById('btnPause').classList.add('hidden');
+        document.getElementById('pauseCover').classList.add('hidden');
+      }
+
+      currentMode = mode;
+
+      const btnPvP = document.getElementById('modeBtnPvP');
+      const btnSolo = document.getElementById('modeBtnSolo');
+      const tugSec = document.getElementById('tugSection');
+      const soloSec = document.getElementById('soloSection');
+      const pvpBox = document.getElementById('pvpContainer');
+      const soloBox = document.getElementById('soloContainer');
+      const ropeBadge = document.getElementById('ropeScoreBadge');
+      const soloBadge = document.getElementById('soloScoreBadge');
+
+      if (mode === 'pvp') {
+        btnPvP.className = 'px-2 sm:px-2.5 py-1 rounded-lg text-xs font-black transition bg-amber-500 text-white shadow-sm';
+        btnSolo.className = 'px-2 sm:px-2.5 py-1 rounded-lg text-xs font-black transition text-slate-600 hover:text-slate-900';
+        tugSec.classList.remove('hidden');
+        soloSec.classList.add('hidden');
+        soloSec.classList.remove('flex');
+        pvpBox.classList.remove('hidden');
+        pvpBox.classList.add('grid');
+        soloBox.classList.add('hidden');
+        soloBox.classList.remove('flex');
+        ropeBadge.classList.remove('hidden');
+        soloBadge.classList.add('hidden');
+        soloBadge.classList.remove('flex');
+
+        setTimeout(syncCanvasDimensions, 50);
+      } else {
+        btnSolo.className = 'px-2 sm:px-2.5 py-1 rounded-lg text-xs font-black transition bg-emerald-500 text-white shadow-sm';
+        btnPvP.className = 'px-2 sm:px-2.5 py-1 rounded-lg text-xs font-black transition text-slate-600 hover:text-slate-900';
+        tugSec.classList.add('hidden');
+        soloSec.classList.remove('hidden');
+        soloSec.classList.add('flex');
+        pvpBox.classList.add('hidden');
+        pvpBox.classList.remove('grid');
+        soloBox.classList.remove('hidden');
+        soloBox.classList.add('flex');
+        ropeBadge.classList.add('hidden');
+        soloBadge.classList.remove('hidden');
+        soloBadge.classList.add('flex');
+      }
+
+      remainTime = matchDuration;
+      document.getElementById('timerNumber').textContent = remainTime;
+
+      newQuestion('red');
+      newQuestion('blue');
+      newQuestion('solo');
+      updateSoloStatsDisplay();
+    }
+
+    // ════════════════════════════════════════════
+    //  出題邏輯（只會從所勾選的任選段數中出題，乘數 1~10）
+    // ════════════════════════════════════════════
+    function newQuestion(team) {
+      const pool = (selectedTables && selectedTables.length > 0) ? selectedTables : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+      const a = pool[Math.floor(Math.random() * pool.length)];
+      const b = Math.floor(Math.random() * 10) + 1;
+      teamState[team].n1 = a;
+      teamState[team].n2 = b;
+      teamState[team].input = '';
+      refreshTeamDisplay(team);
+    }
+
+    function refreshTeamDisplay(team) {
+      const st = teamState[team];
+      if (team === 'red') {
+        document.getElementById('redQuestionText').textContent = `${st.n1} × ${st.n2} =`;
+        document.getElementById('redInputText').textContent = st.input || '?';
+        document.getElementById('redCorrectText').textContent = st.correct;
+      } else if (team === 'blue') {
+        document.getElementById('blueQuestionText').textContent = `${st.n1} × ${st.n2} =`;
+        document.getElementById('blueInputText').textContent = st.input || '?';
+        document.getElementById('blueCorrectText').textContent = st.correct;
+      } else if (team === 'solo') {
+        document.getElementById('soloQuestionText').textContent = `${st.n1} × ${st.n2} =`;
+        document.getElementById('soloInputText').textContent = st.input || '?';
+        document.getElementById('soloCorrectCount').textContent = st.correct;
+        document.getElementById('soloScoreNum').textContent = st.correct;
+      }
+      if (team === 'red' || team === 'blue') updateStageTeamLabels();
+    }
+
+    function updateSoloStatsDisplay() {
+      const st = teamState.solo;
+      const total = st.correct + st.wrong;
+      const acc = total > 0 ? Math.round((st.correct / total) * 100) : 100;
+      document.getElementById('soloStreakText').textContent = st.streak;
+      document.getElementById('soloAccText').textContent = `${acc}%`;
+      const best = parseInt(localStorage.getItem('solo_best_score') || '0', 10);
+      document.getElementById('soloBestScore').textContent = Math.max(best, st.correct);
+    }
+
+    // ════════════════════════════════════════════
+    //  選手作答按鍵與送出
+    // ════════════════════════════════════════════
+    function pressKey(team, val) {
+      if (!isRunning || isPaused) return;
+      sound.init();
+
+      const st = teamState[team];
+      if (val === 'clear') {
+        st.input = '';
+      } else {
+        if (st.input.length < 3) {
+          st.input += val;
+        }
+      }
+      refreshTeamDisplay(team);
+    }
+
+    function submitAnswer(team) {
+      if (!isRunning || isPaused) return;
+      sound.init();
+
+      const st = teamState[team];
+      if (!st.input) return;
+
+      const userNum = parseInt(st.input, 10);
+      const answer = st.n1 * st.n2;
+
+      if (userNum === answer) {
+        st.correct++;
+        sound.playCorrect();
+
+        if (team === 'solo') {
+          st.streak++;
+          st.maxStreak = Math.max(st.maxStreak, st.streak);
+          updateSoloStatsDisplay();
+          showFeedbackTip('solo', true, '答對！太棒了！');
+        } else {
+          st.pullAnim = 16;
+          spawnDustParticles(team);
+
+          if (team === 'red') {
+            ropeOffset = Math.max(-MAX_PULL_SCORE, ropeOffset - 1);
+            showFeedbackTip('red', true, '答對！往左拔！');
+          } else {
+            ropeOffset = Math.min(MAX_PULL_SCORE, ropeOffset + 1);
+            showFeedbackTip('blue', true, '答對！往右拔！');
+          }
+
+          updateRopeBadge();
+
+          if (Math.abs(ropeOffset) >= MAX_PULL_SCORE) {
+            concludeGame(ropeOffset <= -MAX_PULL_SCORE ? 'red_ko' : 'blue_ko');
+            return;
+          }
+        }
+      } else {
+        st.wrong++;
+        sound.playWrong();
+        if (team === 'solo') {
+          st.streak = 0;
+          updateSoloStatsDisplay();
+          showFeedbackTip('solo', false, '答錯！加油！換下一題');
+        } else {
+          showFeedbackTip(team, false, '答錯！換下一位！');
+        }
+      }
+
+      newQuestion(team);
+    }
+
+    function showFeedbackTip(team, isCorrect, msg) {
+      const tipId = team === 'red' ? 'redTipText' : team === 'blue' ? 'blueTipText' : 'soloTipText';
+      const tip = document.getElementById(tipId);
+      if (tip) {
+        tip.textContent = msg;
+        tip.className = `h-4 text-[11px] sm:text-xs font-black mt-0.5 leading-none ${isCorrect ? 'text-emerald-600' : 'text-rose-600'}`;
+      }
+    }
+
+    function updateRopeBadge() {
+      const badge = document.getElementById('ropeScoreBadge');
+      document.getElementById('redPullScore').textContent = Math.max(0, -ropeOffset);
+      document.getElementById('bluePullScore').textContent = Math.max(0, ropeOffset);
+      updateStageTeamLabels();
+
+      if (ropeOffset === 0) {
+        badge.innerHTML = '⚖️ 勢均力敵 (0)';
+        badge.className = 'hidden sm:flex items-center text-xs sm:text-sm font-black bg-slate-100 text-slate-700 px-3 py-1 rounded-full border border-slate-300 shadow-sm';
+        setStageStatus('中央拉鋸・先答對 8 題取勝', 'neutral');
+      } else if (ropeOffset < 0) {
+        badge.innerHTML = `🔴 紅隊領先 ${Math.abs(ropeOffset)} 格`;
+        badge.className = 'hidden sm:flex items-center text-xs sm:text-sm font-black bg-red-100 text-red-700 px-3 py-1 rounded-full border border-red-300 shadow-sm';
+        setStageStatus(`紅隊拉回 ${Math.abs(ropeOffset)} 格`, 'red');
+      } else {
+        badge.innerHTML = `🔵 藍隊領先 ${ropeOffset} 格`;
+        badge.className = 'hidden sm:flex items-center text-xs sm:text-sm font-black bg-blue-100 text-blue-700 px-3 py-1 rounded-full border border-blue-300 shadow-sm';
+        setStageStatus(`藍隊拉回 ${ropeOffset} 格`, 'blue');
+      }
+    }
+
+    // 鍵盤支援
+    window.addEventListener('keydown', (e) => {
+      if (!isRunning || isPaused) return;
+
+      if (currentMode === 'solo') {
+        if ((e.key >= '0' && e.key <= '9') || (e.code.startsWith('Numpad') && e.code.length === 7)) {
+          const num = e.key >= '0' && e.key <= '9' ? e.key : e.code.replace('Numpad', '');
+          pressKey('solo', num);
+        } else if (e.key === 'Enter' || e.code === 'NumpadEnter') {
+          submitAnswer('solo');
+        } else if (e.key === 'Backspace' || e.key === 'c' || e.key === 'C' || e.code === 'NumpadDecimal') {
+          pressKey('solo', 'clear');
+        }
+      } else {
+        if (e.code.startsWith('Numpad')) {
+          const k = e.code.replace('Numpad', '');
+          if (k >= '0' && k <= '9') {
+            pressKey('blue', k);
+          } else if (e.code === 'NumpadEnter') {
+            submitAnswer('blue');
+          } else if (e.code === 'NumpadDecimal') {
+            pressKey('blue', 'clear');
+          }
+        } else if (e.key === 'Enter') {
+          submitAnswer('blue');
+        }
+
+        if (e.key >= '0' && e.key <= '9' && !e.code.startsWith('Numpad')) {
+          pressKey('red', e.key);
+        } else if (e.code === 'Space') {
+          e.preventDefault();
+          submitAnswer('red');
+        } else if (e.key === 'Backspace' || e.key === 'c' || e.key === 'C') {
+          pressKey('red', 'clear');
+        }
+      }
+    });
+
+    // ════════════════════════════════════════════
+    //  比賽流程控制
+    // ════════════════════════════════════════════
+    function startMatch() {
+      sound.init();
+      sound.playWhistle();
+      stopConfetti();
+
+      isRunning = true;
+      isPaused = false;
+      remainTime = matchDuration;
+      ropeOffset = 0;
+      smoothedOffset = 0;
+
+      teamState.red.correct = 0;
+      teamState.red.wrong = 0;
+      teamState.blue.correct = 0;
+      teamState.blue.wrong = 0;
+
+      teamState.solo.correct = 0;
+      teamState.solo.wrong = 0;
+      teamState.solo.streak = 0;
+      teamState.solo.maxStreak = 0;
+
+      document.getElementById('timerNumber').textContent = remainTime;
+      document.getElementById('timerDisplay').classList.remove('urgent-anim');
+
+      const startBtn = document.getElementById('btnStartRestart');
+      startBtn.textContent = '⏹ 重新開始';
+      startBtn.className = 'bg-rose-500 hover:bg-rose-600 text-white text-xs sm:text-sm font-black px-3.5 sm:px-4 py-1.5 rounded-xl shadow transition';
+
+      const pauseBtn = document.getElementById('btnPause');
+      pauseBtn.classList.remove('hidden');
+      pauseBtn.textContent = '⏸ 暫停';
+      document.getElementById('pauseCover').classList.add('hidden');
+
+      if (currentMode === 'pvp') {
+        newQuestion('red');
+        newQuestion('blue');
+        updateRopeBadge();
+      } else {
+        newQuestion('solo');
+        updateSoloStatsDisplay();
+      }
+
+      clearInterval(clockTimer);
+      clockTimer = setInterval(() => {
+        if (!isPaused) {
+          remainTime--;
+          document.getElementById('timerNumber').textContent = remainTime;
+
+          if (remainTime <= 10 && remainTime > 0) {
+            document.getElementById('timerDisplay').classList.add('urgent-anim');
+          }
+
+          if (remainTime <= 0) {
+            concludeGame('time_up');
+          }
+        }
+      }, 1000);
+    }
+
+    function togglePauseMatch() {
+      if (!isRunning) return;
+      isPaused = !isPaused;
+
+      const pauseBtn = document.getElementById('btnPause');
+      const pauseCover = document.getElementById('pauseCover');
+
+      if (isPaused) {
+        pauseBtn.textContent = '▶ 繼續';
+        pauseCover.classList.remove('hidden');
+      } else {
+        pauseBtn.textContent = '⏸ 暫停';
+        pauseCover.classList.add('hidden');
+      }
+    }
+
+    // 結束結算（結合戰隊模式勝率計算）
+    function concludeGame(reason) {
+      clearInterval(clockTimer);
+      isRunning = false;
+      isPaused = false;
+      sound.playWhistle();
+
+      document.getElementById('timerDisplay').classList.remove('urgent-anim');
+      document.getElementById('btnPause').classList.add('hidden');
+      document.getElementById('pauseCover').classList.add('hidden');
+
+      const startBtn = document.getElementById('btnStartRestart');
+      startBtn.textContent = '▶ 開始';
+      startBtn.className = 'bg-emerald-500 hover:bg-emerald-600 text-white text-xs sm:text-sm font-black px-3.5 sm:px-4 py-1.5 rounded-xl shadow transition';
+
+      let title = '';
+      let desc = '';
+      let icon = '🏆';
+      let winner = 'draw';
+
+      const box = document.getElementById('resultModalBox');
+      const resPvP = document.getElementById('resPvPStats');
+      const resSolo = document.getElementById('resSoloStats');
+
+      if (currentMode === 'solo') {
+        resPvP.classList.add('hidden');
+        resSolo.classList.remove('hidden');
+
+        const s = teamState.solo;
+        const total = s.correct + s.wrong;
+        const acc = total > 0 ? `${Math.round((s.correct / total) * 100)}%` : '100%';
+
+        title = '🎉 挑戰完成！';
+        desc = `在 ${matchDuration} 秒內成功答對 ${s.correct} 題！`;
+        icon = s.correct >= 15 ? '👑' : '⭐';
+        winner = 'solo';
+
+        document.getElementById('statSoloCorrect').textContent = s.correct;
+        document.getElementById('statSoloWrong').textContent = s.wrong;
+        document.getElementById('statSoloAcc').textContent = acc;
+        document.getElementById('statSoloMaxStreak').textContent = s.maxStreak;
+
+        const curBest = parseInt(localStorage.getItem('solo_best_score') || '0', 10);
+        if (s.correct > curBest) {
+          localStorage.setItem('solo_best_score', s.correct.toString());
+        }
+        updateSoloStatsDisplay();
+
+        saveHistory({
+          date: new Date().toLocaleString('zh-TW'),
+          mode: 'solo',
+          winner: 'solo',
+          soloScore: s.correct,
+          soloWrong: s.wrong,
+          acc,
+          elapsed: matchDuration - remainTime,
+          tables: selectedTables.length === 10 ? '全段(1~10)' : `任選(${selectedTables.join('、')}段)`
+        });
+      } else {
+        resPvP.classList.remove('hidden');
+        resSolo.classList.add('hidden');
+
+        // 取得當前紅藍戰隊名稱
+        const redClanId = document.getElementById('selectClanRed').value;
+        const blueClanId = document.getElementById('selectClanBlue').value;
+        const redClan = clanList.find(c => c.id === redClanId);
+        const blueClan = clanList.find(c => c.id === blueClanId);
+
+        const redName = redClan ? redClan.name : '紅隊';
+        const blueName = blueClan ? blueClan.name : '藍隊';
+
+        document.getElementById('resRedTeamTitle').textContent = `🔴 ${redName}`;
+        document.getElementById('resBlueTeamTitle').textContent = `🔵 ${blueName}`;
+
+        if (reason === 'red_ko') {
+          title = `🎉 【${redName}】 提前完勝 (K.O.)！`;
+          desc = `實力拔山倒樹！【${redName}】成功將繩索完全拉入陣營！`;
+          icon = '🔴';
+          winner = 'red';
+        } else if (reason === 'blue_ko') {
+          title = `🎉 【${blueName}】 提前完勝 (K.O.)！`;
+          desc = `實力拔山倒樹！【${blueName}】成功將繩索完全拉入陣營！`;
+          icon = '🔵';
+          winner = 'blue';
+        } else {
+          if (ropeOffset < 0) {
+            title = `🏆 【${redName}】 獲勝！`;
+            desc = `時間到！紅結偏向【${redName}】陣營 (領先 ${Math.abs(ropeOffset)} 格)！`;
+            icon = '🔴';
+            winner = 'red';
+          } else if (ropeOffset > 0) {
+            title = `🏆 【${blueName}】 獲勝！`;
+            desc = `時間到！紅結偏向【${blueName}】陣營 (領先 ${ropeOffset} 格)！`;
+            icon = '🔵';
+            winner = 'blue';
+          } else {
+            title = '🤝 勢均力敵 平手！';
+            desc = `雙方反應與心算實力旗鼓相當，【${redName}】與【${blueName}】平手！`;
+            icon = '⚖️';
+            winner = 'draw';
+          }
+        }
+
+        const redTotal = teamState.red.correct + teamState.red.wrong;
+        const blueTotal = teamState.blue.correct + teamState.blue.wrong;
+        const redAcc = redTotal > 0 ? `${Math.round((teamState.red.correct / redTotal) * 100)}%` : '0%';
+        const blueAcc = blueTotal > 0 ? `${Math.round((teamState.blue.correct / blueTotal) * 100)}%` : '0%';
+
+        document.getElementById('statRedCorrect').textContent = teamState.red.correct;
+        document.getElementById('statRedWrong').textContent = teamState.red.wrong;
+        document.getElementById('statRedAcc').textContent = redAcc;
+
+        document.getElementById('statBlueCorrect').textContent = teamState.blue.correct;
+        document.getElementById('statBlueWrong').textContent = teamState.blue.wrong;
+        document.getElementById('statBlueAcc').textContent = blueAcc;
+
+        saveHistory({
+          date: new Date().toLocaleString('zh-TW'),
+          mode: 'pvp',
+          winner,
+          redClanId: redClan ? redClan.id : '',
+          redName,
+          redCorrect: teamState.red.correct,
+          redWrong: teamState.red.wrong,
+          redAcc,
+          blueClanId: blueClan ? blueClan.id : '',
+          blueName,
+          blueCorrect: teamState.blue.correct,
+          blueWrong: teamState.blue.wrong,
+          blueAcc,
+          elapsed: matchDuration - remainTime,
+          tables: selectedTables.length === 10 ? '全段(1~10)' : `任選(${selectedTables.join('、')}段)`
+        });
+      }
+
+      box.classList.remove('victory-glow', 'draw-glow');
+      if (winner !== 'draw') {
+        box.classList.add('victory-glow');
+        launchConfetti(winner);
+      } else {
+        box.classList.add('draw-glow');
+      }
+
+      document.getElementById('resIcon').textContent = icon;
+      document.getElementById('resTitle').textContent = title;
+      document.getElementById('resDesc').textContent = desc;
+
+      document.getElementById('resultModal').classList.remove('hidden');
+    }
+
+    // ════════════════════════════════════════════
+    //  🎊 輕量紙花 Confetti
+    // ════════════════════════════════════════════
+    const confCanvas = document.getElementById('confettiCanvas');
+    const confCtx = confCanvas.getContext('2d');
+    let confPieces = [];
+    let confAnimId = null;
+
+    function launchConfetti(winner) {
+      confCanvas.width = window.innerWidth;
+      confCanvas.height = window.innerHeight;
+      confPieces = [];
+
+      const colors = winner === 'red'
+        ? ['#ef4444', '#fca5a5', '#fbbf24', '#ffffff']
+        : winner === 'blue'
+        ? ['#3b82f6', '#93c5fd', '#fbbf24', '#ffffff']
+        : ['#10b981', '#6ee7b7', '#fbbf24', '#ffffff'];
+
+      for (let i = 0; i < 50; i++) {
+        confPieces.push({
+          x: Math.random() * confCanvas.width,
+          y: -20 - Math.random() * 200,
+          vx: (Math.random() - 0.5) * 4,
+          vy: Math.random() * 4 + 2,
+          w: Math.random() * 10 + 6,
+          h: Math.random() * 6 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          alpha: 1
+        });
+      }
+
+      if (confAnimId) cancelAnimationFrame(confAnimId);
+      animateConfetti();
+      setTimeout(stopConfetti, 4500);
+    }
+
+    function animateConfetti() {
+      confCtx.clearRect(0, 0, confCanvas.width, confCanvas.height);
+      let alive = false;
+
+      for (let i = 0; i < confPieces.length; i++) {
+        const p = confPieces[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.y > confCanvas.height) p.alpha -= 0.05;
+        if (p.alpha <= 0) continue;
+        alive = true;
+
+        confCtx.globalAlpha = p.alpha;
+        confCtx.fillStyle = p.color;
+        confCtx.fillRect(p.x, p.y, p.w, p.h);
+      }
+
+      if (alive) {
+        confAnimId = requestAnimationFrame(animateConfetti);
+      } else {
+        stopConfetti();
+      }
+    }
+
+    function stopConfetti() {
+      if (confAnimId) cancelAnimationFrame(confAnimId);
+      confAnimId = null;
+      confCtx.clearRect(0, 0, confCanvas.width, confCanvas.height);
+      confPieces = [];
+    }
+
+    // ════════════════════════════════════════════
+    //  💾 成績記憶系統 (localStorage) 與戰隊成效分析
+    // ════════════════════════════════════════════
+    const HISTORY_KEY = 'tugHistory_multiplication_v1';
+    // 只保留最近 200 場，供各戰隊成效與對戰分析使用。
+    const MAX_HISTORY = 200;
+
+    function saveHistory(record) {
+      let history = loadHistory();
+      history.unshift(record);
+      if (history.length > MAX_HISTORY) history = history.slice(0, MAX_HISTORY);
+      try {
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+      } catch (e) {}
+    }
+
+    function loadHistory() {
+      try {
+        const raw = localStorage.getItem(HISTORY_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function switchHistoryTab(tab) {
+      const btnRecent = document.getElementById('tabBtnHistoryList');
+      const btnClans = document.getElementById('tabBtnClanStats');
+      const panelRecent = document.getElementById('recentHistoryPanel');
+      const panelClans = document.getElementById('clanStatsPanel');
+
+      if (tab === 'recent') {
+        btnRecent.className = 'flex-1 py-1.5 text-xs font-black rounded-lg transition bg-white text-indigo-700 shadow-sm';
+        btnClans.className = 'flex-1 py-1.5 text-xs font-black rounded-lg transition text-slate-500 hover:text-slate-800';
+        panelRecent.classList.remove('hidden');
+        panelClans.classList.add('hidden');
+      } else {
+        btnClans.className = 'flex-1 py-1.5 text-xs font-black rounded-lg transition bg-white text-indigo-700 shadow-sm';
+        btnRecent.className = 'flex-1 py-1.5 text-xs font-black rounded-lg transition text-slate-500 hover:text-slate-800';
+        panelClans.classList.remove('hidden');
+        panelRecent.classList.add('hidden');
+        renderClanStatsList();
+      }
+    }
+
+    function openHistoryModal() {
+      renderClanStatsList();
+      document.getElementById('historyModal').classList.remove('hidden');
+    }
+
+    function closeHistoryModal() {
+      document.getElementById('historyModal').classList.add('hidden');
+    }
+
+    function renderRecentHistory() {
+      const history = loadHistory();
+      const elTop = document.getElementById('topHistoryList');
+
+      if (!history || history.length === 0) {
+        elTop.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">尚無比賽紀錄</p>';
+      } else {
+        let itemsHtml = '';
+        for (let i = 0; i < history.length; i++) {
+          const r = history[i];
+          if (r.mode === 'solo') {
+            itemsHtml += `
+              <div class="bg-slate-50 border border-emerald-200 rounded-xl px-3 py-2 text-xs">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="font-black text-emerald-800">#${i + 1} 👤 單人挑戰</span>
+                  <span class="text-slate-400">${r.date}</span>
+                </div>
+                <div class="text-slate-700 font-bold">⭐ 得分：${r.soloScore} 題 (成功率 ${r.acc})</div>
+                <div class="text-slate-400 mt-0.5 text-[11px]">${r.tables || ''} · 耗時 ${r.elapsed || '?'} 秒</div>
+              </div>
+            `;
+          } else {
+            const rName = r.redName || '紅隊';
+            const bName = r.blueName || '藍隊';
+            const wText = r.winner === 'red' ? `🔴 【${rName}】勝` : r.winner === 'blue' ? `🔵 【${bName}】勝` : '🤝 平手';
+            itemsHtml += `
+              <div class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="font-black text-slate-800">#${i + 1} 👥 ${wText}</span>
+                  <span class="text-slate-400">${r.date}</span>
+                </div>
+                <div class="text-slate-700 font-bold">
+                  🔴 ${rName} (${r.redCorrect}對${r.redWrong}錯 / 成功率 ${r.redAcc})
+                  <span class="text-slate-400 mx-1">VS</span>
+                  🔵 ${bName} (${r.blueCorrect}對${r.blueWrong}錯 / 成功率 ${r.blueAcc})
+                </div>
+                <div class="text-slate-400 mt-0.5 text-[11px]">${r.tables || ''} · 耗時 ${r.elapsed || '?'} 秒</div>
+              </div>
+            `;
+          }
+        }
+        elTop.innerHTML = itemsHtml;
+      }
+    }
+
+    // 戰隊獨立排行榜與對抗紀錄單獨呈現
+    function renderClanStatsList() {
+      const history = loadHistory();
+      const container = document.getElementById('clanStatsList');
+
+      if (!clanList || clanList.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">尚未建立戰隊，請先至「戰隊管理」建立戰隊！</p>';
+        return;
+      }
+
+      // 統計各戰隊戰績
+      const stats = {};
+      clanList.forEach(c => {
+        stats[c.name] = {
+          name: c.name,
+          members: c.members,
+          matches: 0,
+          wins: 0,
+          losses: 0,
+          draws: 0,
+          totalCorrect: 0,
+          totalQuestions: 0,
+          battles: [] // 記錄跟哪一戰隊比賽
+        };
+      });
+
+      history.forEach(r => {
+        if (r.mode === 'pvp') {
+          const rName = r.redName;
+          const bName = r.blueName;
+
+          if (stats[rName]) {
+            const s = stats[rName];
+            s.matches++;
+            s.totalCorrect += (r.redCorrect || 0);
+            s.totalQuestions += ((r.redCorrect || 0) + (r.redWrong || 0));
+            const isWin = r.winner === 'red';
+            const isDraw = r.winner === 'draw';
+            if (isWin) s.wins++; else if (isDraw) s.draws++; else s.losses++;
+            s.battles.push({
+              vs: bName,
+              result: isWin ? '勝' : isDraw ? '平' : '負',
+              score: `${r.redCorrect} 對 ${r.blueCorrect}`
+            });
+          }
+
+          if (stats[bName]) {
+            const s = stats[bName];
+            s.matches++;
+            s.totalCorrect += (r.blueCorrect || 0);
+            s.totalQuestions += ((r.blueCorrect || 0) + (r.blueWrong || 0));
+            const isWin = r.winner === 'blue';
+            const isDraw = r.winner === 'draw';
+            if (isWin) s.wins++; else if (isDraw) s.draws++; else s.losses++;
+            s.battles.push({
+              vs: rName,
+              result: isWin ? '勝' : isDraw ? '平' : '負',
+              score: `${r.blueCorrect} 對 ${r.redCorrect}`
+            });
+          }
+        }
+      });
+
+      const clanArray = Object.values(stats).sort((a, b) => {
+        const rateA = a.matches > 0 ? (a.wins / a.matches) : 0;
+        const rateB = b.matches > 0 ? (b.wins / b.matches) : 0;
+        return rateB - rateA;
+      });
+
+      container.innerHTML = clanArray.map(c => {
+        const winRate = c.matches > 0 ? Math.round((c.wins / c.matches) * 100) : 0;
+        const successRate = c.totalQuestions > 0 ? Math.round((c.totalCorrect / c.totalQuestions) * 100) : 0;
+        const battleRecordsHtml = c.battles.length > 0
+          ? c.battles.map(b => `
+              <span class="inline-block bg-white border px-1.5 py-0.5 rounded text-[10px] text-slate-600 mr-1 mb-1">
+                VS ${b.vs} (${b.result} ${b.score})
+              </span>
+            `).join('')
+          : '<span class="text-slate-400 text-[10px]">尚無對戰紀錄</span>';
+
+        return `
+          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-xs">
+            <div class="flex items-center justify-between mb-1.5">
+              <div class="font-black text-slate-800 text-sm flex items-center gap-1.5">
+                <span class="text-amber-500">🛡️</span> ${c.name}
+                <span class="text-[10px] text-slate-400 font-normal">(${c.members.length ? c.members.join('、') : '成員未定'})</span>
+              </div>
+              <div class="font-black text-xs text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-lg">
+                勝率: ${winRate}%
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 bg-white rounded-xl p-2 border border-slate-100 text-center mb-2">
+              <div>
+                <div class="text-[10px] text-slate-400">總出戰</div>
+                <div class="font-black text-slate-700">${c.matches} 場</div>
+              </div>
+              <div>
+                <div class="text-[10px] text-slate-400">戰績 (勝/平/負)</div>
+                <div class="font-black text-emerald-600">${c.wins} / ${c.draws} / ${c.losses}</div>
+              </div>
+              <div>
+                <div class="text-[10px] text-slate-400">答題成功率</div>
+                <div class="font-black text-amber-600">${successRate}%</div>
+              </div>
+            </div>
+
+            <div>
+              <div class="text-[10px] font-black text-slate-500 mb-1">⚔️ 對戰履歷：</div>
+              <div class="flex flex-wrap">${battleRecordsHtml}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function clearAllHistoryRecords() {
+      if (confirm('確定要清除所有歷史紀錄與戰隊戰功嗎？')) {
+        localStorage.removeItem(HISTORY_KEY);
+        openHistoryModal();
+      }
+    }
+
+    // ════════════════════════════════════════════
+    //  📚 出題段數 Checkbox 介面（任選模式）
+    // ════════════════════════════════════════════
+    function buildTableCheckboxes() {
+      const container = document.getElementById('tableCheckboxes');
+      container.innerHTML = '';
+      for (let i = 1; i <= 10; i++) {
+        const checked = selectedTables.includes(i);
+        const div = document.createElement('label');
+        div.id = `tableLabel${i}`;
+        div.className = `flex flex-col items-center justify-center border-2 rounded-xl py-2 px-1 cursor-pointer select-none transition text-center ${checked ? 'border-amber-500 bg-amber-100 shadow-sm' : 'border-slate-300 bg-slate-50 hover:bg-slate-100'}`;
+        div.innerHTML = `
+          <input type="checkbox" value="${i}" ${checked ? 'checked' : ''} onchange="onTableChange(${i}, this)" class="hidden">
+          <span class="font-black text-lg leading-tight ${checked ? 'text-amber-900' : 'text-slate-600'}" id="tableNum${i}">${i}</span>
+          <span class="text-[11px] font-bold ${checked ? 'text-amber-700' : 'text-slate-400'}">的倍數</span>
+        `;
+        container.appendChild(div);
+      }
+      updateTableRangeNote();
+    }
+
+    function onTableChange(val, el) {
+      if (el.checked) {
+        if (!selectedTables.includes(val)) selectedTables.push(val);
+        document.getElementById(`tableLabel${val}`).className = 'flex flex-col items-center justify-center border-2 rounded-xl py-2 px-1 cursor-pointer select-none transition text-center border-amber-500 bg-amber-100 shadow-sm';
+        document.getElementById(`tableNum${val}`).className = 'font-black text-lg leading-tight text-amber-900';
+      } else {
+        selectedTables = selectedTables.filter(t => t !== val);
+        document.getElementById(`tableLabel${val}`).className = 'flex flex-col items-center justify-center border-2 rounded-xl py-2 px-1 cursor-pointer select-none transition text-center border-slate-300 bg-slate-50 hover:bg-slate-100';
+        document.getElementById(`tableNum${val}`).className = 'font-black text-lg leading-tight text-slate-600';
+      }
+      selectedTables.sort((a, b) => a - b);
+      updateTableRangeNote();
+    }
+
+    function selectAllTables() {
+      selectedTables = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+      buildTableCheckboxes();
+    }
+
+    function clearAllTables() {
+      selectedTables = [];
+      buildTableCheckboxes();
+    }
+
+    function updateTableRangeNote() {
+      const note = document.getElementById('tableRangeNote');
+      if (selectedTables.length === 0) {
+        note.innerHTML = '⚠️ <span class="text-rose-600">目前未勾選任何段數！</span>請點選上方按鈕任選段數，若全空套用時會自動切換為全選。';
+      } else if (selectedTables.length === 10) {
+        note.innerHTML = '✨ 目前設定為：<strong>全段練習 (1 ~ 10 段)</strong>，各段題目隨機出現。';
+      } else {
+        note.innerHTML = `🎯 目前已任選：<strong>${selectedTables.map(n => n + '的倍數').join('、')}</strong>，比賽只會出這幾種倍數的題目！`;
+      }
+      updateHeaderBadge();
+    }
+
+    function updateHeaderBadge() {
+      const badge = document.getElementById('tableRangeBadge');
+      if (selectedTables.length === 10 || selectedTables.length === 0) {
+        badge.textContent = '全段 1~10';
+      } else {
+        badge.textContent = `任選: ${selectedTables.map(n => n + '段').join('、')}`;
+      }
+    }
+
+    // ════════════════════════════════════════════
+    //  設定彈窗事件
+    // ════════════════════════════════════════════
+    function choosePresetTime(secs, e) {
+      document.getElementById('inputCustomSeconds').value = secs;
+      document.querySelectorAll('.preset-choice').forEach(b => {
+        b.classList.remove('bg-amber-500', 'text-white', 'border-amber-600');
+        b.classList.add('bg-slate-100', 'text-slate-700', 'border-slate-300');
+      });
+      if (e && e.target) {
+        e.target.classList.remove('bg-slate-100', 'text-slate-700', 'border-slate-300');
+        e.target.classList.add('bg-amber-500', 'text-white', 'border-amber-600');
+      }
+    }
+
+    document.getElementById('btnSetTime').addEventListener('click', () => {
+      buildTableCheckboxes();
+      document.getElementById('timeModal').classList.remove('hidden');
+    });
+
+    document.getElementById('btnShowHistoryTop').addEventListener('click', openHistoryModal);
+
+    document.getElementById('btnCancelTimeModal').addEventListener('click', () => {
+      document.getElementById('timeModal').classList.add('hidden');
+    });
+
+    document.getElementById('btnApplyTimeModal').addEventListener('click', () => {
+      let v = parseInt(document.getElementById('inputCustomSeconds').value, 10);
+      if (isNaN(v) || v < 10) v = 10;
+      if (v > 600) v = 600;
+      matchDuration = v;
+      remainTime = matchDuration;
+      document.getElementById('timerNumber').textContent = remainTime;
+
+      if (selectedTables.length === 0) selectedTables = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+      updateHeaderBadge();
+
+      document.getElementById('timeModal').classList.add('hidden');
+
+      if (isRunning) {
+        startMatch();
+      } else {
+        newQuestion('red');
+        newQuestion('blue');
+        newQuestion('solo');
+      }
+    });
+
+    document.getElementById('btnStartRestart').addEventListener('click', startMatch);
+    document.getElementById('btnPause').addEventListener('click', togglePauseMatch);
+    document.getElementById('btnResumeOverlay').addEventListener('click', togglePauseMatch);
+
+    document.getElementById('btnFullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    document.getElementById('btnSoundToggle').addEventListener('click', () => {
+      sound.enabled = !sound.enabled;
+      document.getElementById('soundIcon').textContent = sound.enabled ? '🔊' : '🔇';
+    });
+
+    document.getElementById('btnModalPlayAgain').addEventListener('click', () => {
+      stopConfetti();
+      document.getElementById('resultModal').classList.add('hidden');
+    });
+
+    document.getElementById('btnModalAdjustTime').addEventListener('click', () => {
+      stopConfetti();
+      document.getElementById('resultModal').classList.add('hidden');
+      buildTableCheckboxes();
+      document.getElementById('timeModal').classList.remove('hidden');
+    });
+
+    // 揚塵粒子
+    function spawnDustParticles(team) {
+      const rect = canvas.getBoundingClientRect();
+      const originX = team === 'red' ? rect.width * 0.28 : rect.width * 0.72;
+      const originY = rect.height * 0.74;
+
+      for (let i = 0; i < 4; i++) {
+        dusts.push({
+          x: originX + (Math.random() * 20 - 10),
+          y: originY + (Math.random() * 4 - 2),
+          vx: (team === 'red' ? -1 : 1) * (Math.random() * 2 + 1),
+          vy: -(Math.random() * 1.5 + 0.5),
+          r: Math.random() * 2.5 + 1.5,
+          alpha: 0.7,
+          color: team === 'red' ? '#ef4444' : '#3b82f6'
+        });
+      }
+    }
+
+    // ════════════════════════════════════════════
+    //  拔河舞台渲染迴圈
+    // ════════════════════════════════════════════
+    function drawStageBackdrop(w, h, groundY) {
+      const sky = ctx.createLinearGradient(0, 0, 0, groundY);
+      sky.addColorStop(0, '#102b52');
+      sky.addColorStop(0.58, '#1d4c79');
+      sky.addColorStop(1, '#2c6a91');
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, w, h);
+
+      const redGlow = ctx.createRadialGradient(w * 0.08, groundY * 0.35, 8, w * 0.08, groundY * 0.35, w * 0.62);
+      redGlow.addColorStop(0, 'rgba(255, 115, 126, 0.32)');
+      redGlow.addColorStop(1, 'rgba(255, 115, 126, 0)');
+      ctx.fillStyle = redGlow;
+      ctx.fillRect(0, 0, w * 0.72, groundY);
+
+      const blueGlow = ctx.createRadialGradient(w * 0.92, groundY * 0.35, 8, w * 0.92, groundY * 0.35, w * 0.62);
+      blueGlow.addColorStop(0, 'rgba(111, 176, 255, 0.32)');
+      blueGlow.addColorStop(1, 'rgba(111, 176, 255, 0)');
+      ctx.fillStyle = blueGlow;
+      ctx.fillRect(w * 0.28, 0, w * 0.72, groundY);
+
+      ctx.save();
+      ctx.globalAlpha = 0.11;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.moveTo(w * 0.08, 0);
+      ctx.lineTo(w * 0.25, 0);
+      ctx.lineTo(w * 0.42, groundY);
+      ctx.lineTo(w * 0.28, groundY);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(w * 0.92, 0);
+      ctx.lineTo(w * 0.75, 0);
+      ctx.lineTo(w * 0.58, groundY);
+      ctx.lineTo(w * 0.72, groundY);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      const pennantColors = ['#f5c85b', '#f38b73', '#82b8ff', '#f8e9a1', '#ee6a7b', '#6ec5b8'];
+      const pennantY = Math.max(32, groundY * 0.31);
+      ctx.save();
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = 'rgba(255, 245, 204, 0.55)';
+      ctx.beginPath();
+      ctx.moveTo(0, pennantY - 12);
+      ctx.quadraticCurveTo(w * 0.5, pennantY + 12, w, pennantY - 12);
+      ctx.stroke();
+      for (let i = 0; i < 10; i++) {
+        const x = w * (i / 9);
+        const y = pennantY + Math.sin((i / 9) * Math.PI) * 7 - 1;
+        ctx.fillStyle = pennantColors[i % pennantColors.length];
+        ctx.beginPath();
+        ctx.moveTo(x - 9, y - 1);
+        ctx.lineTo(x + 9, y - 1);
+        ctx.lineTo(x, y + 14);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+
+      const floor = ctx.createLinearGradient(0, groundY, 0, h);
+      floor.addColorStop(0, '#f8d58a');
+      floor.addColorStop(0.45, '#e6b968');
+      floor.addColorStop(1, '#b9764a');
+      ctx.fillStyle = floor;
+      ctx.fillRect(0, groundY, w, h - groundY);
+
+      ctx.fillStyle = 'rgba(233, 83, 99, 0.2)';
+      ctx.fillRect(0, groundY, w * 0.5, h - groundY);
+      ctx.fillStyle = 'rgba(61, 120, 232, 0.2)';
+      ctx.fillRect(w * 0.5, groundY, w * 0.5, h - groundY);
+
+      ctx.save();
+      ctx.strokeStyle = 'rgba(104, 61, 35, 0.16)';
+      ctx.lineWidth = 1;
+      for (let i = 1; i <= 5; i++) {
+        const y = groundY + ((h - groundY) / 6) * i;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y + Math.sin(i) * 2);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      const trackLeft = w * 0.14;
+      const trackWidth = w * 0.72;
+      ctx.fillStyle = 'rgba(255, 250, 222, 0.46)';
+      ctx.fillRect(trackLeft, groundY - 1, trackWidth, 15);
+      ctx.fillStyle = 'rgba(233, 83, 99, 0.46)';
+      ctx.fillRect(trackLeft, groundY - 1, trackWidth * 0.27, 15);
+      ctx.fillStyle = 'rgba(61, 120, 232, 0.46)';
+      ctx.fillRect(trackLeft + trackWidth * 0.73, groundY - 1, trackWidth * 0.27, 15);
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.fillRect(0, groundY, w, 2);
+      ctx.fillRect(0, h - 4, w, 4);
+    }
+
+    function drawStageRope(w, knotX, ropeY) {
+      const left = w * 0.045;
+      const right = w * 0.955;
+      const curve = Math.min(10, w * 0.012);
+
+      const drawCurve = () => {
+        ctx.beginPath();
+        ctx.moveTo(left, ropeY);
+        ctx.quadraticCurveTo(knotX, ropeY + curve, right, ropeY);
+        ctx.stroke();
+      };
+
+      ctx.save();
+      ctx.lineCap = 'round';
+      ctx.shadowColor = 'rgba(38, 22, 11, 0.4)';
+      ctx.shadowBlur = 8;
+      ctx.strokeStyle = '#6e4727';
+      ctx.lineWidth = 16;
+      drawCurve();
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = '#d39a52';
+      ctx.lineWidth = 11;
+      drawCurve();
+      ctx.strokeStyle = '#f8d48b';
+      ctx.lineWidth = 3;
+      drawCurve();
+
+      ctx.lineWidth = 2.2;
+      for (let i = 0; i < 23; i++) {
+        const t = (i + 0.5) / 23;
+        const x = left + (right - left) * t;
+        const y = ropeY + curve * 4 * t * (1 - t);
+        ctx.strokeStyle = i % 2 === 0 ? '#9a612f' : '#ffe4a4';
+        ctx.beginPath();
+        ctx.moveTo(x - 4, y - 4);
+        ctx.lineTo(x + 4, y + 4);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawPullImpact(x, y, color, progress) {
+      if (progress <= 0) return;
+      const t = progress / 16;
+      ctx.save();
+      ctx.globalAlpha = Math.min(0.9, t + 0.18);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2.3;
+      for (let i = 0; i < 7; i++) {
+        const angle = -Math.PI * 0.86 + (Math.PI * 0.72 * i) / 6;
+        const inner = 12 + (1 - t) * 4;
+        const outer = 24 + (1 - t) * 11;
+        ctx.beginPath();
+        ctx.moveTo(x + Math.cos(angle) * inner, y + Math.sin(angle) * inner);
+        ctx.lineTo(x + Math.cos(angle) * outer, y + Math.sin(angle) * outer);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function renderTugStage() {
+      if (currentMode === 'pvp') {
+        const rect = canvas.getBoundingClientRect();
+        const w = rect.width;
+        const h = rect.height;
+
+        if (w > 0 && h > 0) {
+          smoothedOffset += (ropeOffset - smoothedOffset) * 0.2;
+
+          if (teamState.red.pullAnim > 0) teamState.red.pullAnim--;
+          if (teamState.blue.pullAnim > 0) teamState.blue.pullAnim--;
+
+          ctx.clearRect(0, 0, w, h);
+
+          // 賽場背景
+          const groundY = h * 0.74;
+          drawStageBackdrop(w, h, groundY);
+
+          // 刻度尺標繪製
+          const centerX = w / 2;
+          const stepWidth = (w * 0.36) / MAX_PULL_SCORE;
+
+          ctx.strokeStyle = 'rgba(104, 61, 35, 0.48)';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(centerX - MAX_PULL_SCORE * stepWidth, groundY + 2);
+          ctx.lineTo(centerX + MAX_PULL_SCORE * stepWidth, groundY + 2);
+          ctx.stroke();
+
+          for (let i = -MAX_PULL_SCORE; i <= MAX_PULL_SCORE; i++) {
+            const markX = centerX + i * stepWidth;
+            const isCenter = (i === 0);
+            const isBoundary = (Math.abs(i) === MAX_PULL_SCORE);
+
+            ctx.strokeStyle = isCenter ? '#ffffff' : (isBoundary ? '#a33b4b' : '#875b35');
+            ctx.lineWidth = isCenter ? 3.5 : (isBoundary ? 2.5 : 1.2);
+
+            ctx.beginPath();
+            ctx.moveTo(markX, groundY - (isCenter ? 11 : 6));
+            ctx.lineTo(markX, groundY + 6);
+            ctx.stroke();
+
+            if (i % 2 === 0) {
+              ctx.font = 'bold 11px Fredoka, sans-serif';
+              ctx.fillStyle = isCenter ? '#ffffff' : '#6f472e';
+              ctx.textAlign = 'center';
+              ctx.fillText(i === 0 ? '0' : (i < 0 ? `${i}` : `+${i}`), markX, groundY + 18);
+            }
+          }
+
+          // 繩索本體
+          const knotX = centerX + smoothedOffset * stepWidth;
+          const ropeY = groundY - 20;
+
+          drawStageRope(w, knotX, ropeY);
+
+          // 繪製兩隊選手
+          const personGap = Math.max(38, Math.min(82, w * 0.08));
+          const personScale = Math.max(0.82, Math.min(1.12, h / 170));
+          drawPuller(knotX - personGap * 1.2, groundY, true, teamState.red.pullAnim > 0, personScale);
+          drawPuller(knotX - personGap * 0.48, groundY, true, teamState.red.pullAnim > 0, personScale);
+          drawPuller(knotX + personGap * 0.48, groundY, false, teamState.blue.pullAnim > 0, personScale);
+          drawPuller(knotX + personGap * 1.2, groundY, false, teamState.blue.pullAnim > 0, personScale);
+
+          // 中心紅結
+          ctx.fillStyle = '#dc2626';
+          ctx.beginPath();
+          ctx.arc(knotX, ropeY, 7.5, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = '#ef4444';
+          ctx.beginPath();
+          ctx.moveTo(knotX - 5, ropeY);
+          ctx.lineTo(knotX + 5, ropeY);
+          ctx.lineTo(knotX + 8, ropeY + 20);
+          ctx.lineTo(knotX, ropeY + 15);
+          ctx.lineTo(knotX - 8, ropeY + 20);
+          ctx.closePath();
+          ctx.fill();
+
+          drawPullImpact(knotX - personGap * 1.2, groundY - 35, '#ff9da6', teamState.red.pullAnim);
+          drawPullImpact(knotX + personGap * 1.2, groundY - 35, '#9bc7ff', teamState.blue.pullAnim);
+
+          // 粒子更新
+          for (let i = dusts.length - 1; i >= 0; i--) {
+            const d = dusts[i];
+            d.x += d.vx;
+            d.y += d.vy;
+            d.alpha -= 0.05;
+            if (d.alpha <= 0) {
+              dusts.splice(i, 1);
+              continue;
+            }
+            ctx.globalAlpha = d.alpha;
+            ctx.fillStyle = d.color;
+            ctx.beginPath();
+            ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.globalAlpha = 1;
+        }
+      }
+
+      requestAnimationFrame(renderTugStage);
+    }
+
+    function drawPuller(x, groundY, isLeftTeam, isPulling, scale = 1) {
+      ctx.save();
+
+      // 紅隊在左側面向右、藍隊在右側面向左，雙方都朝中央繩索用力。
+      const dir = isLeftTeam ? 1 : -1;
+      const bounce = isPulling ? Math.sin(performance.now() * 0.04 + x) * 2 : Math.sin(performance.now() * 0.002 + x) * 0.5;
+      const tilt = isPulling ? (isLeftTeam ? -0.25 : 0.25) : (isLeftTeam ? -0.09 : 0.09);
+      const teamColor = isLeftTeam ? '#ef5365' : '#3d78e8';
+      const teamLight = isLeftTeam ? '#ff9aa3' : '#9bc7ff';
+      const pantsColor = isLeftTeam ? '#9f2943' : '#1e4eaa';
+      const skinColor = '#fed7aa';
+
+      ctx.translate(x, groundY + bounce);
+      ctx.scale(scale, scale);
+      ctx.rotate(tilt);
+
+      ctx.fillStyle = 'rgba(30, 38, 56, 0.22)';
+      ctx.beginPath();
+      ctx.ellipse(0, 1, 18, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = pantsColor;
+      ctx.lineWidth = 6;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(-3 * dir, -10);
+      ctx.lineTo(-12 * dir, 0);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(3 * dir, -10);
+      ctx.lineTo(8 * dir, 0);
+      ctx.stroke();
+
+      ctx.fillStyle = teamColor;
+      ctx.beginPath();
+      ctx.roundRect(-11, -35, 22, 25, 6);
+      ctx.fill();
+      ctx.fillStyle = teamLight;
+      ctx.fillRect(-10, -30, 20, 5);
+      ctx.fillStyle = isLeftTeam ? '#ffe89a' : '#e4f1ff';
+      ctx.fillRect(-6, -20, 12, 4);
+
+      ctx.fillStyle = skinColor;
+      ctx.beginPath();
+      ctx.arc(0, -45, 12, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = isLeftTeam ? '#6d2432' : '#1e3a73';
+      ctx.beginPath();
+      ctx.arc(0, -49, 12, Math.PI, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = isLeftTeam ? '#ffe89a' : '#ffffff';
+      ctx.fillRect(-11, -53, 22, 5);
+
+      ctx.fillStyle = '#1e293b';
+      ctx.beginPath();
+      ctx.arc(5 * dir, -45, 1.7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#9a4d42';
+      ctx.lineWidth = 1.3;
+      ctx.beginPath();
+      ctx.arc(5 * dir, -41, 4, 0.15, Math.PI - 0.15);
+      ctx.stroke();
+
+      ctx.strokeStyle = skinColor;
+      ctx.lineWidth = 5.5;
+      ctx.beginPath();
+      ctx.moveTo(4 * dir, -26);
+      ctx.lineTo(18 * dir, -19);
+      ctx.stroke();
+      ctx.fillStyle = skinColor;
+      ctx.beginPath();
+      ctx.arc(19 * dir, -19, 3.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = teamLight;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(-8 * dir, -27);
+      ctx.lineTo(-15 * dir, -18);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    // 頁面初始化
+    window.onload = function() {
+      loadClans();
+      renderClanOptions();
+      syncCanvasDimensions();
+      newQuestion('red');
+      newQuestion('blue');
+      newQuestion('solo');
+      updateRopeBadge();
+      updateHeaderBadge();
+      updateSoloStatsDisplay();
+      renderTugStage();
+    };
+  </script>
+</body>
+</html>
