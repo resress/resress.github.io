@@ -100,10 +100,22 @@
           <span id="liveClock">載入中...</span>
         </div>
 
+        <!-- ➕ 新增軟體按鈕 -->
+        <button onclick="openToolModal()" class="p-2 sm:px-3.5 sm:py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-sm font-bold shadow-md shadow-emerald-500/20 transition flex items-center space-x-1.5" title="新增自訂教學軟體或外部網站">
+          <i class="fa-solid fa-plus text-base"></i>
+          <span class="hidden sm:inline">新增軟體</span>
+        </button>
+
+        <!-- ⚙️ 管理模式切換 -->
+        <button onclick="toggleManageMode()" id="manageModeBtn" class="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm font-medium transition flex items-center space-x-1.5" title="開啟編輯與刪除管理模式">
+          <i class="fa-solid fa-sliders text-base"></i>
+          <span class="hidden sm:inline" id="manageModeText">管理項目</span>
+        </button>
+
         <!-- 使用說明按鈕 -->
         <button onclick="toggleHelpModal()" class="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm font-medium transition flex items-center space-x-1.5" title="使用指南與教學提示">
           <i class="fa-regular fa-circle-question text-base"></i>
-          <span class="hidden sm:inline">使用說明</span>
+          <span class="hidden sm:inline">說明</span>
         </button>
 
         <!-- 全螢幕切換 -->
@@ -202,8 +214,27 @@
         </button>
       </div>
 
-      <!-- 關鍵字搜尋框 -->
-      <div class="relative w-full md:w-72 shrink-0">
+      <!-- 管理條與搜尋框 -->
+      <div class="flex items-center space-x-2 w-full md:w-auto shrink-0">
+        <!-- 備份與還原快捷選單 -->
+        <div id="manageToolbar" class="hidden items-center space-x-1 text-xs">
+          <button onclick="exportToolsConfig()" class="px-2.5 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 font-bold flex items-center space-x-1" title="匯出當前清單備份">
+            <i class="fa-solid fa-file-export"></i>
+            <span class="hidden md:inline">匯出備份</span>
+          </button>
+          <label class="px-2.5 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 font-bold flex items-center space-x-1 cursor-pointer" title="匯入備份清單">
+            <i class="fa-solid fa-file-import"></i>
+            <span class="hidden md:inline">匯入清單</span>
+            <input type="file" id="importFileInput" onchange="importToolsConfig(event)" accept=".json" class="hidden">
+          </label>
+          <button onclick="resetToDefaultTools()" class="px-2.5 py-2 rounded-xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 hover:bg-rose-200 font-bold flex items-center space-x-1" title="還原至官方預設項目">
+            <i class="fa-solid fa-rotate-left"></i>
+            <span class="hidden md:inline">還原預設</span>
+          </button>
+        </div>
+
+        <!-- 關鍵字搜尋框 -->
+        <div class="relative w-full md:w-64 shrink-0">
         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none"></i>
         <input 
           type="text" 
@@ -215,6 +246,7 @@
         <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm">
           <i class="fa-solid fa-xmark"></i>
         </button>
+        </div>
       </div>
 
     </div>
@@ -305,6 +337,153 @@
     </div>
   </div>
 
+  <!-- 新增 / 編輯軟體彈窗 Modal -->
+  <div id="toolModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-5 max-h-[90vh] overflow-y-auto custom-scrollbar">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-700">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-cube" id="toolModalHeaderIcon"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white" id="toolModalTitle">新增自訂軟體／網站</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">填寫軟體資訊，儲存後即刻在平台中展示使用</p>
+          </div>
+        </div>
+        <button onclick="closeToolModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="toolForm" onsubmit="handleSaveTool(event)" class="space-y-4">
+        <input type="hidden" id="editToolId" value="">
+
+        <!-- 軟體名稱 -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+            軟體或網站名稱 <span class="text-rose-500">*</span>
+          </label>
+          <input 
+            type="text" 
+            id="toolNameInput" 
+            required 
+            placeholder="例如：均一教育平台、Canva、成語字典、自製抽籤" 
+            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          >
+        </div>
+
+        <!-- 副標題 -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+            副標題 / 重點特色
+          </label>
+          <input 
+            type="text" 
+            id="toolSubtitleInput" 
+            placeholder="例如：課堂即時測驗 · 線上自學資源" 
+            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          >
+        </div>
+
+        <!-- 網址 / 檔案名稱 -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+            網址連結 或 HTML 檔名 <span class="text-rose-500">*</span>
+          </label>
+          <input 
+            type="text" 
+            id="toolFileInput" 
+            required 
+            placeholder="https://... 或 本機檔名.html" 
+            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          >
+          <p class="text-[11px] text-slate-400 mt-1">可填入外部網站 (https://...) 或本機同目錄下的 .html 檔案。</p>
+        </div>
+
+        <!-- 分類選擇 -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">所屬分類</label>
+            <select id="toolCategoryInput" class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+              <option value="games">🎮 趣味遊戲</option>
+              <option value="chinese">📖 國語語文</option>
+              <option value="math">🔢 數學運算</option>
+              <option value="comprehensive">🏃 健體綜合</option>
+              <option value="management">📋 班級日常</option>
+            </select>
+          </div>
+
+          <!-- 徽章標籤文字 -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">特色標籤 / 徽章</label>
+            <input 
+              type="text" 
+              id="toolBadgeInput" 
+              placeholder="例如：熱門推薦、自訂" 
+              class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            >
+          </div>
+        </div>
+
+        <!-- 圖示與漸層樣式選擇 -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">圖示 (Icon)</label>
+            <select id="toolIconInput" class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+              <option value="fa-cube">🧊 方塊 (預設)</option>
+              <option value="fa-gamepad">🎮 遊戲機手把</option>
+              <option value="fa-book-open">📖 書本書本</option>
+              <option value="fa-calculator">🔢 計算機</option>
+              <option value="fa-person-running">🏃 運動健體</option>
+              <option value="fa-clipboard-list">📋 聯絡記事</option>
+              <option value="fa-star">⭐ 星星幸運</option>
+              <option value="fa-globe">🌐 網路資源</option>
+              <option value="fa-palette">🎨 藝術繪圖</option>
+              <option value="fa-music">🎵 音樂影音</option>
+              <option value="fa-robot">🤖 智慧 AI</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">主題顏色</label>
+            <select id="toolColorInput" class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+              <option value="emerald">綠意盎然 (Emerald)</option>
+              <option value="blue">活力海藍 (Blue)</option>
+              <option value="purple">魔幻紫晶 (Purple)</option>
+              <option value="rose">熱情玫瑰 (Rose)</option>
+              <option value="amber">溫暖陽光 (Amber)</option>
+              <option value="cyan">清新青空 (Cyan)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 軟體簡介說明 -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">功能簡要介紹</label>
+          <textarea 
+            id="toolDescInput" 
+            rows="2" 
+            placeholder="簡要描述此軟體的玩法、教學目的或使用場合..." 
+            class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+          ></textarea>
+        </div>
+
+        <!-- 操作按鈕 -->
+        <div class="pt-2 flex items-center justify-end space-x-2">
+          <button type="button" onclick="closeToolModal()" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-semibold hover:bg-slate-200 transition">
+            取消
+          </button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-500/20 transition">
+            儲存項目
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
   <!-- 使用說明與教學彈窗 Modal -->
   <div id="helpModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs hidden flex items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
@@ -373,8 +552,8 @@
 
   <!-- 資料與核心邏輯 JavaScript -->
   <script>
-    // 工具資料清單
-    const toolsData = [
+    // 官方初始預設工具清單
+    const initialDefaultTools = [
       {
         id: "polyphone-rpg",
         title: "多音獸之島：音字覺醒傳奇",
@@ -546,9 +725,27 @@
       }
     ];
 
+    // 顏色與漸層對照表
+    const colorThemeMap = {
+      emerald: { gradient: "from-emerald-500 to-teal-600", shadow: "shadow-emerald-500/20" },
+      blue: { gradient: "from-blue-600 to-cyan-600", shadow: "shadow-blue-500/20" },
+      purple: { gradient: "from-purple-600 via-indigo-600 to-pink-600", shadow: "shadow-purple-500/20" },
+      rose: { gradient: "from-rose-500 to-pink-600", shadow: "shadow-rose-500/20" },
+      amber: { gradient: "from-amber-500 to-orange-600", shadow: "shadow-amber-500/20" },
+      cyan: { gradient: "from-cyan-500 to-blue-600", shadow: "shadow-cyan-500/20" }
+    };
+
+    // 從 LocalStorage 載入工具資料 (若無則使用官方預設)
+    let toolsData = JSON.parse(localStorage.getItem('classroom_hub_tools_v2') || 'null');
+    if (!toolsData || !Array.isArray(toolsData) || toolsData.length === 0) {
+      toolsData = JSON.parse(JSON.stringify(initialDefaultTools));
+      localStorage.setItem('classroom_hub_tools_v2', JSON.stringify(toolsData));
+    }
+
     // 當前狀態管理
     let currentCategory = 'all';
     let searchQuery = '';
+    let isManageMode = false;
     let favorites = JSON.parse(localStorage.getItem('classroom_hub_favs') || '[]');
 
     // 初始化
@@ -706,10 +903,10 @@
 
         // 搜尋過濾
         if (searchQuery) {
-          const inTitle = item.title.toLowerCase().includes(searchQuery);
-          const inSubtitle = item.subtitle.toLowerCase().includes(searchQuery);
-          const inDesc = item.desc.toLowerCase().includes(searchQuery);
-          const inTags = item.tags.some(tag => tag.toLowerCase().includes(searchQuery));
+          const inTitle = (item.title || '').toLowerCase().includes(searchQuery);
+          const inSubtitle = (item.subtitle || '').toLowerCase().includes(searchQuery);
+          const inDesc = (item.desc || '').toLowerCase().includes(searchQuery);
+          const inTags = (item.tags || []).some(tag => tag.toLowerCase().includes(searchQuery));
           if (!inTitle && !inSubtitle && !inDesc && !inTags) return false;
         }
 
@@ -730,26 +927,42 @@
           ? "fa-solid fa-star text-yellow-400 drop-shadow-sm scale-110" 
           : "fa-regular fa-star text-slate-300 dark:text-slate-600 hover:text-yellow-400";
 
+        // 管理按鈕組
+        const manageButtons = isManageMode ? `
+          <div class="flex items-center space-x-1 bg-amber-500/10 dark:bg-amber-400/10 border border-amber-500/30 rounded-xl p-1 shrink-0 animate-fade-in">
+            <button onclick="openToolModal('${tool.id}')" class="p-1 px-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs transition flex items-center space-x-1" title="編輯此軟體">
+              <i class="fa-solid fa-pen-to-square"></i>
+              <span>編輯</span>
+            </button>
+            <button onclick="deleteTool('${tool.id}', event)" class="p-1 px-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition flex items-center space-x-1" title="移除此軟體">
+              <i class="fa-solid fa-trash-can"></i>
+              <span>刪除</span>
+            </button>
+          </div>
+        ` : `
+          <button onclick="toggleFavorite('${tool.id}', event)" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition" title="${isFav ? '取消收藏' : '加入常用收藏'}">
+            <i class="${starClass} text-lg transition-transform"></i>
+          </button>
+        `;
+
         return `
-          <div class="card-hover group relative bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200/90 dark:border-slate-700/80 shadow-sm hover:shadow-xl transition-all flex flex-col justify-between overflow-hidden">
+          <div class="card-hover group relative bg-white dark:bg-slate-800 rounded-3xl p-6 border ${isManageMode ? 'border-amber-400 dark:border-amber-500/70' : 'border-slate-200/90 dark:border-slate-700/80'} shadow-sm hover:shadow-xl transition-all flex flex-col justify-between overflow-hidden">
             
             <!-- 卡片頂部漸層光暈裝飾 -->
-            <div class="absolute -top-12 -right-12 w-28 h-28 rounded-full bg-gradient-to-br ${tool.gradient} opacity-10 group-hover:opacity-20 blur-xl transition pointer-events-none"></div>
+            <div class="absolute -top-12 -right-12 w-28 h-28 rounded-full bg-gradient-to-br ${tool.gradient || 'from-emerald-500 to-teal-600'} opacity-10 group-hover:opacity-20 blur-xl transition pointer-events-none"></div>
 
             <div>
-              <!-- 頂部：圖標、標籤與收藏按鈕 -->
+              <!-- 頂部：圖標、標籤與管理/收藏按鈕 -->
               <div class="flex items-start justify-between gap-3 mb-4">
-                <div class="w-13 h-13 rounded-2xl bg-gradient-to-tr ${tool.gradient} flex items-center justify-center text-white text-2xl shadow-md ${tool.shadow} shrink-0 group-hover:scale-105 transition-transform duration-300">
-                  <i class="fa-solid ${tool.icon}"></i>
+                <div class="w-13 h-13 rounded-2xl bg-gradient-to-tr ${tool.gradient || 'from-emerald-500 to-teal-600'} flex items-center justify-center text-white text-2xl shadow-md ${tool.shadow || 'shadow-emerald-500/20'} shrink-0 group-hover:scale-105 transition-transform duration-300">
+                  <i class="fa-solid ${tool.icon || 'fa-cube'}"></i>
                 </div>
 
                 <div class="flex items-center space-x-2">
                   <span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-700/80 text-slate-600 dark:text-slate-300">
-                    ${tool.badge}
+                    ${tool.badge || '軟體'}
                   </span>
-                  <button onclick="toggleFavorite('${tool.id}', event)" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition" title="${isFav ? '取消收藏' : '加入常用收藏'}">
-                    <i class="${starClass} text-lg transition-transform"></i>
-                  </button>
+                  ${manageButtons}
                 </div>
               </div>
 
@@ -759,16 +972,16 @@
                   ${tool.title}
                 </h3>
                 <p class="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                  ${tool.subtitle}
+                  ${tool.subtitle || ''}
                 </p>
                 <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed pt-1 line-clamp-3">
-                  ${tool.desc}
+                  ${tool.desc || ''}
                 </p>
               </div>
 
               <!-- 標籤雲 -->
               <div class="flex flex-wrap gap-1.5 my-4">
-                ${tool.tags.map(t => `
+                ${(tool.tags || []).map(t => `
                   <span class="text-[10px] font-medium px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
                     #${t}
                   </span>
@@ -865,6 +1078,188 @@
         document.exitFullscreen().catch(() => {});
         document.getElementById('modalFullscreenIcon').className = 'fa-solid fa-up-right-and-down-left-from-center text-sm';
       }
+    }
+
+
+    // ==========================================
+    // 🛠️ 軟體增減與自訂管理邏輯
+    // ==========================================
+
+    // 切換管理模式
+    function toggleManageMode() {
+      isManageMode = !isManageMode;
+      const btn = document.getElementById('manageModeBtn');
+      const text = document.getElementById('manageModeText');
+      const toolbar = document.getElementById('manageToolbar');
+
+      if (isManageMode) {
+        btn.className = "p-2 sm:px-3.5 sm:py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-sm font-bold shadow-md shadow-amber-500/20 transition flex items-center space-x-1.5";
+        text.textContent = "完成管理";
+        toolbar.classList.remove('hidden');
+        toolbar.classList.add('flex');
+      } else {
+        btn.className = "p-2 sm:px-3 sm:py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm font-medium transition flex items-center space-x-1.5";
+        text.textContent = "管理項目";
+        toolbar.classList.add('hidden');
+        toolbar.classList.remove('flex');
+      }
+      renderTools();
+    }
+
+    // 開啟新增 / 編輯軟體彈窗
+    function openToolModal(toolId = null) {
+      const modal = document.getElementById('toolModal');
+      const titleEl = document.getElementById('toolModalTitle');
+      const editIdInput = document.getElementById('editToolId');
+
+      if (toolId) {
+        const item = toolsData.find(t => t.id === toolId);
+        if (!item) return;
+        titleEl.textContent = "編輯自訂軟體／網站";
+        editIdInput.value = item.id;
+        document.getElementById('toolNameInput').value = item.title || '';
+        document.getElementById('toolSubtitleInput').value = item.subtitle || '';
+        document.getElementById('toolFileInput').value = item.file || '';
+        document.getElementById('toolCategoryInput').value = item.category || 'games';
+        document.getElementById('toolBadgeInput').value = item.badge || '';
+        document.getElementById('toolIconInput').value = item.icon || 'fa-cube';
+        document.getElementById('toolDescInput').value = item.desc || '';
+      } else {
+        titleEl.textContent = "新增自訂軟體／網站";
+        editIdInput.value = "";
+        document.getElementById('toolForm').reset();
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    // 關閉新增 / 編輯軟體彈窗
+    function closeToolModal() {
+      document.getElementById('toolModal').classList.add('hidden');
+    }
+
+    // 儲存軟體 (新增或修改)
+    function handleSaveTool(e) {
+      e.preventDefault();
+      const editId = document.getElementById('editToolId').value;
+      const title = document.getElementById('toolNameInput').value.trim();
+      const subtitle = document.getElementById('toolSubtitleInput').value.trim();
+      const file = document.getElementById('toolFileInput').value.trim();
+      const category = document.getElementById('toolCategoryInput').value;
+      const badge = document.getElementById('toolBadgeInput').value.trim() || '自訂項目';
+      const icon = document.getElementById('toolIconInput').value;
+      const colorKey = document.getElementById('toolColorInput').value;
+      const desc = document.getElementById('toolDescInput').value.trim();
+
+      const theme = colorThemeMap[colorKey] || colorThemeMap['emerald'];
+
+      if (editId) {
+        // 更新既有項目
+        const idx = toolsData.findIndex(t => t.id === editId);
+        if (idx !== -1) {
+          toolsData[idx] = {
+            ...toolsData[idx],
+            title,
+            subtitle,
+            file,
+            category,
+            badge,
+            icon,
+            gradient: theme.gradient,
+            shadow: theme.shadow,
+            desc
+          };
+        }
+      } else {
+        // 新增項目
+        const newTool = {
+          id: 'custom-' + Date.now(),
+          title,
+          subtitle,
+          file,
+          category,
+          icon,
+          gradient: theme.gradient,
+          shadow: theme.shadow,
+          desc,
+          tags: ["自訂推薦", category],
+          badge
+        };
+        toolsData.unshift(newTool); // 新增的排在最前面
+      }
+
+      saveToolsToStorage();
+      closeToolModal();
+      renderTools();
+      updateBadges();
+      alert("✅ 軟體項目已成功儲存！");
+    }
+
+    // 刪除 / 移除軟體
+    function deleteTool(toolId, e) {
+      if (e) e.stopPropagation();
+      const item = toolsData.find(t => t.id === toolId);
+      const name = item ? item.title : "此軟體";
+      if (confirm(`確定要移除【${name}】嗎？\n(可隨時點選「還原預設」恢復原始官方清單)`)) {
+        toolsData = toolsData.filter(t => t.id !== toolId);
+        favorites = favorites.filter(id => id !== toolId);
+        saveToolsToStorage();
+        renderTools();
+        updateBadges();
+      }
+    }
+
+    // 儲存至 LocalStorage
+    function saveToolsToStorage() {
+      localStorage.setItem('classroom_hub_tools_v2', JSON.stringify(toolsData));
+    }
+
+    // 還原為預設項目
+    function resetToDefaultTools() {
+      if (confirm("確定要將所有軟體還原回初始的 12 款官方教學遊戲與工具嗎？自訂添加的軟體將會被重置。")) {
+        toolsData = JSON.parse(JSON.stringify(initialDefaultTools));
+        saveToolsToStorage();
+        renderTools();
+        updateBadges();
+        alert("已成功還原為初始清單！");
+      }
+    }
+
+    // 匯出當前清單備份 JSON
+    function exportToolsConfig() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(toolsData, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", "classroom_hub_tools_backup.json");
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    // 匯入備份清單 JSON
+    function importToolsConfig(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const imported = JSON.parse(evt.target.result);
+          if (Array.isArray(imported) && imported.length > 0) {
+            toolsData = imported;
+            saveToolsToStorage();
+            renderTools();
+            updateBadges();
+            alert(`成功匯入 ${imported.length} 款軟體清單！`);
+          } else {
+            alert("匯入的檔案格式不正確，必須是有效的軟體陣列 JSON。");
+          }
+        } catch (err) {
+          alert("讀取檔案失敗：" + err.message);
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = ''; // 重置 input
     }
 
     // 使用說明 Modal 切換
