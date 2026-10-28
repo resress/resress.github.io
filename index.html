@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>班級小達人智慧教學與互動平台 | Classroom Hub</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Fredoka:wght@600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans TC"', 'sans-serif'],
+            display: ['Fredoka', '"Noto Sans TC"', 'sans-serif']
+          },
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              200: '#bbf7d0',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.05);
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(0,0,0,0.2);
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(0,0,0,0.35);
+    }
+    .card-hover {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-hover:hover {
+      transform: translateY(-4px);
+    }
+    /* 玻璃擬態背景 */
+    .glass-nav {
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
+
+  <!-- 頂部導航欄 -->
+  <header class="sticky top-0 z-30 glass-nav bg-white/85 dark:bg-slate-900/85 border-b border-slate-200/80 dark:border-slate-800/80 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
+      
+      <!-- Logo 與標題 -->
+      <div class="flex items-center space-x-3.5">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-500 via-emerald-500 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
+          <i class="fa-solid fa-graduation-cap text-2xl"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="font-black text-xl md:text-2xl tracking-tight bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 dark:from-emerald-400 dark:via-teal-300 dark:to-cyan-400 bg-clip-text text-transparent">
+              班級小達人教學平台
+            </h1>
+            <span class="hidden sm:inline-block text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+              v2.0 整合版
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400">教學闖關遊戲 · 課堂計時看板 · 數位聯絡簿 (收錄自 resress.github.io)</p>
+        </div>
+      </div>
+
+      <!-- 右側動作區 -->
+      <div class="flex items-center space-x-2 sm:space-x-3">
+        <!-- 當前時間小工具 -->
+        <div class="hidden lg:flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs text-slate-600 dark:text-slate-300 font-medium">
+          <i class="fa-regular fa-clock text-emerald-500"></i>
+          <span id="liveClock">載入中...</span>
+        </div>
+
+        <!-- 使用說明按鈕 -->
+        <button onclick="toggleHelpModal()" class="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm font-medium transition flex items-center space-x-1.5" title="使用指南與教學提示">
+          <i class="fa-regular fa-circle-question text-base"></i>
+          <span class="hidden sm:inline">使用說明</span>
+        </button>
+
+        <!-- 全螢幕切換 -->
+        <button onclick="toggleFullScreen()" class="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm font-medium transition flex items-center space-x-1.5" title="班級電子白板全螢幕">
+          <i class="fa-solid fa-expand text-base" id="fullscreenIcon"></i>
+          <span class="hidden sm:inline">全螢幕</span>
+        </button>
+
+        <!-- 深淺色切換 -->
+        <button onclick="toggleDarkMode()" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition" title="切換護眼深色模式">
+          <i class="fa-solid fa-moon dark:hidden text-slate-600"></i>
+          <i class="fa-solid fa-sun hidden dark:inline text-amber-400"></i>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- 主內容區 -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    
+    <!-- 歡迎橫幅與快速工具條 -->
+    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 text-white p-6 sm:p-8 shadow-xl shadow-teal-700/15">
+      <!-- 裝飾背景圈圈 -->
+      <div class="absolute -right-10 -bottom-10 w-64 h-64 rounded-full bg-white/10 blur-2xl pointer-events-none"></div>
+      <div class="absolute right-40 -top-10 w-40 h-40 rounded-full bg-amber-400/20 blur-xl pointer-events-none"></div>
+
+      <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div class="space-y-2 max-w-2xl">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-semibold tracking-wide uppercase">
+            <span>✨ 智慧教室必備</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-300 animate-pulse"></span>
+            <span>12 款高互動教學與闖關遊戲</span>
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-black tracking-tight text-white">
+            打造身歷其境的課堂互動與自主學習
+          </h2>
+          <p class="text-sm sm:text-base text-emerald-50/90 leading-relaxed">
+            整合生字造詞、成語闖關、十十乘法對抗拔河、健體與綜合問答，以及全自動考試計時器與質感黑板聯絡簿。點擊卡片即可直接內嵌使用，亦可開新分頁投影！
+          </p>
+        </div>
+
+        <!-- 快速統計卡 -->
+        <div class="grid grid-cols-2 gap-3 w-full md:w-auto shrink-0">
+          <div class="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-3.5 text-center">
+            <div class="text-2xl font-black text-amber-300" id="totalToolsCount">12</div>
+            <div class="text-xs font-medium text-emerald-100">精選工具總數</div>
+          </div>
+          <div class="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-3.5 text-center">
+            <div class="text-2xl font-black text-white" id="favCount">0</div>
+            <div class="text-xs font-medium text-emerald-100">已收藏最愛</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 篩選列與搜尋欄 -->
+    <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+      
+      <!-- 分類按鈕選單 (Tabs) -->
+      <div class="flex items-center gap-1.5 overflow-x-auto pb-2 md:pb-0 custom-scrollbar text-sm font-medium">
+        <button onclick="setCategory('all')" data-cat="all" class="cat-btn px-4 py-2 rounded-xl bg-emerald-600 text-white shadow-sm font-bold transition flex items-center space-x-1.5 shrink-0">
+          <i class="fa-solid fa-shapes"></i>
+          <span>全部項目</span>
+          <span class="ml-1 text-xs px-1.5 py-0.5 rounded-full bg-white/20" id="badge-all">12</span>
+        </button>
+        <button onclick="setCategory('games')" data-cat="games" class="cat-btn px-4 py-2 rounded-xl bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition flex items-center space-x-1.5 shrink-0">
+          <i class="fa-solid fa-gamepad text-amber-500"></i>
+          <span>🎮 趣味遊戲</span>
+          <span class="ml-1 text-xs px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500" id="badge-games">3</span>
+        </button>
+        <button onclick="setCategory('chinese')" data-cat="chinese" class="cat-btn px-4 py-2 rounded-xl bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition flex items-center space-x-1.5 shrink-0">
+          <i class="fa-solid fa-book-open text-rose-500"></i>
+          <span>國語語文</span>
+          <span class="ml-1 text-xs px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500" id="badge-chinese">4</span>
+        </button>
+        <button onclick="setCategory('math')" data-cat="math" class="cat-btn px-4 py-2 rounded-xl bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition flex items-center space-x-1.5 shrink-0">
+          <i class="fa-solid fa-calculator text-blue-500"></i>
+          <span>數學運算</span>
+          <span class="ml-1 text-xs px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500" id="badge-math">1</span>
+        </button>
+        <button onclick="setCategory('comprehensive')" data-cat="comprehensive" class="cat-btn px-4 py-2 rounded-xl bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition flex items-center space-x-1.5 shrink-0">
+          <i class="fa-solid fa-person-running text-amber-500"></i>
+          <span>健體綜合</span>
+          <span class="ml-1 text-xs px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500" id="badge-comprehensive">2</span>
+        </button>
+        <button onclick="setCategory('management')" data-cat="management" class="cat-btn px-4 py-2 rounded-xl bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition flex items-center space-x-1.5 shrink-0">
+          <i class="fa-solid fa-clipboard-list text-purple-500"></i>
+          <span>班級日常</span>
+          <span class="ml-1 text-xs px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500" id="badge-management">3</span>
+        </button>
+        <button onclick="setCategory('fav')" data-cat="fav" class="cat-btn px-4 py-2 rounded-xl bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition flex items-center space-x-1.5 shrink-0">
+          <i class="fa-solid fa-star text-yellow-500"></i>
+          <span>我的收藏</span>
+          <span class="ml-1 text-xs px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500" id="badge-fav">0</span>
+        </button>
+      </div>
+
+      <!-- 關鍵字搜尋框 -->
+      <div class="relative w-full md:w-72 shrink-0">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none"></i>
+        <input 
+          type="text" 
+          id="searchInput" 
+          oninput="handleSearch(this.value)" 
+          placeholder="搜尋工具、年級或功能 (快捷鍵 /)..." 
+          class="w-full pl-10 pr-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 transition shadow-xs"
+        >
+        <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- 工具卡片展示網格 -->
+    <div id="toolsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- 由 JavaScript 動態渲染卡片 -->
+    </div>
+
+    <!-- 無搜尋結果提示 -->
+    <div id="noResults" class="hidden text-center py-16 space-y-3">
+      <div class="w-16 h-16 mx-auto rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 text-2xl">
+        <i class="fa-solid fa-search"></i>
+      </div>
+      <h3 class="text-base font-bold text-slate-700 dark:text-slate-300">找不到符合條件的工具</h3>
+      <p class="text-sm text-slate-400 max-w-sm mx-auto">請嘗試變更關鍵字，或切換到「全部工具」分類查看。</p>
+      <button onclick="clearSearch(); setCategory('all')" class="mt-2 px-4 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 transition">
+        重設所有條件
+      </button>
+    </div>
+
+  </main>
+
+  <!-- 頁腳 -->
+  <footer class="mt-auto border-t border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 py-6 text-center text-xs text-slate-500 dark:text-slate-400">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div>
+        <span>智慧班級教學平台 &copy; 2026</span>
+        <span class="mx-1.5">·</span>
+        <span>內容來源自 <a href="https://github.com/resress/resress.github.io" target="_blank" class="text-emerald-600 dark:text-emerald-400 hover:underline">resress.github.io</a></span>
+      </div>
+      <div class="flex items-center space-x-4">
+        <span class="inline-flex items-center text-emerald-600 dark:text-emerald-400">
+          <i class="fa-solid fa-circle-check text-[10px] mr-1"></i> 離線本機可用
+        </span>
+        <span class="inline-flex items-center text-teal-600 dark:text-teal-400">
+          <i class="fa-solid fa-tv text-[10px] mr-1"></i> 投影大屏適配
+        </span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 內嵌全螢幕體驗視窗 (In-Portal App Modal) -->
+  <div id="appModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex flex-col animate-fade-in">
+    <!-- Modal 頂部控制列 -->
+    <div class="h-14 bg-slate-900 text-white px-4 sm:px-6 flex items-center justify-between border-b border-slate-800 shadow-md">
+      <div class="flex items-center space-x-3 overflow-hidden">
+        <div id="modalIconBox" class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm shrink-0">
+          <i class="fa-solid fa-gamepad" id="modalIcon"></i>
+        </div>
+        <div class="truncate">
+          <h3 id="modalTitle" class="text-sm sm:text-base font-bold text-white truncate">工具標題</h3>
+          <p id="modalSubtitle" class="text-xs text-slate-400 truncate hidden sm:block">四年級國語生字大挑戰</p>
+        </div>
+      </div>
+
+      <!-- 控制按鈕組 -->
+      <div class="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
+        <!-- 重新載入 -->
+        <button onclick="reloadModalIframe()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition" title="重新載入工具">
+          <i class="fa-solid fa-rotate-right text-sm"></i>
+        </button>
+        <!-- 新分頁獨立開啟 -->
+        <a id="modalOpenExternal" href="#" target="_blank" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center space-x-1 text-xs" title="在獨立新分頁中開啟">
+          <i class="fa-solid fa-arrow-up-right-from-square text-sm"></i>
+          <span class="hidden md:inline">另開分頁</span>
+        </a>
+        <!-- Iframe 視窗全螢幕切換 -->
+        <button onclick="toggleModalFullScreen()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition" title="放大為全螢幕">
+          <i class="fa-solid fa-up-right-and-down-left-from-center text-sm" id="modalFullscreenIcon"></i>
+        </button>
+        <!-- 關閉按鈕 -->
+        <button onclick="closeAppModal()" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs sm:text-sm transition flex items-center space-x-1 ml-1" title="返回主導航大廳 (Esc)">
+          <i class="fa-solid fa-xmark text-sm"></i>
+          <span>返回大廳</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Iframe 視圖區 -->
+    <div class="flex-1 w-full h-full bg-slate-950 relative overflow-hidden">
+      <!-- 載入中骨架屏動畫 -->
+      <div id="iframeLoader" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 text-slate-400 space-y-3 z-10 transition-opacity duration-300">
+        <i class="fa-solid fa-circle-notch fa-spin text-3xl text-emerald-500"></i>
+        <p class="text-sm">正在載入工具模組...</p>
+      </div>
+      <iframe id="appIframe" src="" class="w-full h-full border-0" allow="fullscreen; autoplay; clipboard-write; microphone" onload="onIframeLoaded()"></iframe>
+    </div>
+  </div>
+
+  <!-- 使用說明與教學彈窗 Modal -->
+  <div id="helpModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
+      
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-700">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-circle-info"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white">智慧班級平台使用指南</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">操作小撇步與班級實務情境建議</p>
+          </div>
+        </div>
+        <button onclick="toggleHelpModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+        <div class="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
+          <h4 class="font-bold text-emerald-800 dark:text-emerald-300 mb-1 flex items-center">
+            <i class="fa-solid fa-display mr-2"></i> 投影於電子白板 / 大螢幕
+          </h4>
+          <p class="text-xs sm:text-sm text-emerald-900/80 dark:text-emerald-200/80">
+            點擊卡片上的「<strong class="font-bold">立即開啟</strong>」，會直接在平台內以全螢幕視窗彈出；點擊右上角的「全螢幕」按鈕可將瀏覽器隱藏網址列，最適合投影進行全班互動或限時測驗。
+          </p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800">
+          <h4 class="font-bold text-amber-800 dark:text-amber-300 mb-1 flex items-center">
+            <i class="fa-solid fa-tablet-screen-button mr-2"></i> 學生平板自學或雙人對抗
+          </h4>
+          <p class="text-xs sm:text-sm text-amber-900/80 dark:text-amber-200/80">
+            特別推薦「<strong class="font-bold">十十乘法戰隊大對抗</strong>」的雙人拔河模式，兩名學生可各坐一側於平板或螢幕前進行即時乘法拔河比賽，刺激又富教育意義！
+          </p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800">
+          <h4 class="font-bold text-indigo-800 dark:text-indigo-300 mb-1 flex items-center">
+            <i class="fa-solid fa-chalkboard mr-2"></i> 考試與聯絡簿日常應用
+          </h4>
+          <p class="text-xs sm:text-sm text-indigo-900/80 dark:text-indigo-200/80">
+            期中考或平時測驗時打開「<strong class="font-bold">考試計時電子看板</strong>」，可自動排程鐘聲與科目題數提醒；放學時切換到「<strong class="font-bold">今日聯絡簿</strong>」或「<strong class="font-bold">三日聯絡簿檢視板</strong>」，黑板風格清晰吸睛。
+          </p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-slate-100 dark:bg-slate-700/50">
+          <h4 class="font-bold text-slate-800 dark:text-slate-200 mb-1 flex items-center">
+            <i class="fa-solid fa-laptop-code mr-2"></i> 離線運作說明
+          </h4>
+          <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+            本平台所有程式碼與工具頁面均已完整下載至本地目錄，即使教室斷網或網路不穩，只要直接點擊 <code>index.html</code> 或執行 <code>啟動班級平台.bat</code>，依舊能 100% 順暢使用！
+          </p>
+        </div>
+      </div>
+
+      <div class="pt-2 text-right">
+        <button onclick="toggleHelpModal()" class="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold transition">
+          我知道了
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 資料與核心邏輯 JavaScript -->
+  <script>
+    // 工具資料清單
+    const toolsData = [
+      {
+        id: "polyphone-rpg",
+        title: "多音獸之島：音字覺醒傳奇",
+        subtitle: "國小國語多音字 RPG 回合制冒險戰鬥",
+        file: "polyphone_rpg.html",
+        category: "games",
+        icon: "fa-dragon",
+        gradient: "from-purple-600 via-indigo-600 to-pink-600",
+        shadow: "shadow-purple-500/20",
+        desc: "超刺激的國小多音字破音字角色扮演冒險遊戲！學生需正確辨識破音字字音來蓄力發動技能、擊敗強大魔物、收服音獸夥伴！",
+        tags: ["多音字破音字", "RPG冒險", "回合制戰鬥", "魔王挑戰", "生字學習"],
+        badge: "全新 RPG ⚔️"
+      },
+      {
+        id: "poke-prize",
+        title: "班級幸運戳戳樂",
+        subtitle: "課堂有獎徵答 · 復古紙盒抽獎遊戲",
+        file: "poke_prize.html",
+        category: "games",
+        icon: "fa-gifts",
+        gradient: "from-rose-500 via-amber-500 to-orange-500",
+        shadow: "shadow-orange-500/20",
+        desc: "古早味童年戳戳樂班級版！支援自訂獎項、真實戳破動畫與驚喜音效，是提升學生課堂參與度與回答動機的最佳法寶！",
+        tags: ["課堂獎勵", "戳戳樂", "趣味抽獎", "驚喜互動"],
+        badge: "熱門抽獎 🎯"
+      },
+      {
+        id: "lucky-wheel",
+        title: "幸運大轉盤 & 隨機點名機",
+        subtitle: "全班號碼抽籤 · 自訂獎項任務轉盤",
+        file: "lucky_wheel.html",
+        category: "games",
+        icon: "fa-dharmachakra",
+        gradient: "from-amber-400 via-rose-500 to-indigo-600",
+        shadow: "shadow-rose-500/20",
+        desc: "課堂隨機抽籤與點名利器！支援 1~45 號自選人數與不重複模式，亦可自訂獎項轉盤，具備流暢物理轉動與中獎彩帶音效！",
+        tags: ["隨機點名", "大轉盤", "不重複抽籤", "彩帶特效", "大屏投影"],
+        badge: "點名必備 🎡"
+      },
+      {
+        id: "word-hero",
+        title: "生字小達人",
+        subtitle: "趣味練習網 · 教育部筆順",
+        file: "408111.html",
+        category: "chinese",
+        icon: "fa-pencil",
+        gradient: "from-rose-500 to-pink-600",
+        shadow: "shadow-rose-500/20",
+        desc: "提供四年級國語課文生字動畫練習、拼音筆順與造詞遊戲，支援教育部筆順學習網無縫對接，加深漢字認知記憶。",
+        tags: ["四年級國語", "筆順動畫", "生字練習", "趣味遊戲"],
+        badge: "熱門練習"
+      },
+      {
+        id: "chinese-quiz-std",
+        title: "國語生字大挑戰",
+        subtitle: "標準版 · 字音字形與部首闖關",
+        file: "408666.html",
+        category: "chinese",
+        icon: "fa-spell-check",
+        gradient: "from-orange-500 to-amber-600",
+        shadow: "shadow-orange-500/20",
+        desc: "四年級課文生字延伸挑戰！測驗包含字音辨正、部首連線、錯別字抓漏，具備全班連線英雄榜與最高分紀錄。",
+        tags: ["字音字形", "部首測驗", "連線英雄榜", "即時回饋"],
+        badge: "闖關競賽"
+      },
+      {
+        id: "chinese-quiz-adv",
+        title: "國語生字大挑戰 (加強版)",
+        subtitle: "精選補充題庫 · 英雄挑戰",
+        file: "480777.html",
+        category: "chinese",
+        icon: "fa-award",
+        gradient: "from-amber-500 to-yellow-600",
+        shadow: "shadow-amber-500/20",
+        desc: "補充更新之四年級生字闖關試卷題庫，針對易混淆字詞進行精準辨析測驗，支援即時排行榜刷榜挑戰。",
+        tags: ["題庫強化", "生字進階", "全班排行", "自適應挑戰"],
+        badge: "進階題庫"
+      },
+      {
+        id: "idiom-challenge",
+        title: "國語成語大挑戰",
+        subtitle: "四年級成語填空與情境選擇",
+        file: "408555.html",
+        category: "chinese",
+        icon: "fa-feather-pointed",
+        gradient: "from-emerald-500 to-teal-600",
+        shadow: "shadow-emerald-500/20",
+        desc: "將課本成語融入生活趣味情境！涵蓋成語缺字挖空、意思選詞與連線大考驗，讓孩子自然學會活用優美成語。",
+        tags: ["成語填空", "情境活用", "全班榜單", "四字成語"],
+        badge: "成語達人"
+      },
+      {
+        id: "math-multiplication",
+        title: "十十乘法戰隊大對抗",
+        subtitle: "雙人拔河對決 · 單人冒險挑戰",
+        file: "999.html",
+        category: "math",
+        icon: "fa-calculator",
+        gradient: "from-blue-600 to-cyan-600",
+        shadow: "shadow-blue-500/20",
+        desc: "超受孩子歡迎的數學對戰神作！提供雙人同機拔河比手速、單人限時闖關、戰隊成員管理與答題成效分析。",
+        tags: ["雙人對決", "乘法拔河", "戰隊系統", "手速考驗"],
+        badge: "人氣最高 ⭐"
+      },
+      {
+        id: "pe-quiz",
+        title: "健體小達人闖關遊戲",
+        subtitle: "健康生活與體育運動問答",
+        file: "408222.html",
+        category: "comprehensive",
+        icon: "fa-heart-pulse",
+        gradient: "from-teal-500 to-emerald-600",
+        shadow: "shadow-teal-500/20",
+        desc: "四年級健康與體育領域主題闖關！測驗衛生常識、運動規則、營養飲食與安全防護觀念，答題即可累積英雄星星。",
+        tags: ["健康體育", "生活常識", "安全教育", "即時闖關"],
+        badge: "寓教於樂"
+      },
+      {
+        id: "comprehensive-quiz",
+        title: "綜合活動小達人闖關",
+        subtitle: "生活實踐與團隊合作探索",
+        file: "408333.html",
+        category: "comprehensive",
+        icon: "fa-people-group",
+        gradient: "from-indigo-500 to-purple-600",
+        shadow: "shadow-indigo-500/20",
+        desc: "四年級綜合活動領域互動遊戲！涵蓋班級生活、團體合作、自我探索與問題解決情境題，提升孩子素養表現。",
+        tags: ["綜合活動", "生活情境", "素養導向", "趣味答題"],
+        badge: "素養遊戲"
+      },
+      {
+        id: "exam-timer",
+        title: "考試計時電子看板",
+        subtitle: "全自動升級版 · 倒數與科目輪播",
+        file: "test111.html",
+        category: "management",
+        icon: "fa-stopwatch-20",
+        gradient: "from-violet-600 to-indigo-700",
+        shadow: "shadow-violet-500/20",
+        desc: "專為段考、複習考設計的超清晰大字體計時器！支援科目排程、剩餘時間警示音效、題數與應考須知動態跑馬燈。",
+        tags: ["全自動排程", "大屏投影", "考場鐘聲", "時間倒數"],
+        badge: "考試必備 ⏰"
+      },
+      {
+        id: "today-contact-book",
+        title: "今日聯絡簿",
+        subtitle: "擬真黑板質感風格 · 單日檢視",
+        file: "contact_book_today.html",
+        category: "management",
+        icon: "fa-clipboard",
+        gradient: "from-emerald-700 to-green-800",
+        shadow: "shadow-emerald-700/20",
+        desc: "綠色黑板風格數位聯絡簿，清楚展示每日各科作業、攜帶物品與明日提醒，支援快速前後日切換與字體自適應。",
+        tags: ["課堂板書", "黑板風格", "今日作業", "行事提醒"],
+        badge: "常態使用"
+      },
+      {
+        id: "three-days-contact-book",
+        title: "三日聯絡簿檢視板",
+        subtitle: "跨日分頁切換 · 作業一覽",
+        file: "contactbook.html",
+        category: "management",
+        icon: "fa-calendar-days",
+        gradient: "from-slate-700 to-slate-900",
+        shadow: "shadow-slate-700/20",
+        desc: "支援前一日、當日與明日的三日聯絡簿看板，方便學生與家長對照作業進度，畫面精巧細緻、排版易於閱讀。",
+        tags: ["三日檢視", "快速翻頁", "聯絡簿彙整", "作業追蹤"],
+        badge: "多日檢視"
+      }
+    ];
+
+    // 當前狀態管理
+    let currentCategory = 'all';
+    let searchQuery = '';
+    let favorites = JSON.parse(localStorage.getItem('classroom_hub_favs') || '[]');
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      // 檢查使用者偏好主題
+      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+
+      // 更新即時時鐘
+      updateLiveClock();
+      setInterval(updateLiveClock, 1000);
+
+      // 監聽鍵盤快捷鍵 (/) 快速搜尋, (Esc) 關閉 Modal
+      window.addEventListener('keydown', (e) => {
+        if (e.key === '/' && document.activeElement.id !== 'searchInput') {
+          e.preventDefault();
+          document.getElementById('searchInput').focus();
+        }
+        if (e.key === 'Escape') {
+          closeAppModal();
+          const helpModal = document.getElementById('helpModal');
+          if (!helpModal.classList.contains('hidden')) {
+            helpModal.classList.add('hidden');
+          }
+        }
+      });
+
+      renderTools();
+      updateBadges();
+    });
+
+    // 實時時鐘更新
+    function updateLiveClock() {
+      const now = new Date();
+      const options = { month: 'numeric', day: 'numeric', weekday: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+      const clockEl = document.getElementById('liveClock');
+      if (clockEl) {
+        clockEl.textContent = now.toLocaleString('zh-TW', options);
+      }
+    }
+
+    // 切換深淺色主題
+    function toggleDarkMode() {
+      if (document.documentElement.classList.contains('dark')) {
+        document.documentElement.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        document.documentElement.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+    }
+
+    // 瀏覽器全螢幕切換
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          alert(`無法切換全螢幕: ${err.message}`);
+        });
+        document.getElementById('fullscreenIcon').className = 'fa-solid fa-compress text-base';
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+        document.getElementById('fullscreenIcon').className = 'fa-solid fa-expand text-base';
+      }
+    }
+
+    // 分類切換
+    function setCategory(cat) {
+      currentCategory = cat;
+      // 更新按鈕外觀
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        const isMatch = btn.dataset.cat === cat;
+        if (isMatch) {
+          btn.className = "cat-btn px-4 py-2 rounded-xl bg-emerald-600 text-white shadow-sm font-bold transition flex items-center space-x-1.5 shrink-0";
+        } else {
+          btn.className = "cat-btn px-4 py-2 rounded-xl bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition flex items-center space-x-1.5 shrink-0";
+        }
+      });
+      renderTools();
+    }
+
+    // 搜尋處理
+    function handleSearch(val) {
+      searchQuery = val.trim().toLowerCase();
+      const clearBtn = document.getElementById('clearSearchBtn');
+      if (searchQuery) {
+        clearBtn.classList.remove('hidden');
+      } else {
+        clearBtn.classList.add('hidden');
+      }
+      renderTools();
+    }
+
+    // 清除搜尋
+    function clearSearch() {
+      const searchInput = document.getElementById('searchInput');
+      searchInput.value = '';
+      searchQuery = '';
+      document.getElementById('clearSearchBtn').classList.add('hidden');
+      renderTools();
+    }
+
+    // 最愛切換
+    function toggleFavorite(id, e) {
+      e.stopPropagation();
+      if (favorites.includes(id)) {
+        favorites = favorites.filter(favId => favId !== id);
+      } else {
+        favorites.push(id);
+      }
+      localStorage.setItem('classroom_hub_favs', JSON.stringify(favorites));
+      renderTools();
+      updateBadges();
+    }
+
+    // 更新各標籤數字徽章
+    function updateBadges() {
+      const total = toolsData.length;
+      const gamesCount = toolsData.filter(t => t.category === 'games').length;
+      const chCount = toolsData.filter(t => t.category === 'chinese').length;
+      const mathCount = toolsData.filter(t => t.category === 'math').length;
+      const compCount = toolsData.filter(t => t.category === 'comprehensive').length;
+      const mgmtCount = toolsData.filter(t => t.category === 'management').length;
+      const favCount = favorites.length;
+
+      document.getElementById('badge-all').textContent = total;
+      if (document.getElementById('badge-games')) document.getElementById('badge-games').textContent = gamesCount;
+      document.getElementById('badge-chinese').textContent = chCount;
+      document.getElementById('badge-math').textContent = mathCount;
+      document.getElementById('badge-comprehensive').textContent = compCount;
+      document.getElementById('badge-management').textContent = mgmtCount;
+      document.getElementById('badge-fav').textContent = favCount;
+      
+      document.getElementById('totalToolsCount').textContent = total;
+      document.getElementById('favCount').textContent = favCount;
+    }
+
+    // 渲染工具卡片
+    function renderTools() {
+      const grid = document.getElementById('toolsGrid');
+      const noResults = document.getElementById('noResults');
+
+      // 篩選
+      const filtered = toolsData.filter(item => {
+        // 分類過濾
+        if (currentCategory === 'fav') {
+          if (!favorites.includes(item.id)) return false;
+        } else if (currentCategory !== 'all') {
+          if (item.category !== currentCategory) return false;
+        }
+
+        // 搜尋過濾
+        if (searchQuery) {
+          const inTitle = item.title.toLowerCase().includes(searchQuery);
+          const inSubtitle = item.subtitle.toLowerCase().includes(searchQuery);
+          const inDesc = item.desc.toLowerCase().includes(searchQuery);
+          const inTags = item.tags.some(tag => tag.toLowerCase().includes(searchQuery));
+          if (!inTitle && !inSubtitle && !inDesc && !inTags) return false;
+        }
+
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        noResults.classList.remove('hidden');
+        return;
+      }
+
+      noResults.classList.add('hidden');
+
+      grid.innerHTML = filtered.map(tool => {
+        const isFav = favorites.includes(tool.id);
+        const starClass = isFav 
+          ? "fa-solid fa-star text-yellow-400 drop-shadow-sm scale-110" 
+          : "fa-regular fa-star text-slate-300 dark:text-slate-600 hover:text-yellow-400";
+
+        return `
+          <div class="card-hover group relative bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200/90 dark:border-slate-700/80 shadow-sm hover:shadow-xl transition-all flex flex-col justify-between overflow-hidden">
+            
+            <!-- 卡片頂部漸層光暈裝飾 -->
+            <div class="absolute -top-12 -right-12 w-28 h-28 rounded-full bg-gradient-to-br ${tool.gradient} opacity-10 group-hover:opacity-20 blur-xl transition pointer-events-none"></div>
+
+            <div>
+              <!-- 頂部：圖標、標籤與收藏按鈕 -->
+              <div class="flex items-start justify-between gap-3 mb-4">
+                <div class="w-13 h-13 rounded-2xl bg-gradient-to-tr ${tool.gradient} flex items-center justify-center text-white text-2xl shadow-md ${tool.shadow} shrink-0 group-hover:scale-105 transition-transform duration-300">
+                  <i class="fa-solid ${tool.icon}"></i>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                  <span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-700/80 text-slate-600 dark:text-slate-300">
+                    ${tool.badge}
+                  </span>
+                  <button onclick="toggleFavorite('${tool.id}', event)" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition" title="${isFav ? '取消收藏' : '加入常用收藏'}">
+                    <i class="${starClass} text-lg transition-transform"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 標題與簡介 -->
+              <div class="space-y-1.5 mb-3">
+                <h3 class="text-xl font-black text-slate-900 dark:text-white tracking-tight group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                  ${tool.title}
+                </h3>
+                <p class="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                  ${tool.subtitle}
+                </p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed pt-1 line-clamp-3">
+                  ${tool.desc}
+                </p>
+              </div>
+
+              <!-- 標籤雲 -->
+              <div class="flex flex-wrap gap-1.5 my-4">
+                ${tool.tags.map(t => `
+                  <span class="text-[10px] font-medium px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
+                    #${t}
+                  </span>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- 卡片底部動作按鈕 -->
+            <div class="pt-4 border-t border-slate-100 dark:border-slate-700/60 flex items-center gap-2">
+              <button 
+                onclick="openAppModal('${tool.id}')" 
+                class="flex-1 py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-emerald-600 dark:bg-slate-700 dark:hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm transition-all duration-200 flex items-center justify-center space-x-1.5 shadow-sm active:scale-95"
+              >
+                <i class="fa-solid fa-play text-xs text-amber-300"></i>
+                <span>立即開啟</span>
+              </button>
+
+              <a 
+                href="${tool.file}" 
+                target="_blank" 
+                class="py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-700/60 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-200 font-semibold text-xs transition flex items-center justify-center shrink-0" 
+                title="在獨立新分頁中開啟"
+              >
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+              </a>
+            </div>
+
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 開啟內嵌視窗 Modal
+    function openAppModal(toolId) {
+      const tool = toolsData.find(t => t.id === toolId);
+      if (!tool) return;
+
+      const modal = document.getElementById('appModal');
+      const iframe = document.getElementById('appIframe');
+      const loader = document.getElementById('iframeLoader');
+      const titleEl = document.getElementById('modalTitle');
+      const subtitleEl = document.getElementById('modalSubtitle');
+      const iconBox = document.getElementById('modalIconBox');
+      const icon = document.getElementById('modalIcon');
+      const openExt = document.getElementById('modalOpenExternal');
+
+      titleEl.textContent = tool.title;
+      subtitleEl.textContent = tool.subtitle;
+      iconBox.className = `w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm shrink-0 bg-gradient-to-tr ${tool.gradient}`;
+      icon.className = `fa-solid ${tool.icon}`;
+      openExt.href = tool.file;
+
+      // 顯示載入動畫
+      loader.classList.remove('hidden', 'opacity-0');
+      iframe.src = tool.file;
+
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    // Iframe 載入完成回呼
+    function onIframeLoaded() {
+      const loader = document.getElementById('iframeLoader');
+      setTimeout(() => {
+        loader.classList.add('opacity-0');
+        setTimeout(() => loader.classList.add('hidden'), 300);
+      }, 200);
+    }
+
+    // 關閉 Modal
+    function closeAppModal() {
+      const modal = document.getElementById('appModal');
+      const iframe = document.getElementById('appIframe');
+      modal.classList.add('hidden');
+      iframe.src = '';
+      document.body.style.overflow = 'auto';
+    }
+
+    // 重新載入當前 iframe
+    function reloadModalIframe() {
+      const iframe = document.getElementById('appIframe');
+      const loader = document.getElementById('iframeLoader');
+      loader.classList.remove('hidden', 'opacity-0');
+      iframe.contentWindow.location.reload();
+    }
+
+    // Modal 內部視窗全螢幕切換
+    function toggleModalFullScreen() {
+      const modal = document.getElementById('appModal');
+      if (!document.fullscreenElement) {
+        modal.requestFullscreen().catch(() => {});
+        document.getElementById('modalFullscreenIcon').className = 'fa-solid fa-down-left-and-up-right-to-center text-sm';
+      } else {
+        document.exitFullscreen().catch(() => {});
+        document.getElementById('modalFullscreenIcon').className = 'fa-solid fa-up-right-and-down-left-from-center text-sm';
+      }
+    }
+
+    // 使用說明 Modal 切換
+    function toggleHelpModal() {
+      const helpModal = document.getElementById('helpModal');
+      helpModal.classList.toggle('hidden');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>班級幸運大轉盤 & 互動點名機 | Classroom Lucky Wheel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Canvas-Confetti 粒子特效 -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Fredoka:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Noto Sans TC', sans-serif; }
+    .display-font { font-family: 'Fredoka', 'Noto Sans TC', sans-serif; }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.05); opacity: 0.4; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    .pulse-glow { animation: pulse-ring 2s infinite ease-in-out; }
+  </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex flex-col items-center justify-between p-4 selection:bg-amber-500 selection:text-white">
+
+  <!-- 頂部導航 -->
+  <header class="w-full max-w-5xl flex items-center justify-between py-3 border-b border-slate-800">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-rose-500 flex items-center justify-center text-xl shadow-lg shadow-rose-500/20">
+        🎡
+      </div>
+      <div>
+        <h1 class="text-xl sm:text-2xl font-black tracking-tight bg-gradient-to-r from-amber-400 via-rose-400 to-pink-400 bg-clip-text text-transparent">
+          班級幸運大轉盤 · 互動抽籤機
+        </h1>
+        <p class="text-xs text-slate-400">課堂抽籤點名 · 隨機獎勵問答 · 刺激百分百！</p>
+      </div>
+    </div>
+    <div class="flex items-center space-x-2">
+      <button onclick="toggleSound()" id="soundBtn" class="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 transition flex items-center space-x-1.5">
+        <i class="fa-solid fa-volume-high text-amber-400" id="soundIcon"></i>
+        <span class="hidden sm:inline">音效：開</span>
+      </button>
+      <button onclick="toggleFullScreen()" class="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 transition flex items-center space-x-1.5">
+        <i class="fa-solid fa-expand text-emerald-400"></i>
+        <span class="hidden sm:inline">全螢幕</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 主內容區 -->
+  <main class="w-full max-w-5xl flex-1 flex flex-col lg:flex-row items-center justify-center gap-8 py-6">
+    
+    <!-- 左側 / 中間：大轉盤本體 -->
+    <div class="relative flex flex-col items-center">
+      <!-- 轉盤外圍光暈圈 -->
+      <div class="absolute -inset-4 rounded-full bg-gradient-to-r from-amber-500/20 via-rose-500/20 to-indigo-500/20 blur-xl pointer-events-none pulse-glow"></div>
+
+      <!-- 頂部指針 -->
+      <div class="absolute -top-5 z-20 flex flex-col items-center filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)]">
+        <div class="w-8 h-10 bg-gradient-to-b from-amber-300 to-yellow-500 clip-triangle" style="clip-path: polygon(50% 100%, 0 0, 100% 0);"></div>
+        <div class="w-4 h-4 rounded-full bg-amber-400 -mt-2 border-2 border-white"></div>
+      </div>
+
+      <!-- Canvas 轉盤 -->
+      <div class="relative p-2 bg-gradient-to-tr from-amber-500 via-rose-500 to-indigo-600 rounded-full shadow-2xl shadow-rose-950">
+        <canvas id="wheelCanvas" width="460" height="460" class="rounded-full shadow-inner bg-slate-950"></canvas>
+
+        <!-- 中心點擊按鈕 -->
+        <button 
+          id="spinBtn" 
+          onclick="spinWheel()" 
+          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full bg-gradient-to-tr from-amber-400 to-orange-500 text-slate-950 font-black text-lg shadow-xl shadow-amber-500/40 border-4 border-white flex flex-col items-center justify-center hover:scale-105 active:scale-95 transition-all duration-150 cursor-pointer z-10"
+        >
+          <span>開始</span>
+          <span class="text-[10px] font-bold text-slate-900 tracking-wider">SPIN</span>
+        </button>
+      </div>
+
+      <!-- 快捷中獎展示欄 -->
+      <div id="resultBanner" class="mt-4 px-6 py-2 rounded-2xl bg-slate-800/80 border border-slate-700/80 text-center min-h-[46px] flex items-center justify-center">
+        <span class="text-sm text-slate-400">點擊轉盤中心「開始」或按空白鍵抽籤！</span>
+      </div>
+    </div>
+
+    <!-- 右側：設定與自訂選項 -->
+    <div class="w-full lg:w-96 bg-slate-800/90 backdrop-blur-md rounded-3xl p-6 border border-slate-700 shadow-xl space-y-5">
+      
+      <!-- 模式切換 -->
+      <div>
+        <label class="text-xs font-bold text-slate-400 tracking-wider uppercase mb-2 block">轉盤模式選擇</label>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="setMode('number')" id="modeNumberBtn" class="py-2 px-3 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs transition flex items-center justify-center space-x-1 shadow-sm">
+            <i class="fa-solid fa-list-ol"></i>
+            <span>全班號碼抽籤</span>
+          </button>
+          <button onclick="setMode('custom')" id="modeCustomBtn" class="py-2 px-3 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold text-xs transition flex items-center justify-center space-x-1">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <span>自訂獎項/任務</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 號碼模式設定 -->
+      <div id="numberSettings" class="space-y-3">
+        <div class="flex items-center justify-between text-xs text-slate-300">
+          <span>全班人數 (1 ~ 45 號)：</span>
+          <div class="flex items-center space-x-2">
+            <button onclick="changeStudentCount(-1)" class="w-7 h-7 rounded-lg bg-slate-700 hover:bg-slate-600 font-bold">-</button>
+            <span id="studentCountDisplay" class="font-bold text-amber-400 text-base">28</span>
+            <button onclick="changeStudentCount(1)" class="w-7 h-7 rounded-lg bg-slate-700 hover:bg-slate-600 font-bold">+</button>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-2 text-xs text-slate-300">
+          <input type="checkbox" id="noRepeatCheck" class="w-4 h-4 rounded text-amber-500 focus:ring-0 bg-slate-700 border-slate-600">
+          <label for="noRepeatCheck" class="cursor-pointer">抽過號碼不重複（直到全部抽完）</label>
+        </div>
+      </div>
+
+      <!-- 自訂選項模式文字框 -->
+      <div id="customSettings" class="space-y-2 hidden">
+        <div class="flex items-center justify-between">
+          <label class="text-xs text-slate-300 font-medium">每行輸入一個項目：</label>
+          <button onclick="loadPreset('prizes')" class="text-[11px] text-amber-400 hover:underline">套用獎勵範例</button>
+        </div>
+        <textarea id="customItemsInput" rows="5" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500 resize-none font-mono" placeholder="榮譽章 5 枚&#10;免寫生字半行&#10;當今日小老師&#10;自選下週座位&#10;獲得棒棒糖一隻&#10;再抽一次"></textarea>
+        <button onclick="applyCustomItems()" class="w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition">
+          更新轉盤項目
+        </button>
+      </div>
+
+      <!-- 中獎歷史記錄 -->
+      <div>
+        <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
+          <span>中獎 / 抽籤記錄</span>
+          <button onclick="clearHistory()" class="hover:text-rose-400 transition">清空</button>
+        </div>
+        <div id="historyList" class="bg-slate-900/80 rounded-xl p-2.5 h-28 overflow-y-auto space-y-1 text-xs text-slate-300 font-mono">
+          <div class="text-slate-500 text-center py-4">尚無抽籤記錄</div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <footer class="w-full text-center text-xs text-slate-500 py-2">
+    班級小達人智慧教學平台 · 幸運大轉盤組件
+  </footer>
+
+  <script>
+    // 音訊合成器（免載入外部音檔，支援直接發聲）
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let isSoundOn = true;
+
+    function playTick() {
+      if (!isSoundOn) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.04);
+      } catch(e) {}
+    }
+
+    function playWinSound() {
+      if (!isSoundOn) return;
+      try {
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, idx) => {
+          setTimeout(() => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.3);
+          }, idx * 100);
+        });
+      } catch(e) {}
+    }
+
+    function toggleSound() {
+      isSoundOn = !isSoundOn;
+      document.getElementById('soundBtn').innerHTML = isSoundOn 
+        ? '<i class="fa-solid fa-volume-high text-amber-400"></i><span class="hidden sm:inline">音效：開</span>'
+        : '<i class="fa-solid fa-volume-xmark text-slate-500"></i><span class="hidden sm:inline">音效：關</span>';
+    }
+
+    // 轉盤狀態
+    let currentMode = 'number'; // 'number' or 'custom'
+    let studentCount = 28;
+    let items = [];
+    let drawnNumbers = [];
+    let history = [];
+
+    let currentAngle = 0;
+    let isSpinning = false;
+
+    // 繽紛色彩陣列
+    const sliceColors = [
+      '#ef4444', '#f97316', '#f59e0b', '#10b981', '#06b6d4', 
+      '#3b82f6', '#6366f1', '#8b5cf6', '#ec4899', '#14b8a6'
+    ];
+
+    const canvas = document.getElementById('wheelCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // 初始化
+    window.onload = () => {
+      initNumberMode();
+      drawWheel();
+      window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && !isSpinning && document.activeElement.tagName !== 'TEXTAREA') {
+          e.preventDefault();
+          spinWheel();
+        }
+      });
+    };
+
+    function initNumberMode() {
+      items = [];
+      for (let i = 1; i <= studentCount; i++) {
+        items.push(`${i} 號`);
+      }
+    }
+
+    function changeStudentCount(delta) {
+      const next = studentCount + delta;
+      if (next >= 2 && next <= 45) {
+        studentCount = next;
+        document.getElementById('studentCountDisplay').textContent = studentCount;
+        initNumberMode();
+        drawWheel();
+      }
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      const numBtn = document.getElementById('modeNumberBtn');
+      const cusBtn = document.getElementById('modeCustomBtn');
+      const numSet = document.getElementById('numberSettings');
+      const cusSet = document.getElementById('customSettings');
+
+      if (mode === 'number') {
+        numBtn.className = 'py-2 px-3 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs transition flex items-center justify-center space-x-1 shadow-sm';
+        cusBtn.className = 'py-2 px-3 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold text-xs transition flex items-center justify-center space-x-1';
+        numSet.classList.remove('hidden');
+        cusSet.classList.add('hidden');
+        initNumberMode();
+      } else {
+        cusBtn.className = 'py-2 px-3 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs transition flex items-center justify-center space-x-1 shadow-sm';
+        numBtn.className = 'py-2 px-3 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold text-xs transition flex items-center justify-center space-x-1';
+        cusSet.classList.remove('hidden');
+        numSet.classList.add('hidden');
+        if (document.getElementById('customItemsInput').value.trim() === '') {
+          loadPreset('prizes');
+        } else {
+          applyCustomItems();
+        }
+      }
+      drawWheel();
+    }
+
+    function loadPreset(type) {
+      const defaultPrizes = [
+        "榮譽章 5 枚",
+        "免寫生字半行",
+        "自選下週座位",
+        "課堂點歌一首",
+        "獲得神秘零食",
+        "擔任今日小班長",
+        "跳過本次快問答",
+        "全組加 10 分"
+      ];
+      document.getElementById('customItemsInput').value = defaultPrizes.join('\n');
+      applyCustomItems();
+    }
+
+    function applyCustomItems() {
+      const text = document.getElementById('customItemsInput').value.trim();
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      if (lines.length < 2) {
+        alert("請至少輸入 2 個項目！");
+        return;
+      }
+      items = lines;
+      drawWheel();
+    }
+
+    // 繪製轉盤
+    function drawWheel() {
+      const numSlices = items.length;
+      if (numSlices === 0) return;
+      const arc = (2 * Math.PI) / numSlices;
+      const radius = canvas.width / 2;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < numSlices; i++) {
+        const angle = currentAngle + i * arc;
+        ctx.beginPath();
+        ctx.fillStyle = sliceColors[i % sliceColors.length];
+        ctx.moveTo(radius, radius);
+        ctx.arc(radius, radius, radius - 8, angle, angle + arc);
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // 文字標籤
+        ctx.save();
+        ctx.translate(radius, radius);
+        ctx.rotate(angle + arc / 2);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = 'rgba(0,0,0,0.6)';
+        ctx.shadowBlur = 4;
+
+        const fontSize = numSlices > 25 ? 12 : numSlices > 16 ? 14 : 17;
+        ctx.font = `bold ${fontSize}px "Noto Sans TC"`;
+        const text = items[i];
+        ctx.fillText(text.length > 8 ? text.slice(0, 7) + '…' : text, radius - 24, 6);
+        ctx.restore();
+      }
+
+      // 轉盤外框圓環裝飾
+      ctx.beginPath();
+      ctx.arc(radius, radius, radius - 4, 0, 2 * Math.PI);
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = 6;
+      ctx.stroke();
+    }
+
+    // 旋轉轉盤
+    function spinWheel() {
+      if (isSpinning || items.length === 0) return;
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      // 若啟用了「號碼不重複」
+      const noRepeat = document.getElementById('noRepeatCheck').checked;
+      let availableIndices = [];
+      if (currentMode === 'number' && noRepeat) {
+        items.forEach((item, idx) => {
+          if (!drawnNumbers.includes(item)) availableIndices.push(idx);
+        });
+        if (availableIndices.length === 0) {
+          alert("全班所有號碼已全數抽過一輪！即將自動重置記錄。");
+          drawnNumbers = [];
+          availableIndices = items.map((_, i) => i);
+        }
+      } else {
+        availableIndices = items.map((_, i) => i);
+      }
+
+      isSpinning = true;
+      document.getElementById('spinBtn').disabled = true;
+      document.getElementById('resultBanner').innerHTML = '<span class="text-amber-400 font-bold animate-pulse">轉盤高速旋轉中... 誰會是幸運兒？</span>';
+
+      // 隨機選中目標
+      const targetLocalIdx = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+      const numSlices = items.length;
+      const arc = (2 * Math.PI) / numSlices;
+
+      // 指針位於正上方 (3 * Math.PI / 2)
+      // 目標扇形中心需對齊指針
+      const randomOffset = (Math.random() - 0.5) * (arc * 0.7);
+      const targetAngleAtTop = (3 * Math.PI / 2) - (targetLocalIdx * arc + arc / 2) + randomOffset;
+      
+      const currentMod = currentAngle % (2 * Math.PI);
+      const spins = (6 + Math.floor(Math.random() * 4)) * (2 * Math.PI); // 6~9 圈
+      const totalDelta = spins + (targetAngleAtTop - currentMod + 2 * Math.PI) % (2 * Math.PI);
+
+      const startAngle = currentAngle;
+      const finalAngle = startAngle + totalDelta;
+      const duration = 4500;
+      const startTime = performance.now();
+      let lastTickAngle = startAngle;
+
+      function animate(time) {
+        const elapsed = time - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // ease-out cubic
+        const ease = 1 - Math.pow(1 - progress, 3.5);
+        currentAngle = startAngle + totalDelta * ease;
+
+        // 播放答答音效
+        if (currentAngle - lastTickAngle > arc * 0.8) {
+          playTick();
+          lastTickAngle = currentAngle;
+        }
+
+        drawWheel();
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          isSpinning = false;
+          document.getElementById('spinBtn').disabled = false;
+          onSpinEnd(targetLocalIdx);
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    // 抽籤結束回呼
+    function onSpinEnd(winningIdx) {
+      const winner = items[winningIdx];
+      playWinSound();
+
+      // 噴彩帶
+      confetti({
+        particleCount: 120,
+        spread: 80,
+        origin: { y: 0.6 }
+      });
+
+      // 更新橫幅
+      document.getElementById('resultBanner').innerHTML = `
+        <div class="flex items-center space-x-2">
+          <span class="text-xl">🎉</span>
+          <span class="text-base font-black text-amber-300">恭喜選中：【${winner}】！</span>
+          <span class="text-xl">🎊</span>
+        </div>
+      `;
+
+      // 記錄號碼
+      if (currentMode === 'number') {
+        drawnNumbers.push(winner);
+      }
+
+      // 加入歷史清單
+      addHistory(winner);
+    }
+
+    function addHistory(item) {
+      const now = new Date();
+      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+      history.unshift({ item, time: timeStr });
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const box = document.getElementById('historyList');
+      if (history.length === 0) {
+        box.innerHTML = '<div class="text-slate-500 text-center py-4">尚無抽籤記錄</div>';
+        return;
+      }
+      box.innerHTML = history.slice(0, 15).map((h, i) => `
+        <div class="flex items-center justify-between py-1 border-b border-slate-800 last:border-0">
+          <span class="font-bold text-amber-300">#${history.length - i} ${h.item}</span>
+          <span class="text-[10px] text-slate-500">${h.time}</span>
+        </div>
+      `).join('');
+    }
+
+    function clearHistory() {
+      history = [];
+      drawnNumbers = [];
+      renderHistory();
+      document.getElementById('resultBanner').innerHTML = '<span class="text-sm text-slate-400">記錄已清空。隨時點擊開始抽籤！</span>';
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+  </script>
+</body>
+</html>

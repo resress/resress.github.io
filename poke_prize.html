@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎯 戳戳樂</title>
+  <style>
+    :root {
+      --bg: #eef2f7;
+      --card: #ffffff;
+      --content: #f5f7fb;
+      --border: #dce3ed;
+      --fg: #1e293b;
+      --fg-muted: #64748b;
+      --primary: #6366f1;
+      --primary-fg: #ffffff;
+      --accent: #eef2ff;
+      --accent-fg: #4f46e5;
+      --success: #10b981;
+      --danger: #ef4444;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", "微軟正黑體", sans-serif;
+      background: var(--bg); color: var(--fg); min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ===== 動畫 ===== */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-3deg); }
+      75% { transform: rotate(3deg); }
+    }
+    @keyframes poke-punch {
+      0% { transform: scale(1); }
+      20% { transform: scale(0.7) rotate(-8deg); }
+      50% { transform: scale(0.3) rotate(15deg); opacity: 0.5; }
+      70% { transform: scale(0.1); opacity: 0; }
+      100% { transform: scale(0); opacity: 0; }
+    }
+    @keyframes reveal-pop {
+      0% { transform: scale(0); opacity: 0; }
+      60% { transform: scale(1.15); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes confetti-fall {
+      0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+      100% { transform: translateY(140px) rotate(720deg) scale(0.2); opacity: 0; }
+    }
+    @keyframes bounce-in {
+      0% { transform: scale(0.3); opacity: 0; }
+      50% { transform: scale(1.08); }
+      70% { transform: scale(0.95); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes fade-in {
+      0% { opacity: 0; transform: translateY(10px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes sparkle {
+      0%, 100% { opacity: 0.4; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+    @keyframes celebrate {
+      0% { transform: scale(1); }
+      10% { transform: scale(1.1) rotate(-3deg); }
+      20% { transform: scale(1.1) rotate(3deg); }
+      30% { transform: scale(1.1) rotate(-3deg); }
+      40% { transform: scale(1) rotate(0deg); }
+      100% { transform: scale(1); }
+    }
+
+    .confetti-piece {
+      position: fixed; border-radius: 2px;
+      animation: confetti-fall 1.8s ease forwards;
+      pointer-events: none; z-index: 9999;
+    }
+
+    /* ===== 版面 ===== */
+    .container { max-width: 920px; margin: 0 auto; padding: 20px; }
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 28px; flex-wrap: wrap; gap: 12px;
+    }
+    .header h1 {
+      font-size: 32px; font-weight: 900;
+      background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .nav-btns { display: flex; gap: 8px; }
+    .hidden { display: none !important; }
+
+    /* ===== 卡片 ===== */
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 28px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+      animation: fade-in 0.4s ease;
+    }
+    .card-title { font-size: 20px; font-weight: 700; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+
+    /* ===== 按鈕 ===== */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 20px; border-radius: 12px; font-size: 14px; font-weight: 600;
+      cursor: pointer; border: none; transition: all 0.25s;
+    }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .btn:active { transform: translateY(0); }
+    .btn-primary { background: var(--primary); color: var(--primary-fg); }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-outline { background: var(--card); border: 1.5px solid var(--border); color: var(--fg); }
+    .btn-outline:hover { background: var(--accent); border-color: var(--accent-fg); color: var(--accent-fg); }
+    .btn-danger { background: transparent; border: 1.5px solid #fca5a5; color: var(--danger); }
+    .btn-danger:hover { background: #fef2f2; }
+    .btn-sm { padding: 8px 14px; font-size: 13px; border-radius: 10px; }
+    .btn-lg { padding: 14px 28px; font-size: 16px; border-radius: 14px; }
+
+    /* ===== 表單 ===== */
+    input[type="text"], input[type="number"] {
+      width: 100%; padding: 12px 16px; border: 1.5px solid var(--border); border-radius: 12px;
+      font-size: 15px; color: var(--fg); background: var(--card); outline: none; transition: all 0.25s;
+    }
+    input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
+    input::placeholder { color: #94a3b8; }
+    .label { display: block; font-size: 14px; color: var(--fg-muted); margin-bottom: 8px; font-weight: 600; }
+
+    /* ===== 訊息輸入行 ===== */
+    .msg-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; animation: fade-in 0.3s ease both; }
+    .msg-badge {
+      width: 42px; height: 42px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 800; font-size: 15px; flex-shrink: 0;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    }
+    .msg-row input { flex: 1; }
+
+    /* ===== 存檔卡片 ===== */
+    .saved-card {
+      background: var(--content); border: 1.5px solid var(--border); border-radius: 16px;
+      padding: 18px 22px; display: flex; align-items: center; justify-content: space-between;
+      gap: 14px; transition: all 0.25s; flex-wrap: wrap;
+    }
+    .saved-card:hover { border-color: var(--primary); box-shadow: 0 4px 16px rgba(99,102,241,0.08); }
+    .saved-card h3 { font-size: 16px; font-weight: 700; color: var(--fg); }
+    .saved-card p { font-size: 13px; color: var(--fg-muted); margin-top: 3px; }
+    .saved-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+    /* ===== 音效切換 ===== */
+    .sound-toggle {
+      background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 10px; padding: 6px 12px; font-size: 18px; cursor: pointer;
+      transition: all 0.2s; backdrop-filter: blur(4px);
+    }
+    .sound-toggle:hover { background: rgba(255,255,255,0.3); }
+
+    /* =================================================================
+       ===== 戳戳樂遊戲面板 =====
+       ================================================================= */
+    .game-board {
+      background: linear-gradient(160deg, #4f46e5, #7c3aed, #a855f7);
+      border-radius: 24px; padding: 28px 24px;
+      box-shadow: 0 8px 40px rgba(79,70,229,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+      position: relative; overflow: hidden;
+    }
+    .game-board::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at 20% 80%, rgba(255,255,255,0.08) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 20%, rgba(255,255,255,0.06) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    /* 背景裝飾星星 */
+    .board-stars {
+      position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+    }
+    .board-star {
+      position: absolute; font-size: 16px; opacity: 0.2;
+      animation: sparkle 2s ease infinite;
+    }
+
+    .board-title-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px; position: relative; z-index: 1; flex-wrap: wrap; gap: 8px;
+    }
+    .board-title-bar h2 { font-size: 22px; font-weight: 800; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+    .board-title-bar .progress-text { font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 600; }
+    .board-title-bar .btn-reset {
+      background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.3);
+      backdrop-filter: blur(4px);
+    }
+    .board-title-bar .btn-reset:hover { background: rgba(255,255,255,0.3); }
+
+    .progress-bar-container {
+      width: 100%; height: 10px; background: rgba(255,255,255,0.2);
+      border-radius: 5px; margin-top: 8px; overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%; border-radius: 5px;
+      background: linear-gradient(90deg, #34d399, #fbbf24, #f472b6);
+      transition: width 0.5s ease;
+    }
+
+    .grid-game { display: grid; gap: 16px; position: relative; z-index: 1; }
+
+    /* ----- 格子 ----- */
+    .cell-wrapper { perspective: 600px; }
+
+    .poke-cell {
+      width: 100%; aspect-ratio: 1 / 1; border-radius: 50%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      cursor: pointer; user-select: none;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+
+    /* 未戳封面 */
+    .poke-cell.sealed {
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25), inset 0 2px 4px rgba(255,255,255,0.3), inset 0 -2px 4px rgba(0,0,0,0.1);
+      animation: float 3s ease-in-out infinite;
+    }
+    /* 讓每個球的動畫錯開 */
+    .cell-wrapper:nth-child(2n) .poke-cell.sealed { animation-delay: 0.5s; }
+    .cell-wrapper:nth-child(3n) .poke-cell.sealed { animation-delay: 1s; }
+    .cell-wrapper:nth-child(4n) .poke-cell.sealed { animation-delay: 1.5s; }
+    .cell-wrapper:nth-child(5n) .poke-cell.sealed { animation-delay: 0.3s; }
+
+    .poke-cell.sealed .cell-icon {
+      font-size: 28px; line-height: 1;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+    }
+    .poke-cell.sealed .cell-number {
+      font-size: 22px; font-weight: 900; color: #fff;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.3); line-height: 1; margin-top: 2px;
+    }
+    .poke-cell.sealed .cell-hint {
+      font-size: 10px; color: rgba(255,255,255,0.8); margin-top: 3px; font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    .poke-cell.sealed:hover {
+      transform: scale(1.15) rotate(-3deg);
+      box-shadow: 0 12px 35px rgba(0,0,0,0.35), inset 0 2px 4px rgba(255,255,255,0.4);
+      animation: wiggle 0.4s ease infinite;
+    }
+    .poke-cell.sealed:active { transform: scale(0.88); }
+
+    /* 光澤 */
+    .poke-cell.sealed::after {
+      content: ''; position: absolute; inset: 0; border-radius: 50%;
+      background: radial-gradient(circle at 32% 28%, rgba(255,255,255,0.45) 0%, transparent 55%);
+      pointer-events: none;
+    }
+
+    /* 戳開後 */
+    .poke-cell.opened {
+      background: rgba(0,0,0,0.3) !important;
+      box-shadow: inset 0 4px 14px rgba(0,0,0,0.45);
+      cursor: default; animation: reveal-pop 0.5s ease both;
+    }
+    .poke-cell.opened .cell-number-small { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.55); }
+    .poke-cell.opened .cell-message {
+      font-size: 11px; color: rgba(255,255,255,0.9); margin-top: 3px;
+      text-align: center; padding: 0 6px; line-height: 1.3;
+      max-height: 48px; overflow: hidden;
+    }
+
+    .poke-cell.punching { animation: poke-punch 0.5s ease forwards; }
+
+    /* 封面顏色 */
+    .color-0  { background-color: #f43f5e; }
+    .color-1  { background-color: #ef4444; }
+    .color-2  { background-color: #f97316; }
+    .color-3  { background-color: #eab308; }
+    .color-4  { background-color: #22c55e; }
+    .color-5  { background-color: #06b6d4; }
+    .color-6  { background-color: #3b82f6; }
+    .color-7  { background-color: #8b5cf6; }
+    .color-8  { background-color: #d946ef; }
+    .color-9  { background-color: #ec4899; }
+
+    /* ===== 彈窗 ===== */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px;
+    }
+    .modal-box {
+      background: #fff; border-radius: 28px; padding: 44px 32px;
+      max-width: 420px; width: 100%;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.2);
+      text-align: center; animation: bounce-in 0.5s ease;
+    }
+    .modal-emoji { font-size: 64px; margin-bottom: 12px; }
+    .modal-title { font-size: 28px; font-weight: 800; color: var(--fg); margin-bottom: 14px; }
+    .modal-msg {
+      font-size: 22px; line-height: 1.6; color: #92400e;
+      margin-bottom: 28px; padding: 18px 22px;
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      border-radius: 16px; font-weight: 700;
+    }
+
+    /* ===== 全完成慶祝 ===== */
+    .game-board.celebrating { animation: celebrate 1s ease; }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+
+    @media (max-width: 480px) {
+      .container { padding: 12px; }
+      .card { padding: 20px; border-radius: 16px; }
+      .game-board { padding: 16px 12px; border-radius: 18px; }
+      .grid-game { gap: 10px; }
+      .poke-cell.sealed .cell-number { font-size: 18px; }
+      .poke-cell.sealed .cell-icon { font-size: 22px; }
+      .header h1 { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container" id="app">
+    <div class="header">
+      <h1>🎯 戳戳樂</h1>
+      <div class="nav-btns">
+        <button onclick="showPage('setup')" id="btn-setup" class="btn btn-outline btn-sm">⚙️ 設定</button>
+        <button onclick="showPage('saved')" id="btn-saved" class="btn btn-outline btn-sm">📁 存檔</button>
+      </div>
+    </div>
+
+    <!-- 歡迎 -->
+    <div id="page-welcome">
+      <div class="card" style="text-align:center; padding:56px 28px;">
+        <div style="font-size:72px; margin-bottom:16px;">🎯</div>
+        <h2 style="font-size:26px; font-weight:800; margin-bottom:10px;">歡迎來到戳戳樂！</h2>
+        <p style="color:var(--fg-muted); margin-bottom:32px; font-size:16px;">
+          設定號碼和訊息，開始後訊息會隨機分配，每一戳都是驚喜！
+        </p>
+        <div style="display:flex; justify-content:center; gap:14px; flex-wrap:wrap;">
+          <button onclick="showPage('setup')" class="btn btn-primary btn-lg">⚙️ 建立新設定</button>
+          <button onclick="showPage('saved')" class="btn btn-outline btn-lg">📁 載入存檔</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 設定 -->
+    <div id="page-setup" class="hidden">
+      <div class="card">
+        <div class="card-title">📝 建立新的戳戳樂</div>
+        <div style="margin-bottom:18px;">
+          <label class="label">設定名稱</label>
+          <input id="config-name" type="text" placeholder="例如：聖誕派對戳戳樂" />
+        </div>
+        <div style="margin-bottom:18px;">
+          <label class="label">號碼數量（1 ~ 50）</label>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <input id="cell-count" type="number" min="1" max="50" value="6" style="width:110px; text-align:center;" />
+            <button onclick="generateInputs()" class="btn btn-primary btn-sm">產生輸入欄位</button>
+          </div>
+        </div>
+        <div style="background:var(--accent); border-radius:12px; padding:12px 16px; margin-bottom:18px; font-size:13px; color:var(--accent-fg);">
+          💡 <strong>提示：</strong>訊息設定完成後，系統會自動將訊息<strong>隨機打亂</strong>分配給各號碼，每次遊戲都充滿驚喜！
+        </div>
+        <div id="message-inputs" style="max-height:420px; overflow-y:auto; margin-bottom:22px; padding-right:4px;"></div>
+        <div id="setup-actions" class="hidden" style="display:flex; flex-wrap:wrap; gap:10px;">
+          <button onclick="randomFill()" class="btn btn-outline">🎲 隨機填入範例</button>
+          <button onclick="saveConfig()" class="btn btn-primary">💾 儲存設定</button>
+          <button onclick="startGameFromSetup()" class="btn btn-success btn-lg">🎮 直接開玩！</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 存檔列表 -->
+    <div id="page-saved" class="hidden">
+      <div class="card">
+        <div class="card-title">📁 已儲存的設定</div>
+        <div id="saved-list" style="display:flex; flex-direction:column; gap:12px;"></div>
+        <div id="no-saved" class="hidden" style="text-align:center; padding:48px 0; color:var(--fg-muted);">
+          <div style="font-size:56px; margin-bottom:10px;">📭</div>
+          <p style="font-size:16px;">還沒有儲存的設定</p>
+          <p style="font-size:13px; margin-top:6px;">前往「設定」建立你的第一個戳戳樂吧！</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 遊戲 -->
+    <div id="page-game" class="hidden">
+      <div class="game-board" id="game-board">
+        <!-- 背景星星裝飾 -->
+        <div class="board-stars" id="board-stars"></div>
+        <div class="board-title-bar">
+          <div>
+            <h2 id="game-title">🎉 開始戳戳樂！</h2>
+            <p class="progress-text" id="game-progress"></p>
+            <div class="progress-bar-container">
+              <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+            </div>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button onclick="toggleSound()" class="sound-toggle" id="sound-btn" title="音效開關">🔊</button>
+            <button onclick="resetGame()" class="btn btn-reset btn-sm">🔄 重置</button>
+          </div>
+        </div>
+        <div id="game-grid" class="grid-game"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 彈窗 -->
+  <div id="modal" class="modal-overlay hidden" onclick="closeModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div class="modal-emoji" id="modal-emoji">🎉</div>
+      <div class="modal-title" id="modal-number"></div>
+      <div class="modal-msg" id="modal-message"></div>
+      <button onclick="closeModalDirect()" class="btn btn-primary btn-lg">確定 ✨</button>
+    </div>
+  </div>
+
+  <script>
+    // ===== 全域 =====
+    const STORAGE_KEY = 'poke-prize-configs';
+    let currentGame = null;
+    let soundEnabled = true;
+    let audioCtx = null;
+
+    // 每個號碼對應的可愛圖案
+    const cellIcons = [
+      '🐱', '🐶', '🐰', '🦊', '🐻', '🐼', '🐨', '🦁', '🐸', '🐧',
+      '🦄', '🐝', '🐞', '🦋', '🐢', '🐙', '🦀', '🐠', '🐳', '🦈',
+      '🌸', '⭐', '🌈', '❤️', '🍀', '🎀', '🍭', '🧁', '🎪', '🎠',
+      '🌻', '🍩', '🎈', '🦩', '🐿️', '🐾', '🌟', '💎', '🍬', '🎵',
+      '🦕', '🐥', '🐷', '🐮', '🐴', '🦉', '🐛', '🐲', '🍓', '🫧'
+    ];
+
+    // =============================================
+    // ===== Web Audio API 音效系統 =====
+    // =============================================
+    function getAudioCtx() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+
+    // 滑鼠懸停音效：輕輕的 "嗶"
+    function playHoverSound() {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(800, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.06);
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.08);
+      } catch(e) {}
+    }
+
+    // 戳破音效：爆裂 "啪"
+    function playPokeSound() {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioCtx();
+        // 噪音爆破
+        const bufferSize = ctx.sampleRate * 0.15;
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 3);
+        }
+        const noise = ctx.createBufferSource();
+        noise.buffer = buffer;
+        const noiseGain = ctx.createGain();
+        noiseGain.gain.setValueAtTime(0.4, ctx.currentTime);
+        noiseGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+        noise.connect(noiseGain); noiseGain.connect(ctx.destination);
+        noise.start(ctx.currentTime);
+
+        // 低頻震動
+        const osc = ctx.createOscillator();
+        const oscGain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(150, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(50, ctx.currentTime + 0.12);
+        oscGain.gain.setValueAtTime(0.3, ctx.currentTime);
+        oscGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+        osc.connect(oscGain); oscGain.connect(ctx.destination);
+        osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.15);
+      } catch(e) {}
+    }
+
+    // 揭曉音效：歡快上揚的叮噹
+    function playRevealSound() {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioCtx();
+        const notes = [523, 659, 784, 1047]; // C5 E5 G5 C6
+        notes.forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.type = 'triangle';
+          const t = ctx.currentTime + i * 0.1;
+          osc.frequency.setValueAtTime(freq, t);
+          gain.gain.setValueAtTime(0, t);
+          gain.gain.linearRampToValueAtTime(0.2, t + 0.03);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+          osc.start(t); osc.stop(t + 0.35);
+        });
+      } catch(e) {}
+    }
+
+    // 全部完成音效：慶祝鈴聲
+    function playCelebrateSound() {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioCtx();
+        // 兩輪歡快音階
+        const melody = [523, 587, 659, 784, 880, 1047, 1175, 1319];
+        melody.forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.type = i < 4 ? 'triangle' : 'sine';
+          const t = ctx.currentTime + i * 0.1;
+          osc.frequency.setValueAtTime(freq, t);
+          gain.gain.setValueAtTime(0, t);
+          gain.gain.linearRampToValueAtTime(0.18, t + 0.03);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+          osc.start(t); osc.stop(t + 0.4);
+        });
+        // 最後和弦
+        [523, 659, 784, 1047].forEach(freq => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.type = 'sine';
+          const t = ctx.currentTime + 0.9;
+          osc.frequency.setValueAtTime(freq, t);
+          gain.gain.setValueAtTime(0, t);
+          gain.gain.linearRampToValueAtTime(0.12, t + 0.05);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 1.0);
+          osc.start(t); osc.stop(t + 1.0);
+        });
+      } catch(e) {}
+    }
+
+    // 按鈕音效
+    function playClickSound() {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, ctx.currentTime);
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+        osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.06);
+      } catch(e) {}
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      document.getElementById('sound-btn').textContent = soundEnabled ? '🔊' : '🔇';
+      if (soundEnabled) playClickSound();
+    }
+
+    // ===== 頁面切換 =====
+    function showPage(page) {
+      ['welcome', 'setup', 'saved', 'game'].forEach(p => {
+        document.getElementById('page-' + p).classList.add('hidden');
+      });
+      document.getElementById('page-' + page).classList.remove('hidden');
+      document.getElementById('btn-setup').style.background = (page === 'setup') ? 'var(--accent)' : '';
+      document.getElementById('btn-setup').style.color = (page === 'setup') ? 'var(--accent-fg)' : '';
+      document.getElementById('btn-saved').style.background = (page === 'saved') ? 'var(--accent)' : '';
+      document.getElementById('btn-saved').style.color = (page === 'saved') ? 'var(--accent-fg)' : '';
+      if (page === 'saved') renderSavedList();
+      if (page === 'game') generateBoardStars();
+    }
+
+    // 背景星星裝飾
+    function generateBoardStars() {
+      const container = document.getElementById('board-stars');
+      container.innerHTML = '';
+      const deco = ['✨', '⭐', '🌟', '💫', '✦', '✧'];
+      for (let i = 0; i < 12; i++) {
+        const star = document.createElement('span');
+        star.className = 'board-star';
+        star.textContent = deco[i % deco.length];
+        star.style.left = (Math.random() * 90 + 5) + '%';
+        star.style.top = (Math.random() * 90 + 5) + '%';
+        star.style.animationDelay = (Math.random() * 2) + 's';
+        star.style.fontSize = (12 + Math.random() * 14) + 'px';
+        container.appendChild(star);
+      }
+    }
+
+    // ===== 產生輸入欄位 =====
+    function generateInputs() {
+      const count = parseInt(document.getElementById('cell-count').value) || 6;
+      if (count < 1 || count > 50) { alert('號碼數量請設定在 1 ~ 50 之間'); return; }
+      const container = document.getElementById('message-inputs');
+      container.innerHTML = '';
+      for (let i = 1; i <= count; i++) {
+        const row = document.createElement('div');
+        row.className = 'msg-row';
+        row.style.animationDelay = (i * 0.03) + 's';
+        row.innerHTML = `
+          <div class="msg-badge color-${i % 10}">${cellIcons[(i - 1) % cellIcons.length]}</div>
+          <input id="msg-${i}" type="text" placeholder="輸入第 ${i} 項訊息內容..." />
+        `;
+        container.appendChild(row);
+      }
+      const actions = document.getElementById('setup-actions');
+      actions.classList.remove('hidden');
+      actions.style.display = 'flex';
+    }
+
+    // ===== 隨機範例 =====
+    function randomFill() {
+      const examples = [
+        '🎁 恭喜中獎！獲得小禮物一份', '🍕 請你吃一片披薩', '🎵 為你唱一首歌',
+        '💪 多做十個伏地挺身', '🧋 請喝一杯珍珠奶茶', '😂 講一個冷笑話',
+        '🎈 什麼都沒有，再試一次', '🏆 最大獎！免費午餐一頓', '📸 和旁邊的人自拍一張',
+        '🤗 給旁邊的人一個擁抱', '🎶 跳一段舞', '📖 分享一個祕密',
+        '🍦 請你吃冰淇淋', '🎪 表演一個才藝', '💰 紅包一個',
+        '🌟 你今天最幸運！', '🎭 模仿一個動物', '🧩 回答一個腦筋急轉彎',
+        '🎤 大聲說出你的願望', '🎊 恭喜！獲得神秘大獎', '🍰 一塊蛋糕',
+        '☕ 一杯咖啡', '🎠 旋轉三圈', '🦸 擺出英雄姿勢',
+        '🧸 獲得可愛貼紙一張', '🌈 說出三個優點', '🎯 再戳一次的機會',
+        '🐶 學狗叫三聲', '🦋 說一句祝福的話', '🎹 哼一段旋律',
+      ];
+      const count = parseInt(document.getElementById('cell-count').value) || 6;
+      const shuffled = [...examples].sort(() => Math.random() - 0.5);
+      for (let i = 1; i <= count; i++) {
+        const input = document.getElementById('msg-' + i);
+        if (input) input.value = shuffled[(i - 1) % shuffled.length];
+      }
+    }
+
+    // ===== 洗牌 =====
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    // ===== 收集 =====
+    function collectMessages() {
+      const count = parseInt(document.getElementById('cell-count').value) || 6;
+      const messages = [];
+      for (let i = 1; i <= count; i++) {
+        const input = document.getElementById('msg-' + i);
+        messages.push(input ? input.value.trim() : '');
+      }
+      return messages;
+    }
+    function collectConfig() {
+      const name = document.getElementById('config-name').value.trim() || '未命名設定';
+      return { name, messages: collectMessages(), createdAt: new Date().toISOString() };
+    }
+
+    // ===== 建立遊戲 =====
+    function buildGame(config) {
+      const shuffledMessages = shuffle(config.messages);
+      const shuffledIcons = shuffle(cellIcons.slice(0, Math.max(config.messages.length, 10)));
+      return {
+        id: config.id, name: config.name,
+        cells: config.messages.map((_, i) => ({
+          number: i + 1,
+          icon: shuffledIcons[i % shuffledIcons.length],
+          message: shuffledMessages[i],
+          opened: false
+        }))
+      };
+    }
+
+    // ===== 儲存 =====
+    function saveConfig() {
+      const config = collectConfig();
+      const empty = config.messages.filter(m => !m);
+      if (empty.length > 0 && !confirm(`還有 ${empty.length} 個號碼尚未填寫訊息，確定要儲存嗎？`)) return;
+      const configs = loadAllConfigs();
+      config.id = Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
+      configs.push(config);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(configs));
+      alert('✅ 設定已儲存！');
+      showPage('saved');
+    }
+    function loadAllConfigs() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
+    }
+
+    // ===== 存檔列表 =====
+    function renderSavedList() {
+      const configs = loadAllConfigs();
+      const list = document.getElementById('saved-list');
+      const noSaved = document.getElementById('no-saved');
+      if (configs.length === 0) { list.innerHTML = ''; noSaved.classList.remove('hidden'); noSaved.style.display = ''; return; }
+      noSaved.classList.add('hidden');
+      list.innerHTML = configs.map(cfg => {
+        const date = new Date(cfg.createdAt).toLocaleDateString('zh-TW', {
+          year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'
+        });
+        const count = cfg.messages ? cfg.messages.length : (cfg.cells ? cfg.cells.length : 0);
+        return `
+          <div class="saved-card">
+            <div><h3>${escapeHtml(cfg.name)}</h3><p>${count} 個號碼 · ${date}</p></div>
+            <div class="saved-actions">
+              <button onclick="startGame('${cfg.id}')" class="btn btn-success btn-sm">🎮 開始玩</button>
+              <button onclick="editConfig('${cfg.id}')" class="btn btn-outline btn-sm" title="編輯">✏️</button>
+              <button onclick="duplicateConfig('${cfg.id}')" class="btn btn-outline btn-sm" title="複製">📋</button>
+              <button onclick="deleteConfig('${cfg.id}')" class="btn btn-danger btn-sm" title="刪除">🗑️</button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // ===== 開始遊戲 =====
+    function startGame(configId) {
+      const configs = loadAllConfigs();
+      const cfg = configs.find(c => c.id === configId);
+      if (!cfg) { alert('找不到設定！'); return; }
+      if (!cfg.messages && cfg.cells) cfg.messages = cfg.cells.map(c => c.message);
+      currentGame = buildGame(cfg);
+      renderGame(); showPage('game');
+    }
+    function startGameFromSetup() {
+      const config = collectConfig();
+      if (config.messages.every(m => !m)) { alert('請至少填寫一個號碼的訊息！'); return; }
+      config.id = 'temp-' + Date.now();
+      currentGame = buildGame(config);
+      renderGame(); showPage('game');
+    }
+
+    // ===== 渲染遊戲 =====
+    function renderGame() {
+      if (!currentGame) return;
+      document.getElementById('game-title').textContent = '🎉 ' + currentGame.name;
+      updateProgress();
+      const grid = document.getElementById('game-grid');
+      const count = currentGame.cells.length;
+      let cols = 3;
+      if (count <= 4) cols = 2;
+      else if (count <= 9) cols = 3;
+      else if (count <= 16) cols = 4;
+      else if (count <= 25) cols = 5;
+      else cols = 6;
+      grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+      grid.innerHTML = currentGame.cells.map((cell, idx) => {
+        if (cell.opened) {
+          return `<div class="cell-wrapper"><div class="poke-cell opened">
+            <div class="cell-number-small">No.${cell.number}</div>
+            <div class="cell-message">${escapeHtml(cell.message) || '（空）'}</div>
+          </div></div>`;
+        }
+        return `<div class="cell-wrapper">
+          <div class="poke-cell sealed color-${cell.number % 10}"
+               onclick="pokeCell(${idx})" id="cell-${idx}"
+               onmouseenter="playHoverSound()">
+            <div class="cell-icon">${cell.icon}</div>
+            <div class="cell-number">${cell.number}</div>
+            <div class="cell-hint">戳我！</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // ===== 戳格子 =====
+    function pokeCell(idx) {
+      if (!currentGame || currentGame.cells[idx].opened) return;
+      const cell = currentGame.cells[idx];
+      const el = document.getElementById('cell-' + idx);
+
+      playPokeSound();
+      el.classList.add('punching');
+      spawnConfetti(el);
+
+      setTimeout(() => {
+        cell.opened = true;
+        updateProgress();
+        playRevealSound();
+        showModal(cell.number, cell.message);
+        renderGame();
+
+        // 全部完成？
+        if (currentGame.cells.every(c => c.opened)) {
+          setTimeout(() => {
+            playCelebrateSound();
+            document.getElementById('game-board').classList.add('celebrating');
+            spawnMassConfetti();
+            setTimeout(() => document.getElementById('game-board').classList.remove('celebrating'), 1500);
+          }, 600);
+        }
+      }, 500);
+    }
+
+    // ===== 碎紙花 =====
+    function spawnConfetti(el) {
+      const colors = ['#f43f5e','#f97316','#eab308','#22c55e','#06b6d4','#3b82f6','#8b5cf6','#ec4899'];
+      const rect = el.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
+      for (let i = 0; i < 18; i++) {
+        const p = document.createElement('div');
+        p.className = 'confetti-piece';
+        p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        p.style.left = (cx + (Math.random()-0.5)*100) + 'px';
+        p.style.top = (cy + (Math.random()-0.5)*50) + 'px';
+        p.style.animationDelay = (Math.random()*0.4) + 's';
+        const s = 5 + Math.random()*10;
+        p.style.width = s+'px'; p.style.height = (s*(0.4+Math.random()*0.6))+'px';
+        p.style.borderRadius = Math.random()>0.5 ? '50%' : '2px';
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 2200);
+      }
+    }
+    function spawnMassConfetti() {
+      const colors = ['#f43f5e','#f97316','#eab308','#22c55e','#06b6d4','#3b82f6','#8b5cf6','#ec4899','#fbbf24','#a855f7'];
+      for (let i = 0; i < 60; i++) {
+        const p = document.createElement('div');
+        p.className = 'confetti-piece';
+        p.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
+        p.style.left = (Math.random()*window.innerWidth) + 'px';
+        p.style.top = (-20 - Math.random()*40) + 'px';
+        p.style.animationDelay = (Math.random()*1.5) + 's';
+        p.style.animationDuration = (1.5 + Math.random()*1.5) + 's';
+        const s = 6 + Math.random()*12;
+        p.style.width = s+'px'; p.style.height = (s*(0.3+Math.random()*0.7))+'px';
+        p.style.borderRadius = Math.random()>0.5 ? '50%' : '2px';
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 3500);
+      }
+    }
+
+    // ===== 進度 =====
+    function updateProgress() {
+      if (!currentGame) return;
+      const total = currentGame.cells.length;
+      const opened = currentGame.cells.filter(c => c.opened).length;
+      document.getElementById('game-progress').textContent =
+        `已戳開 ${opened} / ${total}` + (opened === total ? ' 🎊 全部戳完啦！' : '');
+      document.getElementById('progress-bar').style.width = Math.round((opened/total)*100) + '%';
+    }
+
+    // ===== 重置 =====
+    function resetGame() {
+      if (!currentGame) return;
+      if (!confirm('確定要重置嗎？訊息將重新隨機分配！')) return;
+      const msgs = currentGame.cells.map(c => c.message);
+      const shuffledMsgs = shuffle(msgs);
+      const shuffledIconSet = shuffle(cellIcons.slice(0, Math.max(msgs.length, 10)));
+      currentGame.cells.forEach((c, i) => {
+        c.message = shuffledMsgs[i];
+        c.icon = shuffledIconSet[i % shuffledIconSet.length];
+        c.opened = false;
+      });
+      renderGame();
+      playClickSound();
+    }
+
+    // ===== 彈窗 =====
+    const emojis = ['🎉','🌟','🎊','✨','🎁','🏆','🎈','💫','🎇','🥳'];
+    function showModal(number, message) {
+      document.getElementById('modal-emoji').textContent = emojis[Math.floor(Math.random()*emojis.length)];
+      document.getElementById('modal-number').textContent = `第 ${number} 號`;
+      document.getElementById('modal-message').textContent = message || '（沒有設定訊息）';
+      const m = document.getElementById('modal'); m.classList.remove('hidden'); m.style.display = 'flex';
+    }
+    function closeModal(e) { if (e.target === document.getElementById('modal')) closeModalDirect(); }
+    function closeModalDirect() {
+      const m = document.getElementById('modal'); m.classList.add('hidden'); m.style.display = 'none';
+      playClickSound();
+    }
+
+    // ===== 編輯 =====
+    function editConfig(configId) {
+      const configs = loadAllConfigs();
+      const cfg = configs.find(c => c.id === configId);
+      if (!cfg) return;
+      const messages = cfg.messages || (cfg.cells ? cfg.cells.map(c => c.message) : []);
+      showPage('setup');
+      document.getElementById('config-name').value = cfg.name;
+      document.getElementById('cell-count').value = messages.length;
+      generateInputs();
+      messages.forEach((msg, i) => { const inp = document.getElementById('msg-'+(i+1)); if(inp) inp.value = msg; });
+      deleteConfigSilent(configId);
+    }
+    function duplicateConfig(configId) {
+      const configs = loadAllConfigs();
+      const cfg = configs.find(c => c.id === configId);
+      if (!cfg) return;
+      const n = JSON.parse(JSON.stringify(cfg));
+      n.id = Date.now().toString(36)+Math.random().toString(36).substr(2,4);
+      n.name = cfg.name+'（副本）'; n.createdAt = new Date().toISOString();
+      configs.push(n); localStorage.setItem(STORAGE_KEY, JSON.stringify(configs));
+      renderSavedList();
+    }
+    function deleteConfig(configId) {
+      if (!confirm('確定要刪除這個設定嗎？')) return;
+      deleteConfigSilent(configId); renderSavedList();
+    }
+    function deleteConfigSilent(configId) {
+      let c = loadAllConfigs(); c = c.filter(x => x.id !== configId);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(c));
+    }
+    function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalDirect(); });
+  </script>
+</body>
+</html>
