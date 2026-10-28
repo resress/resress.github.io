@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#173a59">
+<title>成語島探險隊</title>
+<style>
+:root{
+  --ink:#25354a;--muted:#65758a;--paper:#fffdf7;--cream:#f5f1e7;--line:#e6decd;
+  --blue:#4776bd;--blue-dark:#31588e;--mint:#dff2e7;--green:#317a57;--gold:#f2c45b;
+  --coral:#d96d55;--lav:#eee9fb;--shadow:0 12px 28px rgba(49,55,66,.12);
+  --radius:22px
+}
+*{box-sizing:border-box}
+html{min-height:100%;background:var(--cream)}
+body{margin:0;color:var(--ink);font-family:"Microsoft JhengHei","Noto Sans TC","PingFang TC",system-ui,sans-serif;background:
+  radial-gradient(circle at 10% 2%,rgba(255,255,255,.9),transparent 26rem),
+  linear-gradient(150deg,#f8f4eb,#f1f5ed 65%,#eef3f8);min-height:100vh}
+button{font:inherit;color:inherit;touch-action:manipulation}
+button:focus-visible{outline:4px solid #f2c45b;outline-offset:3px}
+.shell{max-width:1100px;margin:0 auto;padding:20px clamp(14px,3vw,34px) 34px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-mark{display:grid;place-items:center;width:52px;height:52px;border-radius:17px;background:#fff;box-shadow:var(--shadow);font-size:28px}
+h1{font-size:clamp(22px,4vw,32px);line-height:1.2;margin:0;font-weight:900;letter-spacing:.03em}
+.tagline{font-size:14px;color:var(--muted);margin-top:4px}
+.quiet-chip,.progress-pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;background:rgba(255,253,247,.88);padding:9px 13px;font-size:14px;font-weight:800}
+.quiet-chip{white-space:nowrap;color:#466153}
+.panel{background:rgba(255,253,247,.96);border:1px solid rgba(230,222,205,.9);border-radius:var(--radius);box-shadow:var(--shadow)}
+.home-hero{padding:clamp(20px,4vw,34px);margin-bottom:18px;position:relative;overflow:hidden}
+.home-hero:after{content:"✦";position:absolute;right:28px;top:16px;color:#f1cc71;font-size:54px;opacity:.7;transform:rotate(12deg)}
+.eyebrow{font-size:13px;font-weight:900;color:var(--blue);letter-spacing:.12em}
+.home-hero h2{font-size:clamp(24px,4vw,36px);margin:9px 0 8px;line-height:1.25}
+.home-hero p{max-width:720px;color:var(--muted);font-size:17px;line-height:1.7;margin:0}
+.home-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:22px 2px 12px}
+.section-title h3{font-size:20px;margin:0}
+.section-title span{font-size:14px;color:var(--muted)}
+.lesson-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.lesson-card{min-height:126px;text-align:left;border:1px solid var(--line);border-radius:18px;background:#fff;padding:17px;cursor:pointer;transition:transform .16s,box-shadow .16s,border-color .16s}
+.lesson-card:hover,.mode-card:hover{transform:translateY(-2px);box-shadow:0 9px 20px rgba(49,55,66,.1);border-color:#afc4dd}
+.lesson-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.lesson-name{font-size:18px;font-weight:900}
+.lesson-icon{font-size:24px}
+.lesson-desc{font-size:14px;line-height:1.55;color:var(--muted);margin-top:9px}
+.mini-progress{height:7px;border-radius:99px;background:#edf0ed;overflow:hidden;margin-top:12px}
+.mini-progress i{display:block;height:100%;background:linear-gradient(90deg,#76bb8d,#4d9b70);border-radius:99px}
+.mode-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.mode-card{border:1px solid var(--line);border-radius:18px;background:#fff;padding:18px;text-align:left;cursor:pointer;min-height:128px;transition:transform .16s,box-shadow .16s,border-color .16s}
+.mode-card strong{display:block;font-size:18px;margin-bottom:7px}
+.mode-card span{display:block;color:var(--muted);font-size:14px;line-height:1.55}
+.mode-icon{font-size:24px;margin-bottom:7px}
+.primary,.secondary,.soft,.choice,.text-choice,.tiny-button{border:0;border-radius:15px;cursor:pointer;transition:transform .12s,filter .12s,background .12s}
+.primary:active,.secondary:active,.soft:active,.choice:active,.text-choice:active,.tiny-button:active{transform:scale(.985)}
+.primary{background:var(--blue);color:white;font-weight:900;padding:15px 20px;min-height:54px;box-shadow:0 6px 14px rgba(71,118,189,.22)}
+.primary:hover{background:var(--blue-dark)}
+.secondary{background:#edf3fb;color:var(--blue-dark);font-weight:900;padding:13px 17px;min-height:50px}
+.soft{background:#f4f0e7;color:#59687a;font-weight:800;padding:12px 15px;min-height:48px}
+.small-link{background:transparent;border:0;padding:10px 8px;color:var(--muted);font-weight:800;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.note{color:var(--muted);font-size:13px;line-height:1.6;margin:14px 2px 0}
+.game-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px;flex-wrap:wrap}
+.game-meta{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.progress-wrap{padding:13px 16px;margin-bottom:16px}
+.progress-label{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;font-weight:900}
+.progress-track{height:10px;margin-top:10px;border-radius:99px;background:#ebeee9;overflow:hidden}
+.progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#75b98e,#3d936a);transition:width .25s}
+.tabletop{padding:clamp(17px,3.2vw,28px)}
+.tabletop-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}
+.tabletop-head h2{font-size:clamp(20px,3.3vw,27px);margin:0}
+.step-label{background:#eef3fb;color:var(--blue-dark);font-size:13px;font-weight:900;padding:8px 11px;border-radius:999px;white-space:nowrap}
+.prompt-card{border:2px dashed #b6c9dc;border-radius:20px;background:linear-gradient(145deg,#f1f6ff,#fff);padding:clamp(19px,4vw,29px);position:relative}
+.card-label{font-size:13px;font-weight:900;color:var(--blue);letter-spacing:.1em}
+.prompt-text{font-size:clamp(21px,3.7vw,30px);line-height:1.65;font-weight:850;margin:12px 0 4px}
+.blank{color:#5278af;white-space:nowrap}
+.hint-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:15px}
+.hint-box{background:#fff8df;border:1px solid #f1dfa3;color:#68531d;border-radius:14px;padding:11px 14px;font-size:15px;line-height:1.55;flex:1;min-width:220px}
+.choice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:17px}
+.choice{min-height:90px;padding:15px 13px;background:#fff;border:2px solid #e4e7eb;box-shadow:0 4px 10px rgba(46,60,77,.05);font-size:clamp(19px,3vw,24px);font-weight:900;line-height:1.35}
+.choice:hover{border-color:#9bb6d7;background:#f8fbff}
+.choice.correct{background:#e5f5ea;border-color:#60a77a;color:#286646}
+.choice.incorrect{background:#fff0ec;border-color:#e49782;color:#9d4333}
+.feedback{margin-top:15px;padding:15px 17px;border-radius:16px;background:#f1f6ff;border:1px solid #d6e2f1;font-size:16px;line-height:1.65}
+.feedback.good{background:#ebf7ef;border-color:#c7e8d1;color:#285e40}
+.feedback.try{background:#fff7e8;border-color:#f0dfb3;color:#735819}
+.feedback strong{font-size:18px}
+.feedback-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:13px}
+.usage-options{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.text-choice{min-height:106px;text-align:left;border:2px solid #e4e7eb;background:#fff;padding:16px;border-radius:17px;font-size:17px;line-height:1.65}
+.text-choice:hover{border-color:#9bb6d7;background:#f8fbff}
+.text-choice.correct{background:#e5f5ea;border-color:#60a77a}
+.text-choice.incorrect{background:#fff0ec;border-color:#e49782}
+.text-choice .letter{display:inline-grid;place-items:center;width:29px;height:29px;border-radius:50%;background:#edf3fb;color:var(--blue-dark);font-weight:900;margin-right:8px}
+.idiom-display{display:flex;align-items:center;gap:14px;padding:18px;border-radius:18px;background:linear-gradient(110deg,#eef6ff,#f4f1ff);border:1px solid #dfe6f2}
+.idiom-seal{display:grid;place-items:center;width:54px;height:54px;flex:0 0 54px;background:white;border-radius:17px;font-size:27px;box-shadow:0 5px 12px rgba(49,55,66,.1)}
+.idiom-display h3{font-size:clamp(24px,4vw,32px);margin:0}
+.idiom-display p{margin:5px 0 0;color:var(--muted);font-size:16px;line-height:1.55}
+.self-card{margin-top:16px;padding:18px;border-radius:18px;background:#fff;border:1px solid var(--line)}
+.self-card h3{font-size:20px;margin:0 0 8px}
+.self-card p{font-size:16px;line-height:1.6;color:var(--muted);margin:0}
+.example-box{background:#fff8df;border-left:5px solid var(--gold);border-radius:12px;padding:13px 15px;margin-top:13px;font-size:17px;line-height:1.65}
+.button-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:17px}
+.summary{padding:clamp(20px,4vw,34px);text-align:center}
+.summary-badge{display:inline-grid;place-items:center;background:#fff5d4;border-radius:50%;width:80px;height:80px;font-size:42px;margin-bottom:10px}
+.summary h2{font-size:clamp(25px,4vw,35px);margin:5px 0 9px}
+.summary p{color:var(--muted);font-size:17px;line-height:1.65;max-width:650px;margin:0 auto}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:650px;margin:22px auto}
+.stat{background:#f7f5ef;padding:15px;border-radius:16px}
+.stat strong{display:block;font-size:26px}
+.stat span{font-size:13px;color:var(--muted);font-weight:800}
+.review-list{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:18px auto;max-width:720px}
+.review-chip{background:#fff0ec;color:#9d4a3b;border-radius:99px;padding:8px 12px;font-weight:900;font-size:14px}
+.footer-note{text-align:center;color:#788595;font-size:12px;margin-top:18px}
+.hidden{display:none!important}
+.fade-in{animation:appear .22s ease-out}
+@keyframes appear{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:760px){
+  .shell{padding-top:13px}
+  .topbar{align-items:flex-start}
+  .quiet-chip{font-size:12px;padding:8px 10px}
+  .lesson-grid,.mode-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .choice-grid{grid-template-columns:1fr}
+  .choice{min-height:68px}
+  .usage-options{grid-template-columns:1fr}
+  .text-choice{min-height:78px}
+  .game-top{align-items:flex-start}
+}
+@media(max-width:470px){
+  .lesson-grid,.mode-grid{grid-template-columns:1fr}
+  .brand-mark{width:45px;height:45px}
+  .tagline{font-size:12px}
+  .home-hero:after{right:15px;top:10px;font-size:38px}
+  .home-hero p{font-size:15px}
+  .tabletop-head{align-items:flex-start;flex-direction:column}
+}
+
+/* Adventure refresh: a colorful card-table world with clear touch targets. */
+:root{
+  --ink:#193247;--muted:#647a86;--paper:#fffdf7;--cream:#eff4ec;--line:#d9e6df;
+  --blue:#2868a9;--blue-dark:#174b7d;--mint:#dff6e9;--green:#21805a;--gold:#ffd064;
+  --coral:#e5795a;--lav:#eee9ff;--shadow:0 16px 38px rgba(18,48,67,.15);--radius:24px
+}
+body{
+ background:
+  radial-gradient(ellipse at 12% 8%,rgba(255,255,255,.95),transparent 25rem),
+  radial-gradient(ellipse at 93% 28%,rgba(206,237,231,.7),transparent 26rem),
+  linear-gradient(145deg,#eff3e9 0%,#e9f1f1 48%,#f3ecdf 100%);
+ background-attachment:fixed
+}
+.brand-mark{
+ background:linear-gradient(145deg,#ffe58a,#ffbf61);border:3px solid #fff;
+ box-shadow:0 8px 18px rgba(171,117,35,.23);font-size:29px;transform:rotate(-5deg)
+}
+h1{color:#153952;letter-spacing:.055em}
+.tagline{color:#526e78;font-weight:700}
+.quiet-chip{background:#e4f4e9;border-color:#c5e5d0;color:#286746}
+.panel{border:1px solid rgba(206,224,216,.9);box-shadow:0 12px 30px rgba(35,70,81,.1)}
+.home-hero{
+ min-height:285px;padding:clamp(25px,4.5vw,42px);margin-bottom:21px;
+ color:#fff;background:linear-gradient(118deg,#173a59 0%,#24617a 55%,#337b75 100%);
+ border:0;box-shadow:0 18px 40px rgba(24,68,85,.24);isolation:isolate
+}
+.home-hero:before{
+ content:"";position:absolute;inset:0;z-index:-1;opacity:.55;
+ background:
+  radial-gradient(circle at 78% 28%,rgba(255,218,125,.36),transparent 8rem),
+  radial-gradient(circle at 23% 120%,rgba(104,190,160,.32),transparent 16rem),
+  repeating-linear-gradient(135deg,transparent 0 33px,rgba(255,255,255,.035) 34px 35px)
+}
+.home-hero:after{content:"✦  ·  ✧  ·  ✦";right:22px;top:14px;color:#ffe39b;font-size:22px;letter-spacing:14px;opacity:.8}
+.home-hero h2{max-width:610px;color:#fff;font-size:clamp(28px,4.6vw,42px);text-shadow:0 3px 0 rgba(13,38,56,.16)}
+.home-hero p{max-width:610px;color:#e5f4f0;font-size:17px}
+.home-hero .eyebrow{color:#ffdd86}
+.hero-copy{position:relative;z-index:2;max-width:68%}
+.hero-art{
+ position:absolute;right:3%;top:25px;width:min(30%,300px);height:225px;
+ display:grid;place-items:center;z-index:1;pointer-events:none
+}
+.hero-glow{
+ position:absolute;width:190px;height:190px;border-radius:50%;
+ background:radial-gradient(circle,#ffe493 0%,rgba(255,215,120,.35) 38%,transparent 72%);
+ animation:glowPulse 3.8s ease-in-out infinite
+}
+.hero-island{
+ position:absolute;width:205px;height:91px;left:50%;bottom:10px;transform:translateX(-50%);
+ background:linear-gradient(165deg,#83c68c 0 40%,#458b72 41% 63%,#765c43 64% 100%);
+ clip-path:polygon(0 20%,18% 0,35% 14%,52% 0,73% 13%,100% 7%,85% 53%,68% 74%,56% 100%,39% 76%,18% 63%);
+ filter:drop-shadow(0 10px 6px rgba(8,28,40,.3))
+}
+.hero-mascot{
+ position:absolute;left:50%;top:41px;transform:translateX(-50%) rotate(-4deg);
+ width:100px;height:100px;border:5px solid rgba(255,255,255,.9);border-radius:33px;
+ display:grid;place-items:center;background:linear-gradient(145deg,#fff8d8,#ffc86a);
+ box-shadow:0 12px 25px rgba(8,30,44,.25);font-size:58px;animation:floatMascot 3s ease-in-out infinite
+}
+.hero-map,.hero-gem{
+ position:absolute;display:grid;place-items:center;border:3px solid rgba(255,255,255,.88);
+ box-shadow:0 8px 18px rgba(8,30,44,.22);border-radius:18px
+}
+.hero-map{width:60px;height:62px;left:2px;top:94px;background:#fff3c8;font-size:32px;transform:rotate(-12deg)}
+.hero-gem{width:58px;height:58px;right:0;top:78px;background:#dff7ee;font-size:31px;transform:rotate(11deg)}
+.hero-spark{position:absolute;color:#ffe38a;font-size:23px;animation:twinkle 1.8s ease-in-out infinite alternate}
+.hero-spark.one{left:20%;top:22px}.hero-spark.two{right:17%;top:20px;animation-delay:.6s}.hero-spark.three{right:10%;bottom:25px;animation-delay:1s}
+.home-actions{position:relative;z-index:2}
+.home-hero .primary{background:linear-gradient(180deg,#ffdf83,#ffbf58);color:#493719;box-shadow:0 7px 0 #c98c35,0 12px 20px rgba(10,28,41,.24)}
+.home-hero .primary:hover{background:linear-gradient(180deg,#ffe69e,#ffca6d)}
+.home-hero .progress-pill{background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.28)}
+.home-hero .home-actions{margin-top:22px}
+.quest-strip{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:17px;position:relative;z-index:2}
+.quest-step{
+ display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;
+ background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.17);
+ font-size:12px;font-weight:900;color:#e7f4f1
+}
+.quest-step b{color:#ffdf83}
+.section-title{margin:25px 2px 13px}
+.section-title h3{font-size:21px;color:#1d4557}
+.section-title span{font-weight:700}
+.lesson-grid,.mode-grid{gap:15px}
+.lesson-card{
+ position:relative;overflow:hidden;min-height:145px;padding:17px 18px 15px;
+ border:2px solid rgba(255,255,255,.95);border-radius:21px;
+ background:linear-gradient(145deg,#fff 0%,#f5fbf7 100%);
+ box-shadow:0 8px 18px rgba(32,72,83,.08)
+}
+.lesson-card:after{content:"";position:absolute;width:95px;height:95px;right:-31px;top:-32px;border-radius:50%;background:var(--lesson-glow,rgba(120,184,209,.18))}
+.lesson-card[data-lesson="1"]{--lesson-glow:rgba(247,191,83,.26)}
+.lesson-card[data-lesson="2"]{--lesson-glow:rgba(117,175,224,.25)}
+.lesson-card[data-lesson="3"]{--lesson-glow:rgba(105,189,145,.25)}
+.lesson-card[data-lesson="4"]{--lesson-glow:rgba(239,132,111,.22)}
+.lesson-card[data-lesson="5"]{--lesson-glow:rgba(178,147,220,.25)}
+.lesson-card[data-lesson="6"]{--lesson-glow:rgba(74,171,175,.25)}
+.lesson-card:hover,.mode-card:hover{transform:translateY(-4px) rotate(-.3deg);box-shadow:0 14px 25px rgba(32,72,83,.14);border-color:#a9d0bd}
+.lesson-head,.lesson-desc,.mini-progress{position:relative;z-index:1}
+.lesson-name{font-size:19px;color:#1c4158}
+.lesson-icon{display:grid;place-items:center;width:43px;height:43px;border-radius:15px;background:var(--lesson-glow,rgba(120,184,209,.18));font-size:25px;box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
+.lesson-desc{font-weight:650;color:#617987}
+.mini-progress{height:9px;background:#e6eee9}
+.mini-progress i{background:linear-gradient(90deg,#74d39a,#39a678);box-shadow:0 0 8px rgba(48,163,112,.35)}
+.mode-card{min-height:150px;border:2px solid #fff;border-radius:22px;background:linear-gradient(145deg,#fff,#f5f8ff);box-shadow:0 8px 18px rgba(32,72,83,.08);position:relative;overflow:hidden}
+.mode-card:after{content:"";position:absolute;width:78px;height:78px;right:-27px;bottom:-28px;border-radius:50%;background:rgba(255,208,100,.2)}
+.mode-card strong{color:#234c61;font-size:18px}
+.mode-card span{position:relative;z-index:1}
+.mode-icon{display:grid;place-items:center;width:48px;height:48px;border-radius:16px;margin-bottom:11px;background:linear-gradient(145deg,#fff0c4,#ffe19a);box-shadow:0 5px 11px rgba(95,90,61,.12);font-size:27px}
+.note{background:rgba(255,255,255,.64);border:1px solid rgba(207,224,216,.8);padding:12px 15px;border-radius:15px}
+.game-top{margin-bottom:14px}
+.progress-pill{background:#fff;border-color:#dae9e2;color:#305d60;box-shadow:0 3px 8px rgba(34,76,82,.05)}
+.progress-wrap{padding:15px 18px;background:linear-gradient(105deg,#173e5c,#245c71 68%,#34796c);border:0;color:#fff;box-shadow:0 10px 20px rgba(24,68,85,.19)}
+.progress-label{color:#f6fbf7}
+.progress-track{height:12px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.13)}
+.progress-fill{background:linear-gradient(90deg,#ffe17f,#ffb94e);box-shadow:0 0 12px rgba(255,211,109,.55)}
+.tabletop{position:relative;overflow:hidden;padding:clamp(19px,3.5vw,32px);border:2px solid rgba(255,255,255,.98);background:linear-gradient(145deg,#fffef9,#f8fbf2);box-shadow:0 16px 34px rgba(28,66,78,.12)}
+.tabletop:before{content:"";position:absolute;right:-64px;top:-78px;width:200px;height:200px;border-radius:50%;border:22px solid rgba(111,181,149,.08);pointer-events:none}
+.tabletop-head{position:relative;z-index:1}
+.tabletop-head h2{color:#1b4356}
+.step-label{background:#fff0bd;color:#73521c;border:1px solid #f5d77e;box-shadow:0 3px 7px rgba(150,112,41,.1)}
+.prompt-card{background:radial-gradient(circle at 100% 0,rgba(255,223,143,.2),transparent 11rem),linear-gradient(145deg,#fff8e5,#fffef9 65%);border:2px solid #ecd89c;border-radius:22px;box-shadow:0 9px 18px rgba(106,84,38,.09),inset 0 1px 0 #fff;animation:cardDeal .32s ease-out}
+.prompt-card:after{content:"任務牌";position:absolute;right:16px;top:15px;background:#df7254;color:#fff;font-size:12px;font-weight:900;padding:6px 9px;border-radius:8px;transform:rotate(5deg);box-shadow:0 3px 0 #b9563e}
+.card-label{display:inline-flex;align-items:center;gap:6px;background:#e8f4ef;color:#277351;padding:7px 11px;border-radius:999px;letter-spacing:.06em}
+.prompt-text{color:#27485a;font-size:clamp(22px,3.8vw,31px);line-height:1.72}
+.blank{color:#ad5d2e;background:#fff0ce;border-radius:8px;padding:0 5px}
+.secondary{background:linear-gradient(180deg,#f1f7ff,#e1effd);box-shadow:0 4px 0 #c6d8eb}
+.soft{background:linear-gradient(180deg,#f8f7f2,#ebe9df);box-shadow:0 4px 0 #d8d4c6}
+.choice-grid{gap:15px}
+.choice{position:relative;overflow:hidden;min-height:105px;padding:22px 15px 16px;border:2px solid rgba(255,255,255,.98);border-bottom:6px solid #c5d2d8;border-radius:20px;background:linear-gradient(150deg,#fff,#f5fbff);color:#24475b;box-shadow:0 8px 13px rgba(34,74,89,.1);font-size:clamp(20px,3.2vw,26px);text-align:center}
+.choice:nth-child(2){background:linear-gradient(150deg,#fff,#f1fbf5);border-bottom-color:#b5d8c2}
+.choice:nth-child(3){background:linear-gradient(150deg,#fff,#fff7e9);border-bottom-color:#edd297}
+.choice:before{content:"";position:absolute;left:-17px;bottom:-26px;width:70px;height:70px;border-radius:50%;background:rgba(97,163,179,.1)}
+.choice:after{content:"✦";position:absolute;right:12px;top:8px;color:#d5a740;font-size:14px;opacity:.75}
+.choice:hover{border-color:#b9d9c5;background:linear-gradient(150deg,#fff,#e8f7ee);transform:translateY(-3px) rotate(-.5deg)}
+.feedback{box-shadow:0 5px 12px rgba(45,78,85,.06);border-radius:18px}
+.feedback.good{background:linear-gradient(110deg,#e2f7e9,#f5fff5);border-color:#a9dcb9;color:#245b40}
+.feedback.good:before{content:"✨ ";font-size:21px}
+.feedback.try{background:linear-gradient(110deg,#fff5da,#fffaf0);border-color:#efd894;color:#6f561c;animation:gentleNudge .28s ease-out}
+.usage-options{gap:15px}
+.text-choice{position:relative;overflow:hidden;min-height:118px;border:2px solid #e4e8dc;border-bottom:6px solid #c7d8d0;border-radius:20px;background:linear-gradient(150deg,#fff,#f5fbf8);box-shadow:0 8px 14px rgba(34,74,89,.08);font-size:17px;color:#2a4b5b;padding:18px}
+.text-choice:nth-child(2){background:linear-gradient(150deg,#fff,#fff8ed);border-bottom-color:#e9d4a1}
+.text-choice:hover{border-color:#a8d3bd;background:linear-gradient(150deg,#fff,#eaf8ef);transform:translateY(-2px)}
+.text-choice .letter{width:34px;height:34px;background:#2b7293;color:#fff;box-shadow:0 3px 0 #1b536d;vertical-align:middle}
+.idiom-display{background:linear-gradient(110deg,#e4f5ed,#eaf3ff);border:1px solid #c9e5d7;box-shadow:inset 0 1px 0 #fff}
+.idiom-seal{background:linear-gradient(145deg,#fff5c7,#ffd56d);box-shadow:0 5px 0 #dfb04d,0 9px 15px rgba(104,86,38,.15);transform:rotate(-5deg)}
+.idiom-display h3{color:#1b4c60}
+.self-card{background:linear-gradient(145deg,#fff,#fbf8ef);border:2px solid #eee2c3;box-shadow:0 7px 14px rgba(76,70,48,.06)}
+.self-card h3{color:#a75e2d}
+.example-box{background:#fff5d7;border-left-color:#efa93d;box-shadow:inset 0 0 0 1px #f2dda3}
+.summary{position:relative;overflow:hidden;background:radial-gradient(circle at 50% -40%,rgba(255,212,107,.45),transparent 17rem),linear-gradient(145deg,#fffef9,#f1faf1)}
+.summary-badge{background:linear-gradient(145deg,#fff2b8,#ffcf63);border:5px solid #fff;box-shadow:0 8px 0 #d9a143,0 14px 22px rgba(95,76,35,.16);animation:floatMascot 2.6s ease-in-out infinite}
+.summary h2{color:#1c5263}
+.stat{background:rgba(255,255,255,.8);border:1px solid #dcebe1;box-shadow:0 5px 12px rgba(40,83,82,.06)}
+.stat strong{color:#287552}
+.review-chip{background:#fff0e8;border:1px solid #f0c9b8;color:#a24e3e}
+.footer-note{color:#607985;font-weight:650}
+.home-actions .progress-pill{font-size:15px}
+@keyframes cardDeal{from{opacity:0;transform:translateY(12px) rotate(-1deg)}to{opacity:1;transform:translateY(0) rotate(0)}}
+@keyframes floatMascot{0%,100%{translate:0 0}50%{translate:0 -7px}}
+@keyframes glowPulse{0%,100%{scale:.94;opacity:.72}50%{scale:1.08;opacity:1}}
+@keyframes twinkle{from{opacity:.45;transform:scale(.8) rotate(-10deg)}to{opacity:1;transform:scale(1.14) rotate(12deg)}}
+@keyframes gentleNudge{0%{transform:translateX(0)}30%{transform:translateX(-3px)}65%{transform:translateX(3px)}100%{transform:translateX(0)}}
+@media(max-width:760px){
+ .hero-copy{max-width:73%}
+ .hero-art{width:28%;right:1%;transform:scale(.87);transform-origin:right center}
+ .home-hero{min-height:270px}
+ .lesson-grid,.mode-grid{gap:11px}
+ .lesson-card{min-height:137px}
+ .choice-grid{grid-template-columns:1fr}
+ .choice{min-height:76px}
+}
+@media(max-width:560px){
+ .hero-copy{max-width:100%}
+ .hero-art{position:relative;right:auto;top:auto;margin:5px auto -12px;width:240px;height:155px;transform:none}
+ .hero-island{width:170px;height:70px}
+ .hero-mascot{width:78px;height:78px;top:23px;border-radius:27px;font-size:46px}
+ .hero-map{width:48px;height:49px;top:60px;font-size:25px}
+ .hero-gem{width:47px;height:47px;top:48px;font-size:26px}
+ .home-hero{padding:23px 19px 19px}
+ .home-hero:after{font-size:16px;letter-spacing:7px}
+ .quest-strip{gap:6px}
+ .quest-step{font-size:11px;padding:6px 8px}
+ .game-meta{width:100%}
+ .game-top{gap:9px}
+ .tabletop-head{flex-direction:row}
+ .tabletop-head h2{font-size:20px}
+ .stat-grid{gap:7px}
+ .stat{padding:12px 6px}
+ .stat strong{font-size:22px}
+}
+@media(max-width:430px){
+ .topbar{align-items:center}
+ .quiet-chip{max-width:118px;white-space:normal;text-align:center;line-height:1.35}
+ .brand{gap:8px}
+ .brand-mark{width:43px;height:43px;font-size:25px}
+ h1{font-size:20px}
+ .tagline{max-width:190px}
+ .lesson-grid,.mode-grid{grid-template-columns:1fr}
+ .lesson-card{min-height:125px}
+ .usage-options{grid-template-columns:1fr}
+ .tabletop-head{align-items:flex-start;flex-direction:column;gap:8px}
+ .progress-pill{font-size:12px;padding:8px 10px}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
+}
+.quest-trail{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-2px 0 16px}
+.trail-step{display:inline-flex;align-items:center;gap:7px;padding:8px 11px;border-radius:999px;background:#f0f3ef;border:1px solid #e1e7df;color:#71808a;font-size:13px;font-weight:900}
+.trail-step b{display:grid;place-items:center;width:23px;height:23px;border-radius:50%;background:#dce5e2;color:#526d72}
+.trail-step.active{background:linear-gradient(110deg,#286c81,#32856e);border-color:#286c81;color:#fff;box-shadow:0 4px 9px rgba(40,108,129,.2)}
+.trail-step.active b{background:#ffdd7f;color:#553e17}
+.trail-step.complete{background:#e5f5ea;border-color:#c6e6cf;color:#31704d}
+.trail-step.complete b{background:#55a777;color:#fff}
+.reward-banner{
+ display:flex;align-items:center;gap:9px;margin:0 0 15px;padding:12px 15px;
+ border-radius:15px;background:linear-gradient(100deg,#fff0b9,#fff8df);
+ border:1px solid #f0d47e;color:#72511b;font-weight:900;
+ box-shadow:0 5px 11px rgba(133,104,36,.1);animation:rewardPop .32s cubic-bezier(.2,1.4,.4,1)
+}
+.reward-banner .reward-icon{font-size:23px;filter:drop-shadow(0 2px 1px rgba(133,104,36,.18))}
+.found-card-label{font-size:12px;font-weight:900;color:#428265;letter-spacing:.08em;margin-bottom:3px}
+@keyframes rewardPop{from{opacity:0;transform:scale(.96) translateY(5px)}to{opacity:1;transform:scale(1) translateY(0)}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">🦊</div>
+      <div>
+        <h1>成語島探險隊</h1>
+        <div class="tagline">翻情境牌・收集成語寶石</div>
+      </div>
+    </div>
+    <div class="quiet-chip" aria-label="遊戲特色">🧭 自己探險　⏳ 不計時</div>
+  </header>
+  <main id="app" aria-live="polite"></main>
+  <div class="footer-note">進度只保存在這台平板的瀏覽器中；不需登入，也不會上傳資料。</div>
+</div>
+<script>
+const cards = [
+ {id:"l1a",lesson:1,idiom:"迫不及待",meaning:"心裡非常急切，等不及要做一件事。",scene:"下課鐘一響，小宇就＿＿地跑到操場，想開始踢球。",example:"午餐一打開，小安就迫不及待地拿起筷子。",usageBad:"小安慢慢收好玩具，完全不著急，真是迫不及待。",why:"「迫不及待」表示急著立刻去做。",distractors:["l1c","l1f"]},
+ {id:"l1b",lesson:1,idiom:"忍氣吞聲",meaning:"受了委屈或氣惱，卻忍住不說出來。",scene:"故事裡的小兔被誤會了，心裡很委屈，卻不敢解釋，只好＿＿。",example:"遇到不公平的事，小朋友不必忍氣吞聲，可以找老師幫忙。",usageBad:"小美勇敢說出自己的想法，沒有忍氣吞聲。",why:"這裡說的是心裡有委屈，卻忍著不說。",distractors:["l1d","l1e"]},
+ {id:"l1c",lesson:1,idiom:"疲於奔命",meaning:"忙著四處奔走，忙到很辛苦。",scene:"小傑一早跑圖書館、郵局和市場，忙得＿＿。",example:"叔叔一天跑好幾個地方辦事，忙得疲於奔命。",usageBad:"小傑坐著休息一整天，沒有事情要做，真是疲於奔命。",why:"「疲於奔命」形容忙著奔走、十分辛苦。",distractors:["l1a","l1f"]},
+ {id:"l1d",lesson:1,idiom:"對牛彈琴",meaning:"對不了解內容的人講深奧的道理，對方很難聽懂。",scene:"小安把很難的音樂理論說給完全沒學過音樂的小熊玩偶聽，好像＿＿。",example:"先了解聽的人懂不懂，再決定怎麼說，才不會像對牛彈琴。",usageBad:"哥哥用簡單的圖畫說明規則，妹妹一下就懂了，真是對牛彈琴。",why:"聽的人完全不了解內容，說得再多也很難明白。",distractors:["l1b","l1e"]},
+ {id:"l1e",lesson:1,idiom:"長話短說",meaning:"把較多的內容簡短地說出來。",scene:"班長要在一分鐘內報告整場活動，就先＿＿。",example:"時間不多，請把活動重點長話短說。",usageBad:"老師把故事每個細節都說了半小時，真是長話短說。",why:"長話短說是保留重點、簡短表達。",distractors:["l1d","l1f"]},
+ {id:"l1f",lesson:1,idiom:"一勞永逸",meaning:"把事情做好一次，以後就能長久省事。",scene:"水龍頭一直漏水，爸爸把它修好，以後不用再煩惱，真是＿＿。",example:"把常掉的門把修牢，就能一勞永逸，不必每天再鎖一次。",usageBad:"小美只整理桌子一分鐘，就說以後永遠都不用整理，一勞永逸。",why:"「一勞永逸」要能一次處理好，長久解決問題。",distractors:["l1a","l1c"]},
+ {id:"l2a",lesson:2,idiom:"循序漸進",meaning:"照著次序，一步一步慢慢前進。",scene:"學游泳時，小恩先練習踢水，再學換氣，慢慢增加難度，這是＿＿。",example:"先學簡單的步驟，再做比較難的模型，這樣循序漸進。",usageBad:"小恩跳過所有基本練習，第一天就挑戰最難的動作，真是循序漸進。",why:"循序漸進要由簡單開始，按次序慢慢進步。",distractors:["l2c","l2e"]},
+ {id:"l2b",lesson:2,idiom:"輕而易舉",meaning:"做起來很容易，不費什麼力氣。",scene:"小晴每天練習後，現在很容易就能完成這道題，對她來說＿＿。",example:"這道拼圖我已經玩過很多次，現在輕而易舉就能完成。",usageBad:"這項工作非常困難，大家花了一整天才完成，真是輕而易舉。",why:"「輕而易舉」表示事情做起來很容易。",distractors:["l2d","l2c"]},
+ {id:"l2c",lesson:2,idiom:"得過且過",meaning:"只求眼前過得去，不認真把事情做好。",scene:"小凱做報告只寫一點點，覺得老師看不出來就好，抱著＿＿的態度。",example:"做事情要認真，不要抱著得過且過的心情。",usageBad:"小凱仔細檢查每一個答案，努力把事情做好，真是得過且過。",why:"得過且過是只求混過去，沒有認真完成。",distractors:["l2a","l2f"]},
+ {id:"l2d",lesson:2,idiom:"排山倒海",meaning:"形容力量或聲勢非常大。",scene:"球賽最後一分鐘，全場觀眾發出＿＿的加油聲。",example:"運動會上，大家排山倒海的加油聲讓選手更有精神。",usageBad:"池塘裡只飄來一片小樹葉，浪花排山倒海地湧來。",why:"這裡要形容非常大的聲勢，不是小小的聲音或力量。",distractors:["l2b","l2e"]},
+ {id:"l2e",lesson:2,idiom:"冰天雪地",meaning:"形容冰雪很多、天氣非常寒冷的地方。",scene:"故事裡，小狐狸走進白雪蓋滿大地、冷得發抖的森林，那裡是＿＿。",example:"小企鵝在冰天雪地裡找到了溫暖的家。",usageBad:"夏天太陽很大，大家穿著短袖在海邊玩，真是冰天雪地。",why:"冰天雪地形容冰雪和寒冷的環境。",distractors:["l2d","l2f"]},
+ {id:"l2f",lesson:2,idiom:"原封不動",meaning:"保持原來的樣子，沒有被改動或碰過。",scene:"禮物放在桌上，包裝紙和緞帶都沒拆開，還是＿＿。",example:"我把借來的書原封不動地放回書架。",usageBad:"哥哥拆開盒子，把裡面的積木重新組好，盒子仍原封不動。",why:"原封不動表示原來的樣子沒有改變。",distractors:["l2c","l2e"]},
+ {id:"l3a",lesson:3,idiom:"天涯海角",meaning:"形容非常遙遠的地方。",scene:"小海龜跟著海流游到很遠很遠的海邊，像是到了＿＿。",example:"不管你去到天涯海角，家人都會記得你。",usageBad:"我從教室走到隔壁的圖書角，就到了天涯海角。",why:"天涯海角用來形容非常遙遠的地方。",distractors:["l3c","l3d"]},
+ {id:"l3b",lesson:3,idiom:"安居樂業",meaning:"生活安定，工作也順利、快樂。",scene:"村子裡的人住得安心，大家都有喜歡的工作，過著＿＿的日子。",example:"大家一起愛護環境，讓社區居民安居樂業。",usageBad:"小鹿沒有固定住處，也沒有事情做，每天擔心下一餐，真是安居樂業。",why:"安居樂業是住得安穩，做事也愉快順利。",distractors:["l3e","l3f"]},
+ {id:"l3c",lesson:3,idiom:"本末倒置",meaning:"把主要和次要的事情弄反了。",scene:"小宇為了挑漂亮的封面花了一整天，卻忘了完成報告內容，真是＿＿。",example:"做報告要先完成重要內容，不能本末倒置，只顧裝飾。",usageBad:"小宇先完成報告，再用一點時間美化封面，真是本末倒置。",why:"本末倒置是把重要和次要的順序弄反。",distractors:["l3a","l3e"]},
+ {id:"l3d",lesson:3,idiom:"每況愈下",meaning:"情況一次比一次差。",scene:"花盆裡的植物沒有澆水，葉子從發黃到枯掉，情況＿＿。",example:"如果一直不整理，房間的狀況可能會每況愈下。",usageBad:"小安每天練琴，表現一次比一次進步，真是每況愈下。",why:"每況愈下表示情況漸漸變差。",distractors:["l3a","l3f"]},
+ {id:"l3e",lesson:3,idiom:"彬彬有禮",meaning:"態度文雅有禮貌。",scene:"小文見到客人先問好，借東西也記得說謝謝，大家覺得他＿＿。",example:"她對同學和長輩都彬彬有禮，大家很喜歡和她相處。",usageBad:"小明搶走玩具，還對同學大聲吼叫，真是彬彬有禮。",why:"彬彬有禮是待人有禮貌、態度文雅。",distractors:["l3b","l3f"]},
+ {id:"l3f",lesson:3,idiom:"心安理得",meaning:"覺得自己做得合理正確，心裡坦然。",scene:"小敏把借來的彩色筆準時還回去，也沒有弄壞，心裡＿＿。",example:"我把答應的事情做好了，所以心安理得。",usageBad:"小傑知道自己弄壞玩具卻不肯承認，心裡還能心安理得。",why:"心安理得是認為自己做得合理，心裡沒有不安。",distractors:["l3b","l3d"]},
+ {id:"l4a",lesson:4,idiom:"打退堂鼓",meaning:"遇到困難或害怕時，想要放棄原本要做的事。",scene:"爬山才走一小段，小安看到坡有點陡就不想走了，開始＿＿。",example:"遇到一點困難先別打退堂鼓，可以休息後再試試看。",usageBad:"小安很有信心地繼續練習，從沒有想過放棄，真是打退堂鼓。",why:"打退堂鼓是遇到困難就想退縮或放棄。",distractors:["l4c","l4d"]},
+ {id:"l4b",lesson:4,idiom:"骨瘦如柴",meaning:"形容人非常瘦。",scene:"故事裡的小馬生病後很久吃不下東西，身體變得非常瘦，簡直＿＿。",example:"故事中的小馬休養後慢慢恢復健康，不再骨瘦如柴。",usageBad:"小馬吃得健康、身體強壯，跑起來很有力氣，真是骨瘦如柴。",why:"這個成語形容非常瘦；故事裡用來描寫狀況，不拿來取笑別人。",distractors:["l4c","l4e"]},
+ {id:"l4c",lesson:4,idiom:"揚眉吐氣",meaning:"克服困難或取得好成績後，感到振奮、驕傲。",scene:"小芸練習很久，終於在比賽中完成以前做不到的動作，心裡＿＿。",example:"小芸努力練習後完成挑戰，終於揚眉吐氣。",usageBad:"小芸還沒開始練習就已經遇到很多挫折，心裡非常灰心，真是揚眉吐氣。",why:"揚眉吐氣常用在努力後有了好結果，感到振奮的時候。",distractors:["l4a","l4e"]},
+ {id:"l4d",lesson:4,idiom:"適可而止",meaning:"做到恰當的程度就停下來，不要太過分。",scene:"遊戲時間到了，小朋友收好玩具準備休息，懂得＿＿。",example:"吃點心要適可而止，留一些肚子吃晚餐。",usageBad:"大家已經玩得很晚，小明還是不肯停下來，真懂得適可而止。",why:"適可而止是做到剛剛好，就停下來。",distractors:["l4a","l4b"]},
+ {id:"l4e",lesson:4,idiom:"一知半解",meaning:"只懂得一部分，還沒有完全弄明白。",scene:"小凱只看了故事開頭，就說自己全部了解，其實他對故事＿＿。",example:"我對這個遊戲規則還一知半解，想再讀一次說明。",usageBad:"小凱把整個故事都讀懂，還能清楚說明每個角色，對內容一知半解。",why:"一知半解是知道一些，但還沒有完整了解。",distractors:["l4b","l4d"]},
+ {id:"l5a",lesson:5,idiom:"甜言蜜語",meaning:"好聽又討人喜歡的話，有時用來說服別人。",scene:"小傑想借朋友的球，說了很多好聽的話，這些話像是＿＿。",example:"不要只聽別人的甜言蜜語，也要想一想事情合不合理。",usageBad:"小傑一句話也沒說，就用了甜言蜜語說服大家。",why:"甜言蜜語是好聽、討人喜歡的話。",distractors:["l5c","l5e"]},
+ {id:"l5b",lesson:5,idiom:"海枯石爛",meaning:"形容時間非常久遠，常用來說長久不變的約定或情意。",scene:"童話裡的兩位朋友約好永遠互相幫忙，就算過了非常久也不改變，直到＿＿。",example:"兩個好朋友約定，無論過多久都會記得彼此，直到海枯石爛。",usageBad:"我們只等了兩分鐘，就像已經過了海枯石爛那麼久。",why:"海枯石爛用來形容非常久遠，不是短短一下子。",distractors:["l5a","l5d"]},
+ {id:"l5c",lesson:5,idiom:"張口結舌",meaning:"因驚訝、慌張等原因，一時說不出話來。",scene:"魔術師把空盒子打開，裡面突然飛出一群蝴蝶，觀眾驚訝得＿＿。",example:"看到拼好的機器人自己站起來，大家都張口結舌。",usageBad:"小美回答問題又快又流利，一點也沒有停頓，真是張口結舌。",why:"張口結舌是因驚訝或慌張而說不出話。",distractors:["l5a","l5e"]},
+ {id:"l5d",lesson:5,idiom:"如膠似漆",meaning:"形容兩人感情非常親密，分不開。",scene:"故事裡的兩隻小鳥總是一起築巢、一起找食物，感情＿＿。",example:"兩隻小鳥每天相伴，感情如膠似漆。",usageBad:"兩隻小鳥彼此不熟悉，也不想一起活動，感情如膠似漆。",why:"如膠似漆形容感情很親密。",distractors:["l5b","l5c"]},
+ {id:"l5e",lesson:5,idiom:"一手遮天",meaning:"倚仗權勢遮掩真相，想瞞住大家。",scene:"故事中的國王不讓城裡的人知道真正發生的事，以為自己能＿＿。",example:"做錯事應該勇敢承認，不能以為能一手遮天。",usageBad:"班長把事情公開告訴大家，還說自己可以一手遮天。",why:"一手遮天是想用權勢遮住真相，不讓別人知道。",distractors:["l5a","l5c"]},
+ {id:"l6a",lesson:6,idiom:"墨守成規",meaning:"只照舊規則做，不願意改變或嘗試新方法。",scene:"美術課上，老師鼓勵大家創作，小安卻只照舊作品畫，不肯試新方法，有點＿＿。",example:"遇到新問題可以想想新方法，不要墨守成規。",usageBad:"小安願意試試不同材料，畫出新的作品，真是墨守成規。",why:"墨守成規是只守著舊方法、不肯改變。",distractors:["l6b","l6c"]},
+ {id:"l6b",lesson:6,idiom:"按部就班",meaning:"依照一定的步驟和次序做事。",scene:"做紙飛機時，小恩照著說明一步一步摺好，沒有跳過步驟，真是＿＿。",example:"先收拾書包，再穿鞋出門，按部就班就不容易忘東西。",usageBad:"小恩跳過所有步驟，想到哪裡就做到哪裡，真是按部就班。",why:"按部就班是依照步驟和次序進行。",distractors:["l6a","l6f"]},
+ {id:"l6c",lesson:6,idiom:"隨機應變",meaning:"遇到情況改變時，跟著實際狀況調整做法。",scene:"戶外教學突然下雨，老師改帶大家到室內參觀，這是＿＿。",example:"如果球滾到另一邊，就要隨機應變，換個方法繼續玩。",usageBad:"天氣已經下雨，大家仍不看情況，堅持在戶外上課，真是隨機應變。",why:"隨機應變是看情況改變做法。",distractors:["l6a","l6b"]},
+ {id:"l6d",lesson:6,idiom:"大器晚成",meaning:"有才能的人經過較長時間努力，後來才有成就。",scene:"故事裡的木匠年輕時默默練習，很多年後才成為大家敬佩的名師，真是＿＿。",example:"那位畫家經過多年練習才受到大家肯定，可以說是大器晚成。",usageBad:"小木匠今天才拿起工具，馬上就成為知名大師，真是大器晚成。",why:"大器晚成是努力很久後，較晚才有出色成就。",distractors:["l6e","l6f"]},
+ {id:"l6e",lesson:6,idiom:"出神入化",meaning:"形容技藝高超、精妙，讓人非常佩服。",scene:"姊姊練琴多年，手指彈出的音樂又快又美，技巧簡直＿＿。",example:"魔術師的表演出神入化，讓觀眾看得目瞪口呆。",usageBad:"小明剛學一小時，還不會彈完整首歌，技巧已經出神入化。",why:"出神入化形容技藝非常高超，不是剛開始學習的程度。",distractors:["l6d","l6f"]},
+ {id:"l6f",lesson:6,idiom:"另眼相看",meaning:"改變原本的看法，開始特別重視或佩服某人。",scene:"大家原以為小妍不會下棋，後來看見她練習得很認真、比賽也得獎，便對她＿＿。",example:"他主動幫忙照顧班級植物，讓大家對他另眼相看。",usageBad:"大家從頭到尾都沒改變想法，也沒有特別注意小妍，卻對她另眼相看。",why:"另眼相看表示看法改變，開始特別重視或佩服。",distractors:["l6a","l6d"]}
+];
+
+const app = document.getElementById("app");
+const STORE_KEY = "idiomCardTable.progress.v1";
+const SESSION_KEY = "idiomCardTable.session.v1";
+const lessonInfo = [
+ {n:1,icon:"🧭",title:"第一課",desc:"等不及、忍住委屈與生活中的表達"},
+ {n:2,icon:"🌨️",title:"第二課",desc:"做事步驟、努力態度和自然景象"},
+ {n:3,icon:"🏡",title:"第三課",desc:"生活、待人與事情變化"},
+ {n:4,icon:"🏅",title:"第四課",desc:"面對困難、掌握分寸與理解程度"},
+ {n:5,icon:"🪄",title:"第五課",desc:"說話、情感與故事中的做法"},
+ {n:6,icon:"🎨",title:"第六課",desc:"守規則、看情況與展現本領"}
+];
+let persistent = readJSON(STORE_KEY,{mastered:[],review:[]});
+let game = readJSON(SESSION_KEY,null);
+let showHintNow = false;
+let showExampleNow = false;
+let usageRetry = false;
+
+function readJSON(key,fallback){try{const value=localStorage.getItem(key);return value?JSON.parse(value):fallback}catch(e){return fallback}}
+function saveProgress(){try{localStorage.setItem(STORE_KEY,JSON.stringify(persistent))}catch(e){}}
+function saveSession(){try{if(game){localStorage.setItem(SESSION_KEY,JSON.stringify(game))}else{localStorage.removeItem(SESSION_KEY)}}catch(e){}}
+function byId(id){return cards.find(function(c){return c.id===id})}
+function shuffle(list){const copy=list.slice();for(let i=copy.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=copy[i];copy[i]=copy[j];copy[j]=t}return copy}
+function unique(list){return Array.from(new Set(list))}
+function htmlSafe(value){return String(value).replace(/[&<>"']/g,function(ch){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]})}
+function progressCount(ids){return ids.filter(function(id){return persistent.mastered.indexOf(id)>=0}).length}
+
+function renderHome(){
+  const resumeButton=game?'<button class="primary" onclick="resumeGame()">▶ 繼續上次的牌局</button>':'';
+  const lessons=lessonInfo.map(function(info){
+    const lessonCards=cards.filter(function(c){return c.lesson===info.n});
+    const pct=Math.round(progressCount(lessonCards.map(function(c){return c.id}))/lessonCards.length*100);
+    return '<button class="lesson-card" data-lesson="'+info.n+'" onclick="startLesson('+info.n+')"><div class="lesson-head"><span class="lesson-name">'+info.title+'探險島</span><span class="lesson-icon" aria-hidden="true">'+info.icon+'</span></div><div class="lesson-desc">'+lessonCards.length+' 張成語牌・'+info.desc+'</div><div class="mini-progress" aria-label="已熟悉 '+pct+'%"><i style="width:'+pct+'%"></i></div></button>'
+  }).join("");
+  const reviewButton=persistent.review.length?'<button class="mode-card" onclick="startReview()"><div class="mode-icon">🔁</div><strong>重練需要想一想的牌</strong><span>目前有 '+persistent.review.length+' 張，答錯或用過提示的牌會再出現。</span></button>':'<div class="mode-card" aria-label="錯題重練"><div class="mode-icon">🔁</div><strong>錯題重練牌堆</strong><span>還沒有待重練的牌。答錯或用過提示的成語會放進這一堆。</span></div>';
+  app.innerHTML =
+   '<section class="panel home-hero fade-in"><div class="hero-copy"><div class="eyebrow">🗺️ 小小探險家任務</div><h2>出發！找到情境裡的成語寶藏</h2><p>每完成一張任務牌，就點亮一顆成語寶石。探訪六座課文小島，讓成語從課本走進你的生活！</p><div class="home-actions">'+resumeButton+'<span class="progress-pill">💎 已點亮 '+persistent.mastered.length+' / '+cards.length+' 顆寶石</span></div><div class="quest-strip"><span class="quest-step"><b>1</b> 發現情境</span><span class="quest-step"><b>2</b> 挑對用法</span><span class="quest-step"><b>3</b> 開口造句</span></div></div><div class="hero-art" aria-hidden="true"><div class="hero-glow"></div><div class="hero-island"></div><span class="hero-spark one">✦</span><span class="hero-spark two">✧</span><span class="hero-spark three">✦</span><div class="hero-map">🗺️</div><div class="hero-gem">💎</div><div class="hero-mascot">🦊</div></div></section>'+
+   '<div class="section-title"><h3>🏝️ 選一座課文小島</h3><span>每島有 5–6 張成語寶藏</span></div><section class="lesson-grid">'+lessons+'</section>'+
+   '<div class="section-title"><h3>🎒 探險背包</h3><span>挑選適合今天的任務</span></div><section class="mode-grid">'+
+    '<button class="mode-card" onclick="startMixed(12)"><div class="mode-icon">🎴</div><strong>隨機探險・12 張</strong><span>六課抽牌混合挑戰，短短一輪也能收集寶石。</span></button>'+
+    '<button class="mode-card" onclick="startMixed(34)"><div class="mode-icon">🗝️</div><strong>完整尋寶・34 張</strong><span>走遍六座小島，把全部成語寶藏都找出來。</span></button>'+
+    reviewButton+
+   '</section><p class="note">✨ 每張任務牌有兩顆星星：情境配對、用法挑戰。答錯不扣分；提示牌稍後會再出現。六課近義詞不會被放在容易混淆的同題選項裡。</p>';
+}
+
+function startLesson(n){startGame("lesson",cards.filter(function(c){return c.lesson===n}).map(function(c){return c.id}),"第"+n+"課")}
+function startMixed(count){startGame(count===34?"all":"mixed",shuffle(cards.map(function(c){return c.id})).slice(0,count),count===34?"全套 34 張":"六課混合 12 張")}
+function startReview(){const ids=persistent.review.map(function(id){return id}).filter(function(id){return !!byId(id)});if(!ids.length){renderHome();return}startGame("review",shuffle(ids),"錯題重練")}
+function startGame(mode,ids,title){
+ game={mode:mode,ids:ids.slice(),title:title,index:0,phase:"scene",score:0,correctScenes:0,correctUsage:0,attempts:0,usedHint:false,cardMistake:false,sceneOptions:[],usageAttempts:0,usageOptions:[],usageFeedback:"",usageWrongAnswer:false};
+ showHintNow=false;showExampleNow=false;usageRetry=false;saveSession();renderGame()
+}
+function resumeGame(){renderGame()}
+function current(){return game&&game.ids[game.index]?byId(game.ids[game.index]):null}
+function returnHome(){saveSession();renderHome()}
+function currentProgress(){return game?Math.min(game.index+(game.phase==="summary"?0:1),game.ids.length):0}
+function renderQuestTrail(active){
+ const labels=["發現情境","挑對用法","開口造句"];
+ return '<div class="quest-trail" aria-label="本張任務進度">'+labels.map(function(label,index){const step=index+1;const cls=step<active?"complete":(step===active?"active":"");return '<span class="trail-step '+cls+'"><b>'+step+'</b>'+label+'</span>'}).join("")+'</div>'
+}
+
+function renderGame(){
+ if(!game){renderHome();return}
+ if(game.index>=game.ids.length){renderSummary();return}
+ const c=current();if(!c){game.index++;saveSession();renderGame();return}
+ const progress=currentProgress(),total=game.ids.length,pct=Math.round(progress/total*100);
+ const meta='<div class="game-top"><div class="game-meta"><span class="progress-pill">🎴 '+htmlSafe(game.title)+'</span><span class="progress-pill">⭐ '+game.score+' 星</span></div><button class="soft" onclick="returnHome()">↩ 回牌桌</button></div>'+
+ '<section class="panel progress-wrap"><div class="progress-label"><span>第 '+progress+' 張 / 共 '+total+' 張</span><span>'+pct+'%</span></div><div class="progress-track"><div class="progress-fill" style="width:'+pct+'%"></div></div></section>';
+ let inner="";
+ if(game.phase==="scene"){inner=renderScene(c)}
+ else if(game.phase==="usage"){inner=renderUsage(c)}
+ else if(game.phase==="self"){inner=renderSelf(c)}
+ else if(game.phase==="sceneFeedback"){inner=renderScene(c)}
+ app.innerHTML=meta+inner;
+}
+
+function renderScene(c){
+ if(!game.sceneOptions||!game.sceneOptions.length){game.sceneOptions=shuffle([c.id].concat(c.distractors));saveSession()}
+ const options=game.sceneOptions.map(function(id){const option=byId(id);return '<button class="choice" onclick="answerScene(\''+option.id+'\')">'+htmlSafe(option.idiom)+'</button>'}).join("");
+ const hint=game.usedHint?'<div class="hint-box"><strong>小提示：</strong>'+htmlSafe(c.meaning)+' 想一想，哪張成語牌和這個意思最接近？</div>':'';
+ const feedback=game.sceneFeedback?'<div class="feedback try" role="status"><strong>再讀一次情境～</strong><br>'+htmlSafe(game.sceneFeedback)+(game.attempts>=1?'<br><strong>小提示：</strong>'+htmlSafe(c.meaning):'')+'<div class="feedback-actions"><button class="secondary" onclick="clearSceneFeedback()">我再選一次</button><button class="soft" onclick="showSceneHint()">看小提示</button></div></div>':'';
+ return '<section class="panel tabletop fade-in"><div class="tabletop-head"><h2>🧭 找出最合適的成語牌</h2><span class="step-label">寶藏任務 1 / 3</span></div>'+renderQuestTrail(1)+'<div class="prompt-card"><div class="card-label">📜 情境任務牌</div><div class="prompt-text">'+htmlSafe(c.scene.replace("＿＿","<答案>")).replace("&lt;答案&gt;",'<span class="blank">＿＿</span>')+'</div><div class="hint-row">'+(hint||'')+(!game.usedHint?'<button class="secondary" onclick="showSceneHint()">💡 給我一點提示</button>':'')+'</div></div>'+feedback+'<div class="choice-grid" aria-label="成語牌選項">'+options+'</div></section>'
+}
+function clearSceneFeedback(){game.sceneFeedback="";game.phase="scene";saveSession();renderGame()}
+function showSceneHint(){game.usedHint=true;game.cardMistake=true;game.sceneFeedback="已翻開小提示。先讀懂意思，再挑一張成語牌。";saveSession();renderGame()}
+function answerScene(id){
+ const c=current();if(!c)return;
+ if(id===c.id){game.phase="usage";game.sceneFeedback="";game.attempts=0;game.correctScenes++;if(!game.cardMistake)game.score++;game.rewardMessage="情境配對成功！再挑一句合適的用法，就能點亮第二顆星。";game.usageOptions=shuffle([{text:c.example,correct:true},{text:c.usageBad,correct:false}]);game.usageAttempts=0;game.usageFeedback="";game.usageWrongAnswer=false;saveSession();renderGame();return}
+ game.attempts++;game.cardMistake=true;game.sceneFeedback="這張牌和情境還不太合。"+(game.attempts===1?"請再看看情境裡的線索。":"提示已翻開，找找意思最接近的牌。");if(game.attempts>=2)game.usedHint=true;saveSession();renderGame()
+}
+
+function renderUsage(c){
+ const options=game.usageOptions.map(function(o,index){return '<button class="text-choice" onclick="answerUsage('+index+')"><span class="letter">'+String.fromCharCode(65+index)+'</span>'+htmlSafe(o.text)+'</button>'}).join("");
+ const feedback=game.usageFeedback?'<div class="feedback '+(game.usageWrongAnswer?"try":"good")+'" role="status"><strong>'+(game.usageWrongAnswer?"再想一想":"選得很好！")+'</strong><br>'+htmlSafe(game.usageFeedback)+(game.usageWrongAnswer?'<div class="feedback-actions"><button class="secondary" onclick="retryUsage()">再選一次</button><button class="soft" onclick="revealUsage()">看正確用法</button></div>':'')+'</div>':'';
+ return '<section class="panel tabletop fade-in"><div class="tabletop-head"><h2>🔎 幫成語挑一句合適的話</h2><span class="step-label">寶藏任務 2 / 3</span></div>'+renderQuestTrail(2)+'<div class="reward-banner"><span class="reward-icon">🌟</span><span>'+htmlSafe(game.rewardMessage||"情境配對成功！再找找看哪一句用得恰當。")+'</span></div><div class="idiom-display"><div class="idiom-seal">✍️</div><div><div class="found-card-label">你找到的成語寶藏</div><h3>'+htmlSafe(c.idiom)+'</h3><p>'+htmlSafe(c.meaning)+'</p></div></div><div class="usage-options">'+options+'</div>'+feedback+'</section>'
+}
+function answerUsage(index){
+ const c=current(),option=game.usageOptions[index];if(!c||!option)return;
+ if(option.correct){game.correctUsage++;if(!game.cardMistake)game.score++;game.phase="self";game.rewardMessage="用法也答對了！你已找到這張成語卡的兩顆星。";game.usageFeedback="";game.usageWrongAnswer=false;saveSession();renderGame();return}
+ game.usageAttempts++;game.cardMistake=true;game.usageWrongAnswer=true;game.usageFeedback="這句話和「"+c.idiom+"」的意思不太合。你可以再選一次，也可以先看正確例句。";saveSession();renderGame()
+}
+function retryUsage(){game.usageFeedback="";game.usageWrongAnswer=false;saveSession();renderGame()}
+function revealUsage(){const c=current();if(!c)return;game.phase="self";game.cardMistake=true;game.usageFeedback="";game.usageWrongAnswer=false;showExampleNow=true;saveSession();renderGame()}
+
+function renderSelf(c){
+ const example=showExampleNow?'<div class="example-box"><strong>例句：</strong>'+htmlSafe(c.example)+'</div>':'';
+ const missed=game.cardMistake?'<div class="feedback try"><strong>這張牌已放進「再練習」牌堆。</strong><br>沒關係，下一次再遇到，就會更熟悉。</div>':'';
+ return '<section class="panel tabletop fade-in"><div class="tabletop-head"><h2>🗣️ 把成語放進自己的話</h2><span class="step-label">寶藏任務 3 / 3</span></div>'+renderQuestTrail(3)+'<div class="reward-banner"><span class="reward-icon">🎉</span><span>'+htmlSafe(game.rewardMessage||"完成最後一步，就能把這張成語牌收進背包！")+'</span></div><div class="idiom-display"><div class="idiom-seal">💎</div><div><div class="found-card-label">即將收進背包的成語</div><h3>'+htmlSafe(c.idiom)+'</h3><p>'+htmlSafe(c.meaning)+'</p></div></div><div class="self-card"><h3>輪到你了！</h3><p>先大聲說一句自己的例句，不用打字。可以想想：在學校、家裡或和朋友玩時，什麼情況會用到這個成語？</p>'+example+'</div>'+missed+'<div class="button-row"><button class="primary" onclick="collectCard()">我想好了，收下這張牌</button>'+(!showExampleNow?'<button class="secondary" onclick="peekExample()">先看一個例句</button>':'')+'<button class="soft" onclick="skipSentence()">先收牌，之後再造句</button></div></section>'
+}
+function peekExample(){showExampleNow=true;saveSession();renderGame()}
+function collectCard(){
+ const c=current();if(!c)return;
+ if(game.cardMistake){persistent.review=unique(persistent.review.concat([c.id]));persistent.mastered=persistent.mastered.filter(function(id){return id!==c.id})}
+ else{persistent.mastered=unique(persistent.mastered.concat([c.id]));persistent.review=persistent.review.filter(function(id){return id!==c.id})}
+ saveProgress();advanceCard()
+}
+function skipSentence(){const c=current();if(c){persistent.review=unique(persistent.review.concat([c.id]));persistent.mastered=persistent.mastered.filter(function(id){return id!==c.id});saveProgress()}advanceCard()}
+function advanceCard(){game.index++;game.phase="scene";game.attempts=0;game.usedHint=false;game.cardMistake=false;game.sceneOptions=[];game.usageAttempts=0;game.usageOptions=[];game.usageFeedback="";game.usageWrongAnswer=false;game.rewardMessage="";showHintNow=false;showExampleNow=false;usageRetry=false;saveSession();renderGame()}
+
+function renderSummary(){
+ const total=game.ids.length;const reviewIds=unique(game.ids.filter(function(id){return persistent.review.indexOf(id)>=0}));
+ const masteredNow=game.ids.filter(function(id){return persistent.mastered.indexOf(id)>=0}).length;
+ const names=reviewIds.map(function(id){return '<span class="review-chip">'+htmlSafe(byId(id).idiom)+'</span>'}).join("");
+ app.innerHTML='<section class="panel summary fade-in"><div class="summary-badge">🎉</div><div class="eyebrow">牌局完成</div><h2>你完成了這一桌！</h2><p>每一次想情境、挑用法、自己造句，都讓成語更靠近你的生活。可以休息一下，也可以把需要想一想的牌再玩一次。</p><div class="stat-grid"><div class="stat"><strong>'+total+'</strong><span>完成卡牌</span></div><div class="stat"><strong>'+game.score+'</strong><span>成語星星</span></div><div class="stat"><strong>'+masteredNow+'</strong><span>已收進熟悉牌堆</span></div></div>'+(reviewIds.length?'<div><strong>下次可以再練這些牌：</strong><div class="review-list">'+names+'</div></div>':'<div class="feedback good"><strong>太棒了！</strong>這一輪的牌都順利收進熟悉牌堆。</div>')+'<div class="button-row" style="justify-content:center">'+(reviewIds.length?'<button class="primary" onclick="startReview()">🔁 重練待熟悉的牌</button>':'')+'<button class="secondary" onclick="newRound()">再玩一輪</button><button class="soft" onclick="finishGame()">回到選課牌桌</button></div></section>';
+}
+function newRound(){const mode=game.mode;if(mode==="lesson"){const n=Number(game.ids[0].slice(1,2));startLesson(n)}else if(mode==="all"){startMixed(34)}else if(mode==="review"){startReview()}else{startMixed(12)}}
+function finishGame(){game=null;saveSession();renderHome()}
+
+renderHome();
+</script>
+</body>
+</html>

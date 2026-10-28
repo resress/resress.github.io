@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#173c36">
+<title>注音勇者：多音字王國</title>
+<style>
+:root{--ink:#173c36;--muted:#61756d;--paper:#fffdf5;--green:#2e705a;--mint:#dff1df;--gold:#f1c85b;--line:#dfddcc;--shadow:0 12px 28px #183c3217}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 10% 4%,#fff9dd 0,transparent 32%),linear-gradient(160deg,#e8f2e4,#f7f0de 60%,#e6f0ed);color:var(--ink);font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;line-height:1.6;min-height:100vh}button{font:inherit;color:inherit}.shell{width:min(1120px,100% - 32px);margin:auto;padding:22px 0 44px}.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:24px}.brand{display:flex;align-items:center;gap:12px;font-weight:900;font-size:1.05rem}.brand-mark{width:45px;height:45px;border-radius:15px;background:var(--green);color:white;display:grid;place-items:center;font-size:1.55rem;box-shadow:0 5px 0 #1b4b3c}.top-actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:2px solid var(--line);background:#fffdf6;border-radius:14px;padding:9px 15px;font-weight:800;cursor:pointer;box-shadow:0 3px 0 #d9d3c0;transition:transform .15s,box-shadow .15s}.btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 5px 0 #d9d3c0}.btn:focus-visible{outline:3px solid #286e5b;outline-offset:3px}.btn:disabled{opacity:.5;cursor:not-allowed}.btn.primary{background:var(--green);border-color:var(--green);color:white;box-shadow:0 4px 0 #1b4b3c}.btn.gold{background:var(--gold);border-color:#dcb445;box-shadow:0 4px 0 #bf9c39}.btn.small{padding:6px 10px;font-size:.9rem}.eyebrow{color:var(--green);font-weight:900;letter-spacing:.08em;font-size:.82rem}h1,h2,h3,p{margin-top:0}h1{font-size:clamp(2rem,5vw,3.5rem);line-height:1.15;margin:.35rem 0 .7rem}h2{font-size:clamp(1.45rem,3vw,2.15rem);line-height:1.25}h3{line-height:1.3}.hero{display:grid;grid-template-columns:1.3fr .7fr;gap:22px;align-items:center;background:var(--paper);border:2px solid #e8dfc6;border-radius:28px;padding:clamp(22px,5vw,44px);box-shadow:var(--shadow);position:relative;overflow:hidden}.hero:after{content:"";position:absolute;width:230px;height:230px;border-radius:50%;background:#f8efcc;right:-70px;top:-95px}.hero-copy,.hero-art{position:relative;z-index:1}.hero p{color:var(--muted);font-size:1.08rem;max-width:620px;margin-bottom:19px}.hero-art{font-size:clamp(5rem,12vw,8.5rem);text-align:center;filter:drop-shadow(0 9px 0 #dbca8c);animation:float 3.2s ease-in-out infinite}@keyframes float{50%{transform:translateY(-8px)}}.stats{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0}.stat{background:#fffdf7;border:1px solid var(--line);border-radius:16px;padding:10px 15px;min-width:116px}.stat strong{font-size:1.2rem;display:block}.stat span{color:var(--muted);font-size:.85rem}.section-title{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:28px 2px 14px}.section-title p{color:var(--muted);margin:0}.map-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.lesson-card{background:var(--paper);border:2px solid #e5dfcb;border-radius:20px;padding:18px;box-shadow:0 5px 12px #183c320c;display:flex;flex-direction:column;min-height:185px}.lesson-card .chapter{font-size:.8rem;font-weight:900;color:var(--green)}.lesson-card h3{font-size:1.13rem;margin:4px 0 8px}.lesson-card p{color:var(--muted);font-size:.91rem;margin-bottom:14px}.lesson-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:auto}.badge{font-size:.82rem;font-weight:900;background:var(--mint);border-radius:999px;padding:4px 10px;color:#225a47}.badge.locked{background:#eeeade;color:#817c6b}.side-quest{margin-top:18px;background:#eaf2e7;border:2px dashed #8cb49a;border-radius:22px;padding:20px;display:flex;align-items:center;justify-content:space-between;gap:18px}.side-quest h3{margin:0 0 4px}.side-quest p{margin:0;color:var(--muted)}.hidden{display:none!important}.game-panel{background:var(--paper);border:2px solid #e5dfcb;border-radius:26px;padding:clamp(18px,4vw,34px);box-shadow:var(--shadow)}.game-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}.game-head h2{margin:2px 0 0}.progress-track{height:12px;background:#e8e5d7;border-radius:999px;overflow:hidden;margin:8px 0 22px}.progress-fill{height:100%;width:0;background:linear-gradient(90deg,#54a874,#e9be4a);border-radius:inherit;transition:width .3s}.study-intro{background:#eef6e9;border-radius:18px;padding:16px 18px;margin-bottom:18px}.study-intro p{margin:3px 0 0;color:var(--muted)}.study-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}.study-card{border:1px solid var(--line);background:#fffefa;border-radius:18px;padding:15px}.study-card h3{display:flex;gap:8px;align-items:center;margin:0 0 8px;font-size:1.15rem}.character{font-size:1.55rem;color:var(--green);font-weight:1000}.sound-line{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;padding:9px 0;border-top:1px dashed #e6e0cd}.sound{font-size:1.05rem;font-weight:950;color:#285d4a;white-space:nowrap}.word{font-weight:900}.meaning{font-size:.9rem;color:var(--muted)}.example{margin:3px 0 0;background:#faf6e8;border-radius:10px;padding:8px 10px;font-size:.93rem}.study-bottom{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:20px;flex-wrap:wrap}.quiz-card{max-width:760px;margin:auto;background:#fffefa;border:2px solid #e8e1cd;border-radius:24px;padding:clamp(18px,4vw,30px);text-align:center}.question-count{color:var(--muted);font-weight:800}.sentence{font-size:clamp(1.35rem,3vw,1.8rem);font-weight:900;margin:20px 0 8px}.sentence mark{background:#ffe79c;color:inherit;border-radius:5px;padding:0 .12em}.question{font-size:1.1rem;color:var(--muted);margin-bottom:18px}.choices{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}.choice{min-width:122px;min-height:64px;border:2px solid #d7dfcf;background:#eff6ea;border-radius:17px;font-size:1.55rem;font-weight:1000;cursor:pointer;box-shadow:0 4px 0 #cdd8c4;transition:.15s}.choice:hover:not(:disabled){transform:translateY(-2px);background:#e2f0dc}.choice:disabled{cursor:default}.choice.selected-correct{border-color:#4d9a70;background:#dff3df;box-shadow:0 4px 0 #a9d0ae}.choice.selected-wrong{border-color:#d98268;background:#fce7dc}.feedback{min-height:68px;margin:18px auto 0;max-width:600px;border-radius:15px;padding:12px 15px;text-align:left;background:#f7f1df}.feedback.good{background:#e5f4e3}.feedback.retry{background:#fff0e4}.feedback strong{display:block;margin-bottom:2px}.quest-result{text-align:center;padding:22px 10px 10px}.result-icon{font-size:4rem}.result-score{font-size:1.2rem;font-weight:900;background:#fff5d4;border-radius:15px;padding:12px;display:inline-block;margin:7px}.atlas-overlay{position:fixed;inset:0;background:#102d26aa;z-index:5;display:grid;place-items:center;padding:16px}.atlas{background:var(--paper);border-radius:24px;width:min(820px,100%);max-height:90vh;overflow:auto;padding:22px;box-shadow:0 20px 70px #0004}.atlas-head{display:flex;justify-content:space-between;align-items:center;gap:10px;position:sticky;top:-22px;background:var(--paper);padding:4px 0 12px;z-index:1}.atlas-head h2{margin:0}.atlas-section{border-top:1px solid var(--line);padding:15px 0}.atlas-section h3{margin:0 0 10px}.atlas-words{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.atlas-word{background:#f8f4e7;border-radius:12px;padding:10px}.atlas-word strong{color:var(--green)}.footnote{text-align:center;color:var(--muted);font-size:.85rem;margin:24px 0 0}@media(max-width:760px){.hero{grid-template-columns:1fr}.hero-art{position:absolute;right:14px;bottom:4px;opacity:.2;font-size:5.4rem}.map-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:520px){.shell{width:calc(100% - 20px);padding-top:12px}.topbar{align-items:flex-start}.brand{font-size:.92rem}.brand-mark{width:39px;height:39px}.top-actions{justify-content:flex-end}.btn{padding:8px 11px}.map-grid,.study-grid,.atlas-words{grid-template-columns:1fr}.lesson-card{min-height:160px}.section-title{align-items:flex-start;flex-direction:column}.side-quest{align-items:flex-start;flex-direction:column}.choice{min-width:105px}.game-head{align-items:flex-start}}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="shell">
+<header class="topbar"><div class="brand"><span class="brand-mark" aria-hidden="true">📜</span><span>注音勇者・多音字王國</span></div><div class="top-actions"><button class="btn small" id="atlasBtn" type="button">📖 多音字圖鑑</button><button class="btn small" id="resetBtn" type="button">重設進度</button></div></header>
+<section id="mapView">
+  <section class="hero"><div class="hero-copy"><div class="eyebrow">三年級國語 RPG・離線單機</div><h1>收集聲音，<br>拯救多音字王國！</h1><p>同一個字，放進不同詞語和句子裡，讀音可能就不一樣。帶上注音指南，走訪六個課文村莊，讓每種讀音都找到自己的位置。</p><button class="btn primary" id="beginBtn" type="button">開始冒險　➜</button></div><div class="hero-art" aria-hidden="true">🧙📚</div></section>
+  <div class="stats" aria-label="冒險進度"><div class="stat"><strong id="completedStat">0 / 6</strong><span>完成村莊</span></div><div class="stat"><strong id="soundStat">0 / 31</strong><span>收集讀音</span></div><div class="stat"><strong id="xpStat">0</strong><span>勇者星星</span></div></div>
+  <div class="section-title"><div><div class="eyebrow">冒險地圖</div><h2 style="margin:4px 0 0">選擇一座村莊</h2></div><p>先看讀音卡，再完成村莊挑戰。</p></div>
+  <section class="map-grid" id="mapGrid" aria-label="六課冒險地圖"></section>
+  <section class="side-quest"><div><h3>🐉 最終任務：混音龍王</h3><p id="finalDescription">完成六座村莊，就能挑戰全部 31 個讀音！</p></div><button class="btn gold" id="finalBtn" type="button" disabled>尚未解鎖</button></section>
+  <p class="footnote">例句為遊戲編寫的補充情境，幫助練習依上下文判斷讀音。進度只保存在這台裝置的瀏覽器中；遊戲不需要網路，也不會收集姓名或個人資料。</p>
+</section>
+<section id="gameView" class="game-panel hidden" aria-live="polite"><div class="game-head"><div><div class="eyebrow" id="questEyebrow">第 1 課</div><h2 id="questTitle">冒險任務</h2></div><button class="btn small" id="mapBtn" type="button">← 回地圖</button></div><div class="progress-track" aria-label="任務進度"><div class="progress-fill" id="progressFill"></div></div><div id="studyPanel"></div><div id="quizPanel" class="hidden"></div><div id="resultPanel" class="hidden"></div></section>
+</main>
+<div id="atlasOverlay" class="atlas-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="atlasTitle"><section class="atlas"><div class="atlas-head"><h2 id="atlasTitle">📖 多音字圖鑑</h2><button class="btn small" id="closeAtlasBtn" type="button" aria-label="關閉圖鑑">關閉 ✕</button></div><div id="atlasContent"></div></section></div>
+<script>
+"use strict";
+const lessons=[
+{title:"時間是什麼",chars:[
+{char:"待",readings:[
+{sound:"ㄉㄞ",word:"待在",meaning:"停留在某個地方",sentence:"下雨天，我待在家裡看書。",hint:"人留在家裡，是「停留」的意思。",explain:"「待在」表示停留，讀 ㄉㄞ。"},
+{sound:"ㄉㄞˋ",word:"等待",meaning:"等候",sentence:"大家在教室裡等待老師。",hint:"還沒來，先耐心等候。",explain:"「等待」表示等候，讀 ㄉㄞˋ。"}]},
+{char:"彈",readings:[
+{sound:"ㄊㄢˊ",word:"彈琴",meaning:"用手指撥動琴弦演奏",sentence:"姐姐每天練習彈琴。",hint:"用手指彈奏樂器。",explain:"「彈琴」是用手指撥弦演奏，讀 ㄊㄢˊ。"},
+{sound:"ㄉㄢˋ",word:"彈珠",meaning:"玻璃或塑膠製成的小圓珠",sentence:"小凱把贏來的彈珠放進口袋。",hint:"想一想：小朋友以前常玩的圓圓小珠子。",explain:"「彈珠」的「彈」讀 ㄉㄢˋ。"}]},
+{char:"樂",readings:[
+{sound:"ㄌㄜˋ",word:"快樂",meaning:"心情愉快",sentence:"和朋友一起玩，大家都很快樂。",hint:"形容愉快的心情。",explain:"「快樂」表示心情愉快，讀 ㄌㄜˋ。"},
+{sound:"ㄩㄝˋ",word:"音樂",meaning:"用聲音表現的藝術",sentence:"午休時，教室播放輕柔的音樂。",hint:"這個詞和歌曲、旋律有關。",explain:"「音樂」的「樂」讀 ㄩㄝˋ。"}]}
+]},
+{title:"妙用便利貼",chars:[
+{char:"便",readings:[
+{sound:"ㄅㄧㄢˋ",word:"便利貼",meaning:"方便書寫、黏貼的小紙條",sentence:"我用便利貼記下明天要帶的課本。",hint:"是幫助記事情的小紙條。",explain:"「便利貼」的「便」讀 ㄅㄧㄢˋ。"},
+{sound:"ㄆㄧㄢˊ",word:"便宜",meaning:"價錢低",sentence:"這家店的鉛筆很便宜。",hint:"東西的價錢不高。",explain:"「便宜」的「便」讀 ㄆㄧㄢˊ。"}]}
+]},
+{title:"提早五分鐘",chars:[
+{char:"覺",readings:[
+{sound:"ㄐㄧㄠˋ",word:"睡覺",meaning:"睡眠、休息",sentence:"晚上九點半，我準時上床睡覺。",hint:"閉上眼睛休息。",explain:"「睡覺」的「覺」讀 ㄐㄧㄠˋ。"},
+{sound:"ㄐㄩㄝˊ",word:"覺得",meaning:"感受到、認為",sentence:"我覺得提早準備會更安心。",hint:"說出自己的感受或想法。",explain:"「覺得」的「覺」讀 ㄐㄩㄝˊ。"}]},
+{char:"得",readings:[
+{sound:"ㄉㄟˇ",word:"得先",meaning:"必須、需要先做",sentence:"出門前，得先把書包整理好。",hint:"把它換成「必須先」，句子通順嗎？",explain:"「得先」表示必須先做，讀 ㄉㄟˇ。"},
+{sound:"ㄉㄜˊ",word:"得到",meaning:"取得、獲得",sentence:"努力練習後，小安得到第一名。",hint:"想一想：取得、獲得好成績。",explain:"「得」表示得到、獲得時，讀 ㄉㄜˊ。"},
+{sound:"˙ㄉㄜ",word:"跑得",meaning:"放在動詞後連接程度",sentence:"哥哥跑得很快，一下就到終點。",hint:"它放在「跑」後面，連接跑的情形。",explain:"「得」放在動詞後、連接程度時，讀輕聲 ˙ㄉㄜ。"}]},
+{char:"角",readings:[
+{sound:"ㄐㄧㄠˇ",word:"角落",meaning:"兩面相接或邊緣的位置",sentence:"小貓躲在房間的角落裡。",hint:"房間裡靠邊邊的位置。",explain:"「角落」的「角」讀 ㄐㄧㄠˇ。"},
+{sound:"ㄐㄩㄝˊ",word:"主角",meaning:"故事或戲劇中最重要的角色",sentence:"這本故事書的主角是一隻勇敢的小兔子。",hint:"故事裡最重要的角色。",explain:"「主角」的「角」讀 ㄐㄩㄝˊ。"}]}
+]},
+{title:"水滾了",chars:[
+{char:"倒",readings:[
+{sound:"ㄉㄠˋ",word:"倒入",meaning:"把液體傾進容器裡",sentence:"請把溫水倒入杯子裡。",hint:"水從壺裡流進杯子。",explain:"「倒入」表示傾出液體，讀 ㄉㄠˋ。"},
+{sound:"ㄉㄠˇ",word:"跌倒",meaning:"失去平衡而倒下",sentence:"跑步要小心，才不會跌倒。",hint:"人失去平衡，身體倒下。",explain:"「跌倒」的「倒」讀 ㄉㄠˇ。"}]}
+]},
+{title:"為梨花撐傘",chars:[
+{char:"將",readings:[
+{sound:"ㄐㄧㄤˋ",word:"將領",meaning:"軍隊中的高級指揮官",sentence:"故事中的將領帶領隊伍守護城門。",hint:"指揮軍隊的高級軍官。",explain:"「將領」的「將」讀 ㄐㄧㄤˋ。"},
+{sound:"ㄐㄧㄤ",word:"將要",meaning:"快要、即將",sentence:"天空烏雲密布，將要下雨了。",hint:"事情快要發生。",explain:"「將要」表示快要發生，讀 ㄐㄧㄤ。"}]},
+{char:"結",readings:[
+{sound:"ㄐㄧㄝˊ",word:"結束",meaning:"事情告一段落",sentence:"活動結束後，大家一起整理教室。",hint:"活動做到最後，告一段落。",explain:"「結束」的「結」讀 ㄐㄧㄝˊ。"},
+{sound:"ㄐㄧㄝ",word:"結實",meaning:"堅固、不容易損壞",sentence:"這張木桌很結實，不容易搖晃。",hint:"句子說桌子不容易搖晃，形容它很堅固。",explain:"形容堅固的「結實」讀 ㄐㄧㄝ；此處不是植物長出果實的意思。"}]},
+{char:"當",readings:[
+{sound:"ㄉㄤˋ",word:"上當",meaning:"受騙、吃虧",sentence:"陌生人叫我交出密碼，我沒有上當。",hint:"差點受騙，但保持警覺。",explain:"「上當」的「當」讀 ㄉㄤˋ。"},
+{sound:"ㄉㄤ",word:"當班長",meaning:"擔任班長",sentence:"今年由小美當班長，幫忙帶領大家。",hint:"負責擔任一個職務。",explain:"「當班長」表示擔任班長，讀 ㄉㄤ。"}]},
+{char:"種",readings:[
+{sound:"ㄓㄨㄥˋ",word:"種花",meaning:"把花的種子或幼苗栽進土裡",sentence:"我們在花圃裡種花，讓校園更漂亮。",hint:"把植物栽進土裡的動作。",explain:"「種花」是栽種的動作，讀 ㄓㄨㄥˋ。"},
+{sound:"ㄓㄨㄥˇ",word:"種子",meaning:"植物可以發芽生長的部分",sentence:"春天到了，花盆裡的種子發芽了。",hint:"種下去後能長出植物的小東西。",explain:"「種子」的「種」讀 ㄓㄨㄥˇ。"}]}
+]},
+{title:"小鉛筆大學問",chars:[
+{char:"分",readings:[
+{sound:"ㄈㄣˋ",word:"部分",meaning:"整體中的一份",sentence:"鉛筆盒裡有一部分文具是新的。",hint:"整體裡面的一份。",explain:"「部分」的「分」讀 ㄈㄣˋ。"},
+{sound:"ㄈㄣ",word:"分開",meaning:"分成幾處或幾份",sentence:"請把紅色和藍色的鉛筆分開放。",hint:"不要放在一起，分成兩邊。",explain:"「分開」的「分」讀 ㄈㄣ。"}]},
+{char:"切",readings:[
+{sound:"ㄑㄧㄝ",word:"切菜",meaning:"用刀把菜分成小塊",sentence:"大人切菜時，小朋友要站遠一點。",hint:"用刀處理食材的動作。",explain:"「切菜」的「切」讀 ㄑㄧㄝ。"},
+{sound:"ㄑㄧㄝˋ",word:"切記",meaning:"一定要記住",sentence:"使用削鉛筆機時，切記不要把手指伸進去。",hint:"提醒自己一定要記住。",explain:"「切記」的「切」讀 ㄑㄧㄝˋ。"}]},
+{char:"削",readings:[
+{sound:"ㄒㄧㄠ",word:"削鉛筆",meaning:"把鉛筆木頭削去，使筆尖變尖",sentence:"上課前，我先用削筆器削鉛筆。",hint:"把筆尖磨尖的動作。",explain:"「削鉛筆」的「削」讀 ㄒㄧㄠ。"},
+{sound:"ㄒㄩㄝˋ",word:"削減",meaning:"減少、刪減",sentence:"老師提醒我們削減不必要的包裝。",hint:"把數量或內容減少。",explain:"「削減」的「削」讀 ㄒㄩㄝˋ。"}]}
+]}
+];
+const $=id=>document.getElementById(id);
+const allEntries=[];
+lessons.forEach((lesson,li)=>lesson.chars.forEach((group,ci)=>group.readings.forEach((entry,ri)=>allEntries.push(Object.assign({},entry,{char:group.char,lessonIndex:li,charIndex:ci,readingIndex:ri,lessonTitle:lesson.title})))));
+const STORAGE_KEY="zhuyin-rpg-polyphone-v1";
+function initialProgress(){return{completed:[],best:{},xp:0,finalPerfect:false};}
+function loadProgress(){try{const x=JSON.parse(localStorage.getItem(STORAGE_KEY));if(x&&Array.isArray(x.completed)&&x.best)return Object.assign(initialProgress(),x);}catch(e){}return initialProgress();}
+let progress=loadProgress(),session=null;
+function saveProgress(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(progress));}catch(e){}}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function unlocked(i){return i===0||progress.completed.includes(i-1);}
+function updateStats(){ $("completedStat").textContent=progress.completed.length+" / 6";const learned=progress.completed.reduce((n,i)=>n+lessons[i].chars.reduce((m,g)=>m+g.readings.length,0),0);$("soundStat").textContent=learned+" / 31";$("xpStat").textContent=String(progress.xp);const open=progress.completed.length===6;$("finalBtn").disabled=!open;$("finalBtn").textContent=open?(progress.finalPerfect?"再挑戰龍王　✦":"挑戰龍王　➜"):"尚未解鎖";$("finalDescription").textContent=open?"六座村莊都已完成！用 31 個讀音挑戰混音龍王。":"完成六座村莊，就能挑戰全部 31 個讀音！";}
+function renderMap(){$("mapGrid").innerHTML=lessons.map((l,i)=>{const done=progress.completed.includes(i),open=unlocked(i),n=l.chars.reduce((x,g)=>x+g.readings.length,0);return'<article class="lesson-card"><div class="chapter">村莊 '+(i+1)+' · 第 '+(i+1)+' 課</div><h3>📍 '+esc(l.title)+'</h3><p>'+l.chars.map(g=>g.char).join("、")+'　·　'+n+' 個讀音</p><div class="lesson-foot"><span class="badge '+(!open?"locked":"")+'">'+(done?"✦ 已完成":open?"可前往":"🔒 未解鎖")+'</span><button class="btn small '+(open?"primary":"")+'" type="button" data-lesson="'+i+'" '+(!open?"disabled":"")+'>'+(done?"再練習":"進村莊")+'</button></div></article>';}).join("");$("mapGrid").querySelectorAll("[data-lesson]").forEach(b=>b.addEventListener("click",()=>startLesson(Number(b.dataset.lesson))));updateStats();}
+function show(view){$("mapView").classList.toggle("hidden",view!=="map");$("gameView").classList.toggle("hidden",view!=="game");if(view==="map")renderMap();window.scrollTo({top:0,behavior:"smooth"});}
+function setupGame(title,eyebrow){$("questTitle").textContent=title;$("questEyebrow").textContent=eyebrow;$("studyPanel").classList.remove("hidden");$("quizPanel").classList.add("hidden");$("resultPanel").classList.add("hidden");$("progressFill").style.width="0%";show("game");}
+function startLesson(i){if(!unlocked(i))return;const l=lessons[i];session={mode:"lesson",lessonIndex:i,questions:shuffle(allEntries.filter(e=>e.lessonIndex===i)),index:0,wrong:false,answered:false,firstTry:0,xp:0};setupGame(l.title,"村莊 "+(i+1)+" · 第 "+(i+1)+" 課");renderStudy(l);}
+function renderStudy(l){const cards=l.chars.map(g=>'<article class="study-card"><h3><span class="character">'+esc(g.char)+'</span> 的讀音</h3>'+g.readings.map(r=>'<div class="sound-line"><span class="sound">'+esc(r.sound)+'</span><span class="word">'+esc(r.word)+'</span><span class="meaning">'+esc(r.meaning)+'</span><p class="example">例句：'+esc(r.sentence)+'</p></div>').join("")+'</article>').join("");const n=l.chars.reduce((x,g)=>x+g.readings.length,0);$("studyPanel").innerHTML='<div class="study-intro"><strong>🗺️ 探索讀音線索</strong><p>先讀完每張卡片，留意詞語和句子的意思。接著挑戰本村莊的 '+n+' 題；答錯可以看提示再試，不扣分。</p></div><div class="study-grid">'+cards+'</div><div class="study-bottom"><span class="badge">本課 '+l.chars.length+' 個多音字 · '+n+' 種讀音</span><button class="btn primary" id="startQuizBtn" type="button">讀音線索記住了，開始挑戰 ➜</button></div>';$("startQuizBtn").addEventListener("click",startQuiz);}
+function startQuiz(){session.index=0;session.wrong=false;session.answered=false;$("studyPanel").classList.add("hidden");$("quizPanel").classList.remove("hidden");renderQuestion();}
+function markedSentence(q){const s=esc(q.sentence),w=esc(q.word),i=s.indexOf(w);return i<0?s:s.slice(0,i)+"<mark>"+w+"</mark>"+s.slice(i+w.length);}
+function renderQuestion(){const q=session.questions[session.index],total=session.questions.length; $("progressFill").style.width=(session.index/total*100)+"%";const opts=shuffle([...new Set(allEntries.filter(e=>e.char===q.char).map(e=>e.sound))]);$("quizPanel").innerHTML='<div class="quiz-card"><div class="question-count">'+(session.mode==="final"?"混音龍王":"村莊挑戰")+'　·　第 '+(session.index+1)+' / '+total+' 題</div><p class="sentence">「'+markedSentence(q)+'」</p><p class="question">請選出「<strong>'+esc(q.word)+'</strong>」裡「<strong>'+esc(q.char)+'</strong>」的正確讀音。</p><div class="choices" id="choices"></div><div class="feedback hidden" id="feedback" role="status"></div><div style="margin-top:15px"><button class="btn primary hidden" id="nextBtn" type="button">下一題　➜</button></div></div>';const choices=$("choices");opts.forEach(sound=>{const b=document.createElement("button");b.type="button";b.className="choice";b.textContent=sound;b.setAttribute("aria-label","讀音 "+sound);b.addEventListener("click",()=>answer(sound,b));choices.appendChild(b);});}
+function answer(sound,button){if(session.answered)return;const q=session.questions[session.index],f=$("feedback");f.classList.remove("hidden","good","retry");if(sound===q.sound){session.answered=true;session.xp+=session.wrong?10:20;if(!session.wrong)session.firstTry++;button.classList.add("selected-correct");$("choices").querySelectorAll("button").forEach(b=>b.disabled=true);f.classList.add("good");f.innerHTML="<strong>答對了！✨</strong>"+esc(q.explain);$("nextBtn").classList.remove("hidden");$("nextBtn").addEventListener("click",advance,{once:true});}else{session.wrong=true;button.classList.add("selected-wrong");button.disabled=true;f.classList.add("retry");f.innerHTML="<strong>再找找線索，不扣分喔！</strong>"+esc(q.hint);}}
+function advance(){session.index++;if(session.index>=session.questions.length){session.mode==="final"?finishFinal():finishLesson();}else{session.wrong=false;session.answered=false;renderQuestion();}}
+function finishLesson(){const i=session.lessonIndex,l=lessons[i],total=session.questions.length,score=session.xp;if(!progress.completed.includes(i))progress.completed.push(i);progress.completed.sort((a,b)=>a-b);progress.xp+=score;progress.best[i]=Math.max(progress.best[i]||0,session.firstTry);saveProgress();$("studyPanel").classList.add("hidden");$("quizPanel").classList.add("hidden");$("resultPanel").classList.remove("hidden");$("progressFill").style.width="100%";const msg=i<5?"下一座村莊已開啟，可以繼續冒險！":"六座村莊都完成了，混音龍王已出現！";$("resultPanel").innerHTML='<div class="quest-result"><div class="result-icon">🏅</div><div class="eyebrow">村莊任務完成</div><h2>太棒了，你點亮了「'+esc(l.title)+'」！</h2><div class="result-score">首次答對 '+session.firstTry+' / '+total+' 題</div><div class="result-score">獲得 '+score+' 顆勇者星星</div><p>'+msg+'</p><button class="btn primary" id="resultMapBtn" type="button">回冒險地圖</button></div>';$("resultMapBtn").addEventListener("click",()=>{session=null;show("map");});}
+function startFinal(){if(progress.completed.length!==6)return;session={mode:"final",lessonIndex:null,questions:shuffle(allEntries),index:0,wrong:false,answered:false,firstTry:0,xp:0};setupGame("混音龍王的 31 音試煉","最終任務 · 全部六課");$("studyPanel").innerHTML='<div class="study-intro"><strong>🐉 混音龍王來了！</strong><p>31 個讀音混在一起，仔細看句子和詞語，選出目標字的讀音。答錯可看提示再試，勇者不會被扣分。</p></div><div style="text-align:center;padding:20px"><div style="font-size:4rem">🐲</div><button class="btn gold" id="startFinalBtn" type="button">我準備好了，開始試煉 ➜</button></div>';$("startFinalBtn").addEventListener("click",()=>{$("studyPanel").classList.add("hidden");$("quizPanel").classList.remove("hidden");renderQuestion();});}
+function finishFinal(){const total=session.questions.length,perfect=session.firstTry===total,score=session.xp;progress.xp+=score;progress.finalPerfect=progress.finalPerfect||perfect;saveProgress();$("quizPanel").classList.add("hidden");$("resultPanel").classList.remove("hidden");$("progressFill").style.width="100%";$("resultPanel").innerHTML='<div class="quest-result"><div class="result-icon">'+(perfect?"👑":"🐲")+'</div><div class="eyebrow">混音龍王試煉完成</div><h2>'+(perfect?"你成為多音字王國的聲音勇者！":"龍王被你的努力打動了！")+'</h2><div class="result-score">首次答對 '+session.firstTry+' / '+total+' 題</div><div class="result-score">獲得 '+score+' 顆勇者星星</div><p>'+(perfect?"31 個讀音都一次答對，太厲害了！":"所有題目都完成了；想再練習，可以重返圖鑑或再次挑戰。")+'</p><button class="btn primary" id="finalMapBtn" type="button">回冒險地圖</button></div>';$("finalMapBtn").addEventListener("click",()=>{session=null;show("map");});}
+function openAtlas(){$("atlasContent").innerHTML=lessons.map((l,i)=>'<section class="atlas-section"><h3>第 '+(i+1)+' 課《'+esc(l.title)+'》</h3><div class="atlas-words">'+l.chars.map(g=>'<div class="atlas-word"><strong>'+esc(g.char)+'</strong>　'+g.readings.map(r=>esc(r.sound)+"（"+esc(r.word)+"）").join("／")+'</div>').join("")+'</div></section>').join("");$("atlasOverlay").classList.remove("hidden");$("closeAtlasBtn").focus();}
+function closeAtlas(){$("atlasOverlay").classList.add("hidden");$("atlasBtn").focus();}
+$("beginBtn").addEventListener("click",()=>$("mapGrid").scrollIntoView({behavior:"smooth",block:"start"}));
+$("mapBtn").addEventListener("click",()=>{session=null;show("map");});
+$("finalBtn").addEventListener("click",startFinal);
+$("atlasBtn").addEventListener("click",openAtlas);
+$("closeAtlasBtn").addEventListener("click",closeAtlas);
+$("atlasOverlay").addEventListener("click",e=>{if(e.target===$("atlasOverlay"))closeAtlas();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("atlasOverlay").classList.contains("hidden"))closeAtlas();});
+$("resetBtn").addEventListener("click",()=>{if(confirm("確定要清除這台裝置上的遊戲進度嗎？")){progress=initialProgress();saveProgress();renderMap();}});
+renderMap();
+</script>
+</body>
+</html>

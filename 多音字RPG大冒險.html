@@ -1,0 +1,2365 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>多音獸之島：音字覺醒傳奇 ｜ 國小國語多音字 RPG 冒險</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-dark: #3730a3;
+      --accent: #f59e0b;
+      --accent-glow: #fbbf24;
+      --success: #10b981;
+      --danger: #ef4444;
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+      --card-bg: rgba(30, 41, 59, 0.85);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --font-family: 'PingFang TC', 'Microsoft JhengHei', '微軟正黑體', system-ui, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background: var(--bg-gradient);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* 頂部導航與狀態欄 */
+    header {
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 2px solid var(--card-border);
+      padding: 10px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      font-size: 28px;
+      filter: drop-shadow(0 0 8px var(--accent-glow));
+    }
+
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      background: linear-gradient(45deg, #38bdf8, #a855f7, #fbbf24);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 0.5px;
+    }
+
+    .player-stats {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--card-border);
+    }
+
+    .stat-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .exp-bar-wrap {
+      width: 70px;
+      height: 8px;
+      background: #334155;
+      border-radius: 999px;
+      overflow: hidden;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .exp-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981, #34d399);
+      width: 0%;
+      transition: width 0.3s;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 12px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tab-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .tab-btn.active {
+      color: #fff;
+      background: var(--primary);
+      box-shadow: 0 0 12px rgba(79, 70, 229, 0.5);
+    }
+
+    .audio-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--card-border);
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    /* 容器區 */
+    main {
+      flex: 1;
+      max-width: 1024px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 16px;
+      position: relative;
+    }
+
+    .view-section {
+      display: none;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .view-section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 地圖視圖 */
+    .hero-banner {
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.3), rgba(236, 72, 153, 0.2));
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .hero-text h2 {
+      font-size: 1.4rem;
+      margin-bottom: 6px;
+      color: #fff;
+    }
+
+    .hero-text p {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .stages-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 16px;
+    }
+
+    .stage-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 16px;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .stage-card:hover:not(.locked) {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+      box-shadow: 0 12px 24px -10px rgba(245, 158, 11, 0.3);
+    }
+
+    .stage-card.locked {
+      opacity: 0.55;
+      filter: grayscale(0.6);
+      cursor: not-allowed;
+    }
+
+    .stage-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .stage-icon {
+      font-size: 34px;
+      background: rgba(255, 255, 255, 0.05);
+      width: 56px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+    }
+
+    .stage-stars {
+      color: #facc15;
+      font-size: 1.1rem;
+      letter-spacing: 2px;
+    }
+
+    .stage-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .stage-lesson {
+      font-size: 0.8rem;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+
+    .stage-chars {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .char-pill {
+      background: rgba(255, 255, 255, 0.08);
+      font-size: 0.82rem;
+      padding: 3px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #e2e8f0;
+    }
+
+    .stage-card-btn {
+      margin-top: auto;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 10px;
+      border-radius: 10px;
+      font-weight: 700;
+      text-align: center;
+      font-size: 0.95rem;
+      transition: background 0.2s;
+    }
+
+    .stage-card:hover:not(.locked) .stage-card-btn {
+      background: var(--accent);
+      color: #1e1b4b;
+    }
+
+    /* 戰鬥畫面 View */
+    .battle-container {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(16px);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .battle-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 12px;
+    }
+
+    .stage-progress {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #38bdf8;
+    }
+
+    .battle-stage-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+    }
+
+    .btn-quit {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 4px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    /* 戰鬥擂台 */
+    .battle-arena {
+      min-height: 230px;
+      background: radial-gradient(circle at 50% 60%, rgba(59, 130, 246, 0.15) 0%, rgba(15, 23, 42, 0.4) 70%);
+      border-radius: 16px;
+      border: 1px dashed rgba(255, 255, 255, 0.15);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 16px 20px;
+    }
+
+    .fighter {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      transition: transform 0.2s;
+    }
+
+    .fighter.shake {
+      animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+
+    .fighter.attack {
+      animation: dashAttack 0.35s ease-in-out;
+    }
+
+    @keyframes shake {
+      10%, 90% { transform: translate3d(-3px, 0, 0); }
+      20%, 80% { transform: translate3d(5px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-5px, 0, 0); }
+      40%, 60% { transform: translate3d(5px, 0, 0); }
+    }
+
+    @keyframes dashAttack {
+      0% { transform: translateX(0); }
+      50% { transform: translateX(25px) scale(1.08); }
+      100% { transform: translateX(0); }
+    }
+
+    .fighter-avatar {
+      width: 120px;
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 8px 16px rgba(0,0,0,0.4));
+      position: relative;
+    }
+
+    .fighter-info {
+      width: 150px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--card-border);
+      padding: 6px 10px;
+      border-radius: 10px;
+      margin-top: 8px;
+    }
+
+    .fighter-name-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .hp-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: #334155;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .hp-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
+      width: 100%;
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .boss-tag {
+      background: linear-gradient(45deg, #ef4444, #f97316);
+      color: #fff;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 900;
+    }
+
+    /* 飄字傷害特效 */
+    .dmg-popup {
+      position: absolute;
+      top: 10px;
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #facc15;
+      text-shadow: 0 0 10px #ef4444, 2px 2px 0 #000;
+      pointer-events: none;
+      animation: floatUp 0.8s forwards ease-out;
+    }
+
+    @keyframes floatUp {
+      0% { opacity: 0; transform: translateY(0) scale(0.5); }
+      30% { opacity: 1; transform: translateY(-15px) scale(1.2); }
+      100% { opacity: 0; transform: translateY(-40px) scale(1); }
+    }
+
+    /* 戰鬥題目卡 */
+    .question-card {
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+      border: 2px solid #6366f1;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 8px 20px -6px rgba(99, 102, 241, 0.3);
+      position: relative;
+    }
+
+    .question-prompt {
+      font-size: 1.18rem;
+      line-height: 1.6;
+      font-weight: 600;
+      color: #f1f5f9;
+      margin-bottom: 12px;
+      letter-spacing: 0.5px;
+    }
+
+    .highlight-char {
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.18);
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-weight: 900;
+      text-decoration: underline wavy #38bdf8;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 640px) {
+      .options-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .opt-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #f8fafc;
+      padding: 14px 16px;
+      border-radius: 12px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .opt-btn:hover {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: #818cf8;
+      transform: translateY(-2px);
+    }
+
+    .opt-btn:active {
+      transform: translateY(0);
+    }
+
+    .opt-badge {
+      width: 28px;
+      height: 28px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+
+    .opt-btn.correct {
+      background: rgba(16, 185, 129, 0.3) !important;
+      border-color: #10b981 !important;
+      color: #34d399 !important;
+    }
+
+    .opt-btn.wrong {
+      background: rgba(239, 68, 68, 0.3) !important;
+      border-color: #ef4444 !important;
+      color: #f87171 !important;
+    }
+
+    .battle-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .hint-btn {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fbbf24;
+      padding: 8px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .hint-btn:hover {
+      background: rgba(245, 158, 11, 0.25);
+    }
+
+    /* 提示彈窗 */
+    .hint-box {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fde68a;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      display: none;
+      animation: fadeIn 0.2s;
+      margin-top: 10px;
+    }
+
+    .hint-box.show {
+      display: block;
+    }
+
+    /* 結算彈窗 Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 16px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+      animation: fadeIn 0.3s;
+    }
+
+    .modal-card {
+      background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+      border: 2px solid var(--accent);
+      border-radius: 24px;
+      padding: 28px;
+      max-width: 460px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(245, 158, 11, 0.4);
+    }
+
+    .modal-badge-icon {
+      font-size: 64px;
+      margin-bottom: 12px;
+      filter: drop-shadow(0 0 16px var(--accent-glow));
+    }
+
+    .modal-title {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .modal-stars {
+      color: #facc15;
+      font-size: 2rem;
+      letter-spacing: 6px;
+      margin-bottom: 16px;
+    }
+
+    .modal-desc {
+      color: #cbd5e1;
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .modal-btn {
+      background: linear-gradient(90deg, #f59e0b, #d97706);
+      color: #1e1b4b;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 10px 20px -5px rgba(245, 158, 11, 0.5);
+      transition: transform 0.2s;
+    }
+
+    .modal-btn:hover {
+      transform: scale(1.05);
+    }
+
+    /* 多音字圖鑑 View */
+    .pokedex-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .pokedex-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 18px;
+      transition: all 0.2s;
+    }
+
+    .pokedex-card:hover {
+      border-color: #818cf8;
+      box-shadow: 0 8px 20px -8px rgba(99, 102, 241, 0.3);
+    }
+
+    .poke-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 8px;
+    }
+
+    .poke-char {
+      font-size: 2rem;
+      font-weight: 900;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+    }
+
+    .poke-lesson {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .poke-sound-item {
+      background: rgba(255, 255, 255, 0.04);
+      border-left: 3px solid var(--accent);
+      padding: 8px 12px;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 8px;
+    }
+
+    .poke-sound-title {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #fbbf24;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+
+    .poke-sound-mean {
+      font-size: 0.88rem;
+      color: #cbd5e1;
+      line-height: 1.4;
+    }
+
+    /* 徽章榮譽室 View */
+    .badges-shelf {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+      padding: 20px 0;
+    }
+
+    .badge-item {
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      border-radius: 20px;
+      padding: 24px 16px;
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    .badge-item.unlocked {
+      border-color: #facc15;
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.9), rgba(245, 158, 11, 0.1));
+      box-shadow: 0 10px 25px -8px rgba(245, 158, 11, 0.3);
+    }
+
+    .badge-item.locked {
+      opacity: 0.45;
+      filter: grayscale(1);
+    }
+
+    .badge-big-icon {
+      font-size: 56px;
+      margin-bottom: 12px;
+      display: inline-block;
+      transition: transform 0.3s;
+    }
+
+    .badge-item.unlocked:hover .badge-big-icon {
+      transform: scale(1.15) rotate(5deg);
+    }
+
+    .badge-name {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .badge-sub {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    /* 底部操作與版本 */
+    footer {
+      text-align: center;
+      padding: 16px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--card-border);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .btn-reset {
+      background: transparent;
+      border: 1px solid #475569;
+      color: #94a3b8;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.78rem;
+    }
+
+    .btn-reset:hover {
+      color: #f87171;
+      border-color: #f87171;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 頂部資訊欄 -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">⚡</div>
+      <div class="brand-title">多音獸之島：音字覺醒傳奇</div>
+    </div>
+
+    <div class="player-stats">
+      <div class="stat-badge">
+        <span>🎖️ 等級</span>
+        <span id="player-level" style="color: #38bdf8;">Lv. 1</span>
+      </div>
+      <div class="stat-badge">
+        <span>EXP</span>
+        <div class="exp-bar-wrap">
+          <div class="exp-bar-fill" id="player-exp-bar"></div>
+        </div>
+      </div>
+      <div class="stat-badge">
+        <span>🪙 金幣</span>
+        <span id="player-coins" style="color: #facc15;">0</span>
+      </div>
+    </div>
+
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="switchView('map')">🗺️ 冒險地圖</button>
+      <button class="tab-btn" onclick="switchView('pokedex')">📖 多音寶典</button>
+      <button class="tab-btn" onclick="switchView('badges')">🏆 榮譽徽章</button>
+      <button class="audio-btn" id="audio-toggle" onclick="toggleAudio()" title="音效開關">🔊</button>
+    </div>
+  </header>
+
+  <!-- 主內容容器 -->
+  <main>
+    <!-- 1. 冒險地圖 View -->
+    <section id="view-map" class="view-section active">
+      <div class="hero-banner">
+        <div class="hero-text">
+          <h2>🌟 歡迎來到繁音大陸！</h2>
+          <p>島上的文字精靈因為多音字混淆而失控了！請用正確的讀音與字義魔法擊敗並收服牠們，蒐集 6 大守護徽章！</p>
+        </div>
+      </div>
+      <div class="stages-grid" id="stages-container">
+        <!-- 由 JavaScript 動態生成關卡卡片 -->
+      </div>
+    </section>
+
+    <!-- 2. 戰鬥畫面 View -->
+    <section id="view-battle" class="view-section">
+      <div class="battle-container">
+        <div class="battle-header">
+          <div class="stage-progress" id="battle-progress">第 1 / 3 隻守護獸</div>
+          <div class="battle-stage-title" id="battle-stage-title">時鐘之塔</div>
+          <button class="btn-quit" onclick="quitBattle()">🏃 撤退</button>
+        </div>
+
+        <!-- 戰鬥擂台舞台 -->
+        <div class="battle-arena">
+          <!-- 我方夥伴 -->
+          <div class="fighter" id="player-fighter">
+            <div class="fighter-avatar" id="player-avatar">
+              <!-- SVG 音符洛托姆精靈 -->
+              <svg width="100" height="100" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="38" fill="#f59e0b" filter="drop-shadow(0 0 10px #fbbf24)" />
+                <circle cx="36" cy="42" r="6" fill="#1e1b4b" />
+                <circle cx="64" cy="42" r="6" fill="#1e1b4b" />
+                <circle cx="38" cy="40" r="2" fill="#fff" />
+                <circle cx="66" cy="40" r="2" fill="#fff" />
+                <path d="M42 58 Q50 68 58 58" stroke="#1e1b4b" stroke-width="4" stroke-linecap="round" fill="none" />
+                <path d="M50 12 L50 2" stroke="#f59e0b" stroke-width="6" stroke-linecap="round" />
+                <circle cx="50" cy="2" r="5" fill="#ef4444" />
+                <!-- 音符小翅膀 -->
+                <path d="M12 40 Q2 30 18 25" stroke="#fef08a" stroke-width="4" fill="none" />
+                <path d="M88 40 Q98 30 82 25" stroke="#fef08a" stroke-width="4" fill="none" />
+              </svg>
+            </div>
+            <div class="fighter-info">
+              <div class="fighter-name-row">
+                <span>音符小勇士</span>
+                <span id="player-hp-text" style="color: #10b981;">100%</span>
+              </div>
+              <div class="hp-bar-bg">
+                <div class="hp-bar-fill" id="player-hp-bar" style="width: 100%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 敵方精靈 -->
+          <div class="fighter" id="enemy-fighter">
+            <div id="enemy-dmg" class="dmg-popup" style="display: none;">-1 HP!</div>
+            <div class="fighter-avatar" id="enemy-avatar">
+              <!-- 動態生成敵方精靈 SVG -->
+            </div>
+            <div class="fighter-info">
+              <div class="fighter-name-row">
+                <span id="enemy-name">慢吞吞蝸牛</span>
+                <span id="enemy-tag"></span>
+              </div>
+              <div class="hp-bar-bg">
+                <div class="hp-bar-fill" id="enemy-hp-bar" style="width: 100%;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 戰鬥題目卡片 -->
+        <div class="question-card">
+          <div class="question-prompt" id="question-text">
+            題目載入中...
+          </div>
+          <div class="options-grid" id="options-container">
+            <!-- 動態生成 4 個選項按鈕 -->
+          </div>
+          <div class="battle-footer">
+            <button class="hint-btn" onclick="toggleHint()">
+              <span>💡 洛托姆音波提示</span>
+            </button>
+            <span style="font-size: 0.85rem; color: #94a3b8;">選擇正確音讀發動攻擊！</span>
+          </div>
+          <div class="hint-box" id="hint-box"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 多音字寶典 View -->
+    <section id="view-pokedex" class="view-section">
+      <div class="hero-banner">
+        <div class="hero-text">
+          <h2>📖 三年級多音字大寶典</h2>
+          <p>收錄第 1 至 6 課形音輕鬆學全部 15 組核心多音字。點擊卡片可深入複習讀音、釋義與經典造句！</p>
+        </div>
+      </div>
+      <div class="pokedex-grid" id="pokedex-container">
+        <!-- 動態生成多音字卡 -->
+      </div>
+    </section>
+
+    <!-- 4. 榮譽徽章 View -->
+    <section id="view-badges" class="view-section">
+      <div class="hero-banner">
+        <div class="hero-text">
+          <h2>🏆 守護者榮譽徽章室</h2>
+          <p>擊敗各道館的 BOSS 即可淨化多音精靈並獲得專屬徽章。快來挑戰全三星大滿貫！</p>
+        </div>
+      </div>
+      <div class="badges-shelf" id="badges-container">
+        <!-- 動態生成徽章 -->
+      </div>
+    </section>
+  </main>
+
+  <!-- 通關結算彈窗 Modal -->
+  <div class="modal-overlay" id="victory-modal">
+    <div class="modal-card">
+      <div class="modal-badge-icon" id="modal-icon">🏆</div>
+      <div class="modal-title" id="modal-title">章節通關！</div>
+      <div class="modal-stars" id="modal-stars">⭐⭐⭐</div>
+      <div class="modal-desc" id="modal-desc">太厲害了！你成功淨化了所有多音精靈，並獲得了榮譽徽章！</div>
+      <button class="modal-btn" onclick="closeVictoryModal()">領取獎勵並返回地圖</button>
+    </div>
+  </div>
+
+  <footer>
+    <span>國小三年級國語教材形音輕鬆學 RPG 遊戲化教學系統</span>
+    <button class="btn-reset" onclick="resetGameData()">重置冒險進度</button>
+  </footer>
+
+  <!-- 遊戲核心資料庫與邏輯腳本 -->
+  <script>
+    /* ============================================================
+       1. 遊戲核心題庫與多音字資料庫（嚴格基於 3 上 L01~L06）
+       ============================================================ */
+    const GAME_DATA = [
+      {
+        stageId: "stage01",
+        stageName: "時鐘之塔",
+        lesson: "第 1 課《時間是什麼》",
+        icon: "🕰️",
+        themeColor: "#38bdf8",
+        badgeName: "時之刻度徽章",
+        badgeEmoji: "🕰️",
+        polyChars: ["待", "彈", "樂"],
+        battles: [
+          {
+            enemyName: "時光發條獺",
+            maxHp: 2,
+            isBoss: false,
+            color: "#60a5fa",
+            svg: `<svg width="100" height="100" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="35" fill="#38bdf8" />
+                    <circle cx="38" cy="45" r="5" fill="#0f172a" />
+                    <circle cx="62" cy="45" r="5" fill="#0f172a" />
+                    <ellipse cx="50" cy="58" rx="10" ry="6" fill="#fff" />
+                    <path d="M50 35 L50 20 M42 22 L58 22" stroke="#facc15" stroke-width="4" stroke-linecap="round" />
+                    <circle cx="20" cy="35" r="8" fill="#38bdf8" />
+                    <circle cx="80" cy="35" r="8" fill="#38bdf8" />
+                  </svg>`,
+            questions: [
+              {
+                text: "「外面下著傾盆大雨，媽媽要我乖乖【待】在家裡。」句中『待』字讀音為何？",
+                char: "待",
+                options: [
+                  { text: "ㄉㄞ (停留、逗留)", isCorrect: true },
+                  { text: "ㄉㄞˋ (等候、照顧)", isCorrect: false },
+                  { text: "ㄉㄞˇ (逮捕捉拿)", isCorrect: false },
+                  { text: "ㄉㄚ (回答應允)", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：留在某個地方沒有出門，要讀一聲『ㄉㄞ』喔！",
+                knowledge: "【待】：逗留、停留讀『ㄉㄞ』，如：待在家裡；等候或對待讀『ㄉㄞˋ』，如：等待、招待。"
+              },
+              {
+                text: "「天還沒亮，許多遊客便爬上山頂等【待】看日出。」請問句中的『待』讀作？",
+                char: "待",
+                options: [
+                  { text: "ㄉㄞˋ (等候)", isCorrect: true },
+                  { text: "ㄉㄞ (逗留)", isCorrect: false },
+                  { text: "ㄉㄚˋ (巨大)", isCorrect: false },
+                  { text: "ㄉㄟˇ (必須)", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：等候的意思要讀四聲『ㄉㄞˋ』！",
+                knowledge: "【等待】：等候的意思，讀作『ㄉㄞˋ』。"
+              }
+            ]
+          },
+          {
+            enemyName: "音律旋律蝶",
+            maxHp: 2,
+            isBoss: false,
+            color: "#a855f7",
+            svg: `<svg width="100" height="100" viewBox="0 0 100 100">
+                    <path d="M50 50 Q20 10 10 40 Q5 70 50 60" fill="#c084fc" opacity="0.8" />
+                    <path d="M50 50 Q80 10 90 40 Q95 70 50 60" fill="#c084fc" opacity="0.8" />
+                    <ellipse cx="50" cy="50" rx="6" ry="22" fill="#7e22ce" />
+                    <circle cx="50" cy="30" r="8" fill="#a855f7" />
+                    <path d="M48 24 Q40 10 35 15 M52 24 Q60 10 65 15" stroke="#facc15" stroke-width="2" fill="none" />
+                  </svg>`,
+            questions: [
+              {
+                text: "「我們在小溪邊野餐，聽著流水聲與動聽的音【樂】。」請問此處『樂』讀音為何？",
+                char: "樂",
+                options: [
+                  { text: "ㄩㄝˋ (和諧動人的聲音)", isCorrect: true },
+                  { text: "ㄌㄜˋ (心情開心喜悅)", isCorrect: false },
+                  { text: "ㄧㄠˋ (喜愛愛好)", isCorrect: false },
+                  { text: "ㄌㄨㄛˋ (掉落降下)", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：有節奏的樂器與旋律聲音讀作『ㄩㄝˋ』！",
+                knowledge: "【樂】：和諧聲音讀『ㄩㄝˋ』，如：音樂、樂器；歡樂喜悅讀『ㄌㄜˋ』，如：快樂。"
+              },
+              {
+                text: "「故事裡的王子與公主，永遠過著幸福快【樂】的生活。」請問『樂』讀作什麼？",
+                char: "樂",
+                options: [
+                  { text: "ㄌㄜˋ (開心、喜悅)", isCorrect: true },
+                  { text: "ㄩㄝˋ (音樂樂曲)", isCorrect: false },
+                  { text: "ㄌㄠˋ (烙印)", isCorrect: false },
+                  { text: "ㄖㄜˋ (高溫炎熱)", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：心情很開心高興時讀『ㄌㄜˋ』！",
+                knowledge: "【快樂】：開心喜悅的意思，讀作『ㄌㄜˋ』。"
+              }
+            ]
+          },
+          {
+            enemyName: "慢吞吞巨蝸牛 (館主BOSS)",
+            maxHp: 3,
+            isBoss: true,
+            color: "#f59e0b",
+            svg: `<svg width="100" height="100" viewBox="0 0 100 100">
+                    <ellipse cx="45" cy="65" rx="35" ry="16" fill="#fde047" />
+                    <circle cx="60" cy="45" r="26" fill="#f59e0b" stroke="#b45309" stroke-width="4" />
+                    <path d="M60 45 A 14 14 0 0 0 50 40" stroke="#78350f" stroke-width="3" fill="none" />
+                    <path d="M25 55 Q20 30 18 32 M32 52 Q35 28 38 30" stroke="#ca8a04" stroke-width="3" fill="none" />
+                    <circle cx="18" cy="30" r="3" fill="#0f172a" />
+                    <circle cx="38" cy="28" r="3" fill="#0f172a" />
+                  </svg>`,
+            questions: [
+              {
+                text: "「客廳這套沙發的【彈】簧已經失去【彈】力了。」句中兩個『彈』讀音為何？",
+                char: "彈",
+                options: [
+                  { text: "ㄊㄢˊ，ㄊㄢˊ (緊縮伸展之力)", isCorrect: true },
+                  { text: "ㄉㄢˋ，ㄉㄢˋ (發射小丸)", isCorrect: false },
+                  { text: "ㄊㄢˊ，ㄉㄢˋ", isCorrect: false },
+                  { text: "ㄉㄢˋ，ㄊㄢˊ", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：物體伸展收縮的力道讀『ㄊㄢˊ』；發射的彈珠才讀『ㄉㄢˋ』！",
+                knowledge: "【彈】：彈力、彈性、彈簧皆讀『ㄊㄢˊ』；子彈、彈珠則讀『ㄉㄢˋ』。"
+              },
+              {
+                text: "「下課時，哥哥拿出一盒彩色玻璃【彈】珠跟同學分享。」請問『彈珠』的讀音？",
+                char: "彈",
+                options: [
+                  { text: "ㄉㄢˋ (藉彈力發射之小丸)", isCorrect: true },
+                  { text: "ㄊㄢˊ (演奏、彈性)", isCorrect: false },
+                  { text: "ㄉㄢ (擔負責任)", isCorrect: false },
+                  { text: "ㄉㄤˋ (擺盪晃動)", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：圓滾滾的小丸彈珠讀四聲『ㄉㄢˋ』！",
+                knowledge: "【彈珠】：藉由力量發射之小圓丸，讀作『ㄉㄢˋ』。"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        stageId: "stage02",
+        stageName: "便條森林",
+        lesson: "第 2 課《妙用便利貼》",
+        icon: "📜",
+        themeColor: "#10b981",
+        badgeName: "便利羽毛徽章",
+        badgeEmoji: "🪶",
+        polyChars: ["便"],
+        battles: [
+          {
+            enemyName: "便條紙飛鼠",
+            maxHp: 2,
+            isBoss: false,
+            color: "#34d399",
+            svg: `<svg width="100" height="100" viewBox="0 0 100 100">
+                    <polygon points="50,15 15,80 85,80" fill="#6ee7b7" />
+                    <circle cx="50" cy="40" r="18" fill="#10b981" />
+                    <circle cx="43" cy="38" r="3" fill="#fff" />
+                    <circle cx="57" cy="38" r="3" fill="#fff" />
+                    <ellipse cx="50" cy="48" rx="4" ry="2" fill="#047857" />
+                    <rect x="35" y="60" width="30" height="25" fill="#fef08a" rx="4" transform="rotate(-5 50 70)" />
+                  </svg>`,
+            questions: [
+              {
+                text: "「【便】利貼是辦公室不可少的文具，能讓事情更有條理。」請問『便』讀作？",
+                char: "便",
+                options: [
+                  { text: "ㄅㄧㄢˋ (順利、無阻礙)", isCorrect: true },
+                  { text: "ㄆㄧㄢˊ (物價低廉)", isCorrect: false },
+                  { text: "ㄅㄧㄢ (邊境邊緣)", isCorrect: false },
+                  { text: "ㄆㄧㄢ (片面之詞)", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：順利、好用的意思讀四聲『ㄅㄧㄢˋ』！",
+                knowledge: "【便利】：順利無阻礙、使用輕鬆，讀作『ㄅㄧㄢˋ』。"
+              },
+              {
+                text: "「他把靈感順手寫在【便】條紙上。」請問『便條』的『便』字義為何？",
+                char: "便",
+                options: [
+                  { text: "ㄅㄧㄢˋ (輕鬆簡便的)", isCorrect: true },
+                  { text: "ㄆㄧㄢˊ (價錢便宜的)", isCorrect: false },
+                  { text: "ㄅㄧㄢˇ (扁平平坦的)", isCorrect: false },
+                  { text: "ㄆㄧㄣˊ (頻繁多次的)", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：隨意簡便書寫的小紙條，讀『ㄅㄧㄢˋ』！",
+                knowledge: "【便條】：沒有正式規格、隨意簡便的紙條，讀作『ㄅㄧㄢˋ』。"
+              }
+            ]
+          },
+          {
+            enemyName: "便利金錢豹 (館主BOSS)",
+            maxHp: 3,
+            isBoss: true,
+            color: "#f59e0b",
+            svg: `<svg width="100" height="100" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="36" fill="#fbbf24" stroke="#d97706" stroke-width="3" />
+                    <circle cx="36" cy="42" r="5" fill="#0f172a" />
+                    <circle cx="64" cy="42" r="5" fill="#0f172a" />
+                    <polygon points="46,52 54,52 50,58" fill="#b45309" />
+                    <circle cx="30" cy="62" r="4" fill="#d97706" />
+                    <circle cx="70" cy="62" r="4" fill="#d97706" />
+                    <circle cx="50" cy="28" r="4" fill="#d97706" />
+                    <polygon points="20,20 35,30 20,40" fill="#f59e0b" />
+                    <polygon points="80,20 65,30 80,40" fill="#f59e0b" />
+                  </svg>`,
+            questions: [
+              {
+                text: "「這家文具店正在舉辦週年慶，商品價格非常【便】宜。」請問『便』讀音為何？",
+                char: "便",
+                options: [
+                  { text: "ㄆㄧㄢˊ (物價低廉)", isCorrect: true },
+                  { text: "ㄅㄧㄢˋ (便利順暢)", isCorrect: false },
+                  { text: "ㄆㄧㄣ (拼搏努力)", isCorrect: false },
+                  { text: "ㄅㄧㄢ (寬廣無邊)", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：買東西價格很划算、物價低廉時要讀二聲『ㄆㄧㄢˊ』！",
+                knowledge: "【便宜】：物價低廉讀『ㄆㄧㄢˊ』；其餘方便、便條、順便皆讀『ㄅㄧㄢˋ』。"
+              },
+              {
+                text: "「『便』宜的筆若常斷水，使用起來也不『便』利。」這兩字的讀音順序為？",
+                char: "便",
+                options: [
+                  { text: "ㄆㄧㄢˊ，ㄅㄧㄢˋ", isCorrect: true },
+                  { text: "ㄅㄧㄢˋ，ㄆㄧㄢˊ", isCorrect: false },
+                  { text: "ㄆㄧㄢˊ，ㄆㄧㄢˊ", isCorrect: false },
+                  { text: "ㄅㄧㄢˋ，ㄅㄧㄢˋ", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：前一個是價錢，後一個是使用順暢度！",
+                knowledge: "第一處『便宜』讀『ㄆㄧㄢˊ』；第二處『便利』讀『ㄅㄧㄢˋ』。"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        stageId: "stage03",
+        stageName: "晨曦學院",
+        lesson: "第 3 課《提早五分鐘》",
+        icon: "⏰",
+        themeColor: "#eab308",
+        badgeName: "晨曦明覺徽章",
+        badgeEmoji: "⏰",
+        polyChars: ["覺", "得", "角"],
+        battles: [
+          {
+            enemyName: "瞌睡小靈貓",
+            maxHp: 2,
+            isBoss: false,
+            color: "#fde047",
+            svg: `<svg width="100" height="100" viewBox="0 0 100 100">
+                    <circle cx="50" cy="55" r="32" fill="#fef08a" />
+                    <polygon points="26,30 35,45 20,48" fill="#facc15" />
+                    <polygon points="74,30 65,45 80,48" fill="#facc15" />
+                    <path d="M35 52 Q40 56 45 52 M55 52 Q60 56 65 52" stroke="#713f12" stroke-width="2" fill="none" />
+                    <ellipse cx="50" cy="62" rx="4" ry="2" fill="#ca8a04" />
+                    <text x="68" y="32" font-size="16" fill="#a16207" font-weight="bold">zZ</text>
+                  </svg>`,
+            questions: [
+              {
+                text: "「時候不早了，大家趕快上床睡【覺】吧！」請問『睡覺』的『覺』讀作？",
+                char: "覺",
+                options: [
+                  { text: "ㄐㄧㄠˋ (睡眠進入夢鄉)", isCorrect: true },
+                  { text: "ㄐㄩㄝˊ (感受意識辨識)", isCorrect: false },
+                  { text: "ㄐㄧㄠ (教育指點)", isCorrect: false },
+                  { text: "ㄐㄩㄝ (頑固口角)", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：睡眠、午覺時讀四聲『ㄐㄧㄠˋ』！",
+                knowledge: "【覺】：睡眠讀『ㄐㄧㄠˋ』，如：睡覺、睡午覺；感受到讀『ㄐㄩㄝˊ』，如：發覺、自覺、味覺。"
+              },
+              {
+                text: "「緝毒犬的嗅【覺】非常敏銳，能及時發【覺】異狀。」兩個『覺』讀音為？",
+                char: "覺",
+                options: [
+                  { text: "ㄐㄩㄝˊ，ㄐㄩㄝˊ (感官與感受)", isCorrect: true },
+                  { text: "ㄐㄧㄠˋ，ㄐㄧㄠˋ (睡覺)", isCorrect: false },
+                  { text: "ㄐㄩㄝˊ，ㄐㄧㄠˋ", isCorrect: false },
+                  { text: "ㄐㄧㄠˋ，ㄐㄩㄝˊ", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：感官辨識能力（視覺、味覺）讀作二聲『ㄐㄩㄝˊ』！",
+                knowledge: "【覺】：感官感受與察覺皆讀『ㄐㄩㄝˊ』。"
+              }
+            ]
+          },
+          {
+            enemyName: "得勝報時鳥",
+            maxHp: 2,
+            isBoss: false,
+            color: "#fb923c",
+            svg: `<svg width="100" height="100" viewBox="0 0 100 100">
+                    <circle cx="50" cy="45" r="28" fill="#fdba74" />
+                    <polygon points="50,45 75,50 50,56" fill="#ea580c" />
+                    <circle cx="42" cy="38" r="4" fill="#0f172a" />
+                    <path d="M25 45 Q15 65 35 70" fill="#f97316" />
+                    <circle cx="50" cy="18" r="5" fill="#facc15" />
+                  </svg>`,
+            questions: [
+              {
+                text: "「天色已經變暗了，你【得】趕緊回家才行。」請問『你得回家』的『得』讀作？",
+                char: "得",
+                options: [
+                  { text: "ㄉㄟˇ (應該、必須、需要)", isCorrect: true },
+                  { text: "ㄉㄜˊ (獲取得到)", isCorrect: false },
+                  { text: "˙ㄉㄜ (輕聲助詞)", isCorrect: false },
+                  { text: "ㄉㄞˇ (捉拿逃犯)", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：表示『必須、應當』的意思時，讀三聲『ㄉㄟˇ』！",
+                knowledge: "【得】：應該、必須讀『ㄉㄟˇ』，如：得回家了；獲得讀『ㄉㄜˊ』；跑得快讀輕聲『˙ㄉㄜ』。"
+              },
+              {
+                text: "「弟弟今天在運動會跑步跑【得】特別快。」句中的『得』讀作？",
+                char: "得",
+                options: [
+                  { text: "˙ㄉㄜ (輕聲，表示狀態或結果)", isCorrect: true },
+                  { text: "ㄉㄜˊ (獲取獲得)", isCorrect: false },
+                  { text: "ㄉㄟˇ (必須應當)", isCorrect: false },
+                  { text: "ㄉㄜ (二聲)", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：接在動詞『跑』後面形容跑的狀態，讀輕聲『˙ㄉㄜ』！",
+                knowledge: "【得】：接在動詞、形容詞後面表示結果或性狀，讀輕聲『˙ㄉㄜ』，如：跑得慢、美得冒泡。"
+              }
+            ]
+          },
+          {
+            enemyName: "晨鐘黃金三角龍 (館主BOSS)",
+            maxHp: 3,
+            isBoss: true,
+            color: "#eab308",
+            svg: `<svg width="100" height="100" viewBox="0 0 100 100">
+                    <polygon points="50,15 20,75 80,75" fill="#facc15" stroke="#b45309" stroke-width="4" />
+                    <circle cx="40" cy="50" r="5" fill="#1e1b4b" />
+                    <circle cx="60" cy="50" r="5" fill="#1e1b4b" />
+                    <polygon points="50,25 45,35 55,35" fill="#ea580c" />
+                    <line x1="20" y1="75" x2="30" y2="88" stroke="#ca8a04" stroke-width="6" stroke-linecap="round" />
+                    <line x1="80" y1="75" x2="70" y2="88" stroke="#ca8a04" stroke-width="6" stroke-linecap="round" />
+                  </svg>`,
+            questions: [
+              {
+                text: "「老師要我們拿出三角板，在作業本上畫出直【角】。」請問『角』讀作？",
+                char: "角",
+                options: [
+                  { text: "ㄐㄧㄠˇ (交相形成之夾角)", isCorrect: true },
+                  { text: "ㄐㄩㄝˊ (戲劇文藝角色)", isCorrect: false },
+                  { text: "ㄐㄧㄠ (摔跤翻倒)", isCorrect: false },
+                  { text: "ㄐㄩㄝ (爭論吵嘴)", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：數學幾何夾角、角度讀作三聲『ㄐㄧㄠˇ』！",
+                knowledge: "【角】：幾何夾角、角落讀『ㄐㄧㄠˇ』；戲劇人物或擔負職責讀『ㄐㄩㄝˊ』，如：角色、主角。"
+              },
+              {
+                text: "「這部舞台劇的男主【角】演技逼真，把這個【角】色演得非常傳神。」這兩個『角』讀音為？",
+                char: "角",
+                options: [
+                  { text: "ㄐㄩㄝˊ，ㄐㄩㄝˊ (文藝作品的人物)", isCorrect: true },
+                  { text: "ㄐㄧㄠˇ，ㄐㄧㄠˇ (三角形夾角)", isCorrect: false },
+                  { text: "ㄐㄧㄠˇ，ㄐㄩㄝˊ", isCorrect: false },
+                  { text: "ㄐㄩㄝˊ，ㄐㄧㄠˇ", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：表演中的角色與主角，要讀二聲『ㄐㄩㄝˊ』！",
+                knowledge: "【角色、主角】：文藝表演中的主要人物，讀作『ㄐㄩㄝˊ』。"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        stageId: "stage04",
+        stageName: "沸騰谷地",
+        lesson: "第 4 課《水滾了》",
+        icon: "🍵",
+        themeColor: "#ef4444",
+        badgeName: "沸騰薪火徽章",
+        badgeEmoji: "🔥",
+        polyChars: ["倒"],
+        battles: [
+          {
+            enemyName: "熱水沸沸靈",
+            maxHp: 2,
+            isBoss: false,
+            color: "#f87171",
+            svg: `<svg width="100" height="100" viewBox="0 0 100 100">
+                    <circle cx="50" cy="55" r="30" fill="#f87171" />
+                    <circle cx="40" cy="50" r="4" fill="#fff" />
+                    <circle cx="60" cy="50" r="4" fill="#fff" />
+                    <path d="M44 64 Q50 70 56 64" stroke="#991b1b" stroke-width="3" fill="none" stroke-linecap="round" />
+                    <path d="M38 22 Q42 12 40 5 M50 24 Q54 14 52 7 M62 22 Q66 12 64 5" stroke="#fed7aa" stroke-width="3" stroke-linecap="round" fill="none" />
+                  </svg>`,
+            questions: [
+              {
+                text: "「媽媽煮開水時，將鍋中的沸水舀起，再【倒】回去。」請問『倒水』的『倒』讀作？",
+                char: "倒",
+                options: [
+                  { text: "ㄉㄠˋ (液體或物體傾瀉出來)", isCorrect: true },
+                  { text: "ㄉㄠˇ (摔倒橫躺在地)", isCorrect: false },
+                  { text: "ㄉㄠ (利刃切菜刀)", isCorrect: false },
+                  { text: "ㄉㄠˇ (商店停止營業)", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：把容器裡的水或垃圾傾倒出來，讀四聲『ㄉㄠˋ』！",
+                knowledge: "【倒】：傾瀉倒出、向後退讀『ㄉㄠˋ』，如：倒垃圾、倒車；摔倒、倒塌讀『ㄉㄠˇ』。"
+              },
+              {
+                text: "「司機叔叔技術熟練地把遊覽車往後【倒】進停車格。」請問『倒車』讀音為何？",
+                char: "倒",
+                options: [
+                  { text: "ㄉㄠˋ (向後退、方向相反)", isCorrect: true },
+                  { text: "ㄉㄠˇ (仆下橫躺)", isCorrect: false },
+                  { text: "ㄉㄠ (路途導引)", isCorrect: false },
+                  { text: "ㄉㄠˇ (坍塌破產)", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：向後退或方向相反讀四聲『ㄉㄠˋ』！",
+                knowledge: "【倒車、倒退】：向後退或方向相反，讀作『ㄉㄠˋ』。"
+              }
+            ]
+          },
+          {
+            enemyName: "倒水翻轉火蜥蜴 (館主BOSS)",
+            maxHp: 3,
+            isBoss: true,
+            color: "#dc2626",
+            svg: `<svg width="100" height="100" viewBox="0 0 100 100">
+                    <ellipse cx="50" cy="55" rx="34" ry="24" fill="#ef4444" stroke="#991b1b" stroke-width="4" />
+                    <circle cx="35" cy="45" r="5" fill="#facc15" />
+                    <circle cx="35" cy="45" r="2" fill="#000" />
+                    <circle cx="65" cy="45" r="5" fill="#facc15" />
+                    <circle cx="65" cy="45" r="2" fill="#000" />
+                    <polygon points="50,15 35,35 65,35" fill="#f97316" />
+                    <path d="M20 70 Q10 80 5 70 M80 70 Q90 80 95 70" stroke="#b91c1c" stroke-width="6" stroke-linecap="round" fill="none" />
+                  </svg>`,
+            questions: [
+              {
+                text: "「弟弟奔跑太急不小心跌【倒】，把地上哥哥辛苦搭好的積木城堡弄【倒】了。」這兩字的讀音為？",
+                char: "倒",
+                options: [
+                  { text: "ㄉㄠˇ，ㄉㄠˇ (仆下橫躺、坍塌)", isCorrect: true },
+                  { text: "ㄉㄠˋ，ㄉㄠˋ (傾倒方向相反)", isCorrect: false },
+                  { text: "ㄉㄠˇ，ㄉㄠˋ", isCorrect: false },
+                  { text: "ㄉㄠˋ，ㄉㄠˇ", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：身體摔在地上、物體坍塌傾倒，都讀三聲『ㄉㄠˇ』！",
+                knowledge: "【跌倒、積木弄倒】：仆下摔倒或建築倒塌，讀作三聲『ㄉㄠˇ』。"
+              },
+              {
+                text: "「下列成語或詞語中，哪一個『倒』字讀音為四聲『ㄉㄠˋ』？」",
+                char: "倒",
+                options: [
+                  { text: "排山『倒』海（海水倒灌逆流）", isCorrect: true },
+                  { text: "推『倒』圍牆（坍塌破壞）", isCorrect: false },
+                  { text: "東『倒』西歪（搖晃站不穩）", isCorrect: false },
+                  { text: "公司『倒』閉（停業破產）", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：海水方向反過來翻湧倒灌讀四聲『ㄉㄠˋ』！",
+                knowledge: "排山倒海之『倒』意指水流逆轉或傾瀉，讀作『ㄉㄠˋ』。"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        stageId: "stage05",
+        stageName: "春梨花海",
+        lesson: "第 5 課《為梨花撐傘》",
+        icon: "🌸",
+        themeColor: "#ec4899",
+        badgeName: "梨花守護徽章",
+        badgeEmoji: "🌸",
+        polyChars: ["將", "結", "當", "種"],
+        battles: [
+          {
+            enemyName: "梨樹健步鹿",
+            maxHp: 2,
+            isBoss: false,
+            color: "#f472b6",
+            svg: `<svg width="100" height="100" viewBox="0 0 100 100">
+                    <circle cx="50" cy="55" r="28" fill="#fbcfe8" />
+                    <circle cx="40" cy="50" r="4" fill="#831843" />
+                    <circle cx="60" cy="50" r="4" fill="#831843" />
+                    <ellipse cx="50" cy="62" rx="4" ry="2" fill="#be185d" />
+                    <!-- 樹枝鹿角 -->
+                    <path d="M35 32 L25 15 M28 22 L20 25 M65 32 L75 15 M72 22 L80 25" stroke="#9d174d" stroke-width="3" stroke-linecap="round" />
+                  </svg>`,
+            questions: [
+              {
+                text: "「他是全校知名的游泳健【將】，每天都堅持練習。」請問『健將』的『將』讀作？",
+                char: "將",
+                options: [
+                  { text: "ㄐㄧㄤˋ (傑出超群之人才)", isCorrect: true },
+                  { text: "ㄐㄧㄤ (將要、快要)", isCorrect: false },
+                  { text: "ㄐㄧㄤˇ (獎狀禮品)", isCorrect: false },
+                  { text: "ㄑㄧㄤ (勉強逼迫)", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：指傑出高手、統率軍隊的軍階時讀四聲『ㄐㄧㄤˋ』！",
+                knowledge: "【將】：超群人才或軍官讀『ㄐㄧㄤˋ』，如：健將、大將；快要或拿取讀『ㄐㄧㄤ』，如：將來、將門關好。"
+              },
+              {
+                text: "「出門之前，請記得【將】門窗確實關好。」請問『將門關好』的『將』讀音為何？",
+                char: "將",
+                options: [
+                  { text: "ㄐㄧㄤ (介詞，相當於『把』)", isCorrect: true },
+                  { text: "ㄐㄧㄤˋ (將領軍銜)", isCorrect: false },
+                  { text: "ㄐㄧㄤˇ (稱讚表揚)", isCorrect: false },
+                  { text: "ㄑㄧㄤ (爭搶)", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：意思是『把』的時候讀一聲『ㄐㄧㄤ』！",
+                knowledge: "【將】：作為介詞表示『把』時讀『ㄐㄧㄤ』。"
+              }
+            ]
+          },
+          {
+            enemyName: "結實神苗仙童",
+            maxHp: 2,
+            isBoss: false,
+            color: "#a7f3d0",
+            svg: `<svg width="100" height="100" viewBox="0 0 100 100">
+                    <circle cx="50" cy="60" r="28" fill="#6ee7b7" />
+                    <circle cx="42" cy="55" r="4" fill="#065f46" />
+                    <circle cx="58" cy="55" r="4" fill="#065f46" />
+                    <!-- 頭頂小苗 -->
+                    <path d="M50 32 Q40 18 35 24 Q45 28 50 32" fill="#10b981" />
+                    <path d="M50 32 Q60 18 65 24 Q55 28 50 32" fill="#10b981" />
+                  </svg>`,
+            questions: [
+              {
+                text: "「這棵水梨樹【結】了很多果實，樹枝長得很【結】實。」句中兩字讀音依序為何？",
+                char: "結",
+                options: [
+                  { text: "ㄐㄧㄝ，ㄐㄧㄝ (長出果實、堅固堅實)", isCorrect: true },
+                  { text: "ㄐㄧㄝˊ，ㄐㄧㄝˊ", isCorrect: false },
+                  { text: "ㄐㄧㄝˊ，ㄐㄧㄝ", isCorrect: false },
+                  { text: "ㄐㄧㄝ，ㄐㄧㄝˊ", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：植物長出果實、身體或物品很堅固，皆讀一聲『ㄐㄧㄝ』！",
+                knowledge: "【結】：植物結果、堅固結實讀『ㄐㄧㄝ』；結合、蝴蝶結、結束讀『ㄐㄧㄝˊ』。"
+              },
+              {
+                text: "「農夫在春暖花開時，忙著播【種】以及【種】田。」句中兩字讀音依序為何？",
+                char: "種",
+                options: [
+                  { text: "ㄓㄨㄥˇ (種子)，ㄓㄨㄥˋ (種植作物)", isCorrect: true },
+                  { text: "ㄓㄨㄥˋ，ㄓㄨㄥˇ", isCorrect: false },
+                  { text: "ㄓㄨㄥˋ，ㄓㄨㄥˋ", isCorrect: false },
+                  { text: "ㄓㄨㄥˇ，ㄓㄨㄥˇ", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：名詞『種子』讀三聲；動詞『種田』讀四聲！",
+                knowledge: "【種】：植物種子或類別讀『ㄓㄨㄥˇ』；動手栽種耕作讀『ㄓㄨㄥˋ』。"
+              }
+            ]
+          },
+          {
+            enemyName: "梨花鎮守將軍 (館主BOSS)",
+            maxHp: 3,
+            isBoss: true,
+            color: "#db2777",
+            svg: `<svg width="100" height="100" viewBox="0 0 100 100">
+                    <polygon points="50,15 25,45 75,45" fill="#f43f5e" />
+                    <circle cx="50" cy="60" r="30" fill="#fbcfe8" stroke="#be123c" stroke-width="3" />
+                    <circle cx="40" cy="55" r="4" fill="#000" />
+                    <circle cx="60" cy="55" r="4" fill="#000" />
+                    <path d="M45 68 Q50 74 55 68" stroke="#881337" stroke-width="3" fill="none" />
+                    <line x1="25" y1="20" x2="10" y2="10" stroke="#f43f5e" stroke-width="5" stroke-linecap="round" />
+                    <line x1="75" y1="20" x2="90" y2="10" stroke="#f43f5e" stroke-width="5" stroke-linecap="round" />
+                  </svg>`,
+            questions: [
+              {
+                text: "「妹妹竟然把假消息【當】真，結果真的上【當】了！」這兩個『當』讀音為何？",
+                char: "當",
+                options: [
+                  { text: "ㄉㄤˋ，ㄉㄤˋ (認為視為、遭受圈套)", isCorrect: true },
+                  { text: "ㄉㄤ，ㄉㄤ (正當擔當)", isCorrect: false },
+                  { text: "ㄉㄤˇ，ㄉㄤˇ", isCorrect: false },
+                  { text: "ㄉㄤˋ，ㄉㄤ", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：『當真』與受騙『上當』都讀四聲『ㄉㄤˋ』！",
+                knowledge: "【當】：當作、當真、上當、適當皆讀『ㄉㄤˋ』；擔任、當時、當面讀『ㄉㄤ』。"
+              },
+              {
+                text: "「王老師教學認真，【當】時所有人都推選他【當】班導師。」這兩個『當』讀音為？",
+                char: "當",
+                options: [
+                  { text: "ㄉㄤ，ㄉㄤ (正處某時間點、擔任職位)", isCorrect: true },
+                  { text: "ㄉㄤˋ，ㄉㄤˋ", isCorrect: false },
+                  { text: "ㄉㄤ，ㄉㄤˋ", isCorrect: false },
+                  { text: "ㄉㄤˋ，ㄉㄤ", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：處在某個時間點（當時）與擔任職務，讀一聲『ㄉㄤ』！",
+                knowledge: "【當時、當老師】：處在某時間或擔任職務，讀作『ㄉㄤ』。"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        stageId: "stage06",
+        stageName: "神工密室",
+        lesson: "第 6 課《小鉛筆大學問》",
+        icon: "✏️",
+        themeColor: "#8b5cf6",
+        badgeName: "神工金筆徽章",
+        badgeEmoji: "✏️",
+        polyChars: ["分", "切", "削"],
+        battles: [
+          {
+            enemyName: "筆芯機甲雀",
+            maxHp: 2,
+            isBoss: false,
+            color: "#c084fc",
+            svg: `<svg width="100" height="100" viewBox="0 0 100 100">
+                    <polygon points="50,15 35,45 65,45" fill="#1e1b4b" />
+                    <rect x="42" y="45" width="16" height="35" fill="#facc15" />
+                    <circle cx="46" cy="52" r="2" fill="#000" />
+                    <circle cx="54" cy="52" r="2" fill="#000" />
+                    <path d="M30 55 L15 70 M70 55 L85 70" stroke="#7e22ce" stroke-width="4" stroke-linecap="round" />
+                  </svg>`,
+            questions: [
+              {
+                text: "「一枝鉛筆是由筆芯和木桿兩【部】分組合而成。」請問『部分』的『分』讀作？",
+                char: "分",
+                options: [
+                  { text: "ㄈㄣˋ (整體中的局部)", isCorrect: true },
+                  { text: "ㄈㄣ (考試成績分數)", isCorrect: false },
+                  { text: "ㄈㄣˇ (粉末面霜)", isCorrect: false },
+                  { text: "ㄈㄢ (番薯番茄)", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：整體當中的局部個體，讀四聲『ㄈㄣˋ』！",
+                knowledge: "【分】：部分、身分、本分讀『ㄈㄣˋ』；分數、分開、分離讀『ㄈㄣ』。"
+              },
+              {
+                text: "「期中評量時，小明在國語試卷上獲得了一百分的滿【分】。」請問此處的『分』讀作？",
+                char: "分",
+                options: [
+                  { text: "ㄈㄣ (競賽或考試成績)", isCorrect: true },
+                  { text: "ㄈㄣˋ (職責身分)", isCorrect: false },
+                  { text: "ㄈㄣˇ (粉末)", isCorrect: false },
+                  { text: "ㄈㄥ (秋風吹拂)", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：考試成績的分數讀一聲『ㄈㄣ』！",
+                knowledge: "【分數】：考試或評比成績，讀作『ㄈㄣ』。"
+              }
+            ]
+          },
+          {
+            enemyName: "俐落剪紙雕",
+            maxHp: 2,
+            isBoss: false,
+            color: "#a78bfa",
+            svg: `<svg width="100" height="100" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="30" fill="#ddd6fe" />
+                    <circle cx="40" cy="45" r="4" fill="#4c1d95" />
+                    <circle cx="60" cy="45" r="4" fill="#4c1d95" />
+                    <polygon points="50,48 42,65 58,65" fill="#f59e0b" />
+                    <line x1="20" y1="20" x2="35" y2="40" stroke="#6d28d9" stroke-width="4" />
+                    <line x1="80" y1="20" x2="65" y2="40" stroke="#6d28d9" stroke-width="4" />
+                  </svg>`,
+            questions: [
+              {
+                text: "「大廚拿著菜刀俐落地把新鮮蔬菜【切】成薄片。」請問『切菜』的『切』讀作？",
+                char: "切",
+                options: [
+                  { text: "ㄑㄧㄝ (從中割斷劃開)", isCorrect: true },
+                  { text: "ㄑㄧㄝˋ (咬牙切齒、急迫貼切)", isCorrect: false },
+                  { text: "ㄑㄧㄝˇ (親切和藹)", isCorrect: false },
+                  { text: "ㄑㄧ (七星高照)", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：拿刀把東西割開、切碎讀一聲『ㄑㄧㄝ』！",
+                knowledge: "【切】：用刀割斷、分開讀『ㄑㄧㄝ』，如：切菜、切斷；貼切、急切、切記讀『ㄑㄧㄝˋ』。"
+              },
+              {
+                text: "「老師的講解非常貼【切】，提醒大家一定要【切】記在心。」這兩字讀音為？",
+                char: "切",
+                options: [
+                  { text: "ㄑㄧㄝˋ，ㄑㄧㄝˋ (符合緊密、一定千萬)", isCorrect: true },
+                  { text: "ㄑㄧㄝ，ㄑㄧㄝ", isCorrect: false },
+                  { text: "ㄑㄧㄝ，ㄑㄧㄝˋ", isCorrect: false },
+                  { text: "ㄑㄧㄝˋ，ㄑㄧㄝ", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：貼切（吻合）與切記（務必記得）都讀四聲『ㄑㄧㄝˋ』！",
+                knowledge: "【貼切、切記】：符合或一定務必，讀作『ㄑㄧㄝˋ』。"
+              }
+            ]
+          },
+          {
+            enemyName: "神工金筆刻印魔導 (終極BOSS)",
+            maxHp: 3,
+            isBoss: true,
+            color: "#6d28d9",
+            svg: `<svg width="100" height="100" viewBox="0 0 100 100">
+                    <polygon points="50,5 20,85 80,85" fill="#4c1d95" stroke="#facc15" stroke-width="4" />
+                    <circle cx="50" cy="55" r="16" fill="#facc15" />
+                    <circle cx="45" cy="52" r="3" fill="#1e1b4b" />
+                    <circle cx="55" cy="52" r="3" fill="#1e1b4b" />
+                    <polygon points="50,15 40,35 60,35" fill="#f43f5e" />
+                    <line x1="30" y1="85" x2="20" y2="95" stroke="#facc15" stroke-width="6" stroke-linecap="round" />
+                    <line x1="70" y1="85" x2="80" y2="95" stroke="#facc15" stroke-width="6" stroke-linecap="round" />
+                  </svg>`,
+            questions: [
+              {
+                text: "「家裡這台自動【削】鉛筆機，能快速把鉛筆【削】尖。」請問這兩字讀作？",
+                char: "削",
+                options: [
+                  { text: "ㄒㄧㄠ，ㄒㄧㄠ (用刀颳除皮肉)", isCorrect: true },
+                  { text: "ㄒㄩㄝˋ，ㄒㄩㄝˋ (斜刮、刪減)", isCorrect: false },
+                  { text: "ㄒㄧㄠˋ (嘲笑效法)", isCorrect: false },
+                  { text: "ㄒㄩㄝ (雪花飄落)", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：用刀子削皮、削鉛筆，讀作一聲『ㄒㄧㄠ』！",
+                knowledge: "【削】：用刀颳除讀『ㄒㄧㄠ』，如：削皮、削鉛筆；刪減精簡讀『ㄒㄩㄝˋ』，如：削減、削職。"
+              },
+              {
+                text: "「寫作時，老師建議他【削】減多餘冗長詞語，精簡內容。」請問『削減』讀作？",
+                char: "削",
+                options: [
+                  { text: "ㄒㄩㄝˋ (刪除減省)", isCorrect: true },
+                  { text: "ㄒㄧㄠ (削皮削尖)", isCorrect: false },
+                  { text: "ㄒㄧㄠˇ (幼小細小)", isCorrect: false },
+                  { text: "ㄒㄩㄝ (靴子)", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：減少、刪減的意思時，讀四聲『ㄒㄩㄝˋ』！",
+                knowledge: "【削減】：刪減精簡，讀作『ㄒㄩㄝˋ』。"
+              },
+              {
+                text: "「他因犯錯被【削】職，只能咬牙【切】齒地接受處【分】。」三字讀音依序為？",
+                char: "削切分",
+                options: [
+                  { text: "ㄒㄩㄝˋ，ㄑㄧㄝˋ，ㄈㄣˋ", isCorrect: true },
+                  { text: "ㄒㄧㄠ，ㄑㄧㄝ，ㄈㄣ", isCorrect: false },
+                  { text: "ㄒㄩㄝˋ，ㄑㄧㄝ，ㄈㄣˋ", isCorrect: false },
+                  { text: "ㄒㄧㄠ，ㄑㄧㄝˋ，ㄈㄣ", isCorrect: false }
+                ],
+                hint: "💡 洛托姆提示：削職（刪減）、切齒（咬磨）、處分（本分名位）都是四聲喔！",
+                knowledge: "削職讀『ㄒㄩㄝˋ』、咬牙切齒讀『ㄑㄧㄝˋ』、處分讀『ㄈㄣˋ』。"
+              }
+            ]
+          }
+        ]
+      }
+    ];
+
+    /* 多音字字典（15組）詳細說明資料庫 */
+    const POLY_DICT = [
+      {
+        char: "待",
+        lesson: "第 1 課《時間是什麼》",
+        pronunciations: [
+          { sound: "ㄉㄞ (一聲)", mean: "逗留、停留。如：待在家裡、待著。" },
+          { sound: "ㄉㄞˋ (四聲)", mean: "①等候。如：等待。②對待、照顧。如：待客、招待、優待、待命。" }
+        ]
+      },
+      {
+        char: "彈",
+        lesson: "第 1 課《時間是什麼》",
+        pronunciations: [
+          { sound: "ㄊㄢˊ (二聲)", mean: "①物體緊縮到伸展產生的力量。如：彈性、彈力、彈簧。②演奏。如：彈琴、彈奏。" },
+          { sound: "ㄉㄢˋ (四聲)", mean: "藉彈力發射的小丸。如：彈珠、子彈、飛彈。" }
+        ]
+      },
+      {
+        char: "樂",
+        lesson: "第 1 課《時間是什麼》",
+        pronunciations: [
+          { sound: "ㄌㄜˋ (四聲)", mean: "①開心、喜悅。如：快樂、歡樂。②喜愛。如：樂於助人。" },
+          { sound: "ㄩㄝˋ (四聲)", mean: "有節奏而和諧動人的聲音。如：音樂、樂曲、樂器。" }
+        ]
+      },
+      {
+        char: "便",
+        lesson: "第 2 課《妙用便利貼》",
+        pronunciations: [
+          { sound: "ㄅㄧㄢˋ (四聲)", mean: "①順利、無阻礙。如：方便、便利。②輕鬆、簡單。如：便條紙。③適當時機。如：順便、搭便車。" },
+          { sound: "ㄆㄧㄢˊ (二聲)", mean: "物價低廉。如：便宜、大便宜。" }
+        ]
+      },
+      {
+        char: "覺",
+        lesson: "第 3 課《提早五分鐘》",
+        pronunciations: [
+          { sound: "ㄐㄧㄠˋ (四聲)", mean: "睡眠。如：睡覺、睡午覺。" },
+          { sound: "ㄐㄩㄝˊ (二聲)", mean: "①感受到、意識到。如：發覺、警覺。②感官辨識反應。如：味覺、視覺。③先知賢者。如：先覺。" }
+        ]
+      },
+      {
+        char: "得",
+        lesson: "第 3 課《提早五分鐘》",
+        pronunciations: [
+          { sound: "ㄉㄟˇ (三聲)", mean: "應該、必須、需要。如：你得回家了、得提早出門。" },
+          { sound: "ㄉㄜˊ (二聲)", mean: "①獲取。如：獲得、得獎。②適切。如：得體。③滿足。如：得意、自得。④可以。如：得過且過。" },
+          { sound: "˙ㄉㄜ (輕聲)", mean: "用在動詞、形容詞後表示結果或性狀。如：跑得慢、美得冒泡。" }
+        ]
+      },
+      {
+        char: "角",
+        lesson: "第 3 課《提早五分鐘》",
+        pronunciations: [
+          { sound: "ㄐㄧㄠˇ (三聲)", mean: "①夾角、角度。如：直角、三角板。②凸出部位。如：牛角、角落。" },
+          { sound: "ㄐㄩㄝˊ (二聲)", mean: "①文藝作品表演主要人物。如：主角、配角。②職責角色。如：人生角色。" }
+        ]
+      },
+      {
+        char: "倒",
+        lesson: "第 4 課《水滾了》",
+        pronunciations: [
+          { sound: "ㄉㄠˋ (四聲)", mean: "①向後退。如：倒車、倒退。②傾倒出來。如：倒垃圾、倒水。③方向相反。如：倒掛、海水倒灌。" },
+          { sound: "ㄉㄠˇ (三聲)", mean: "①仆下、橫躺。如：跌倒、摔倒。②坍塌。如：積木弄倒。③停業。如：倒閉。" }
+        ]
+      },
+      {
+        char: "將",
+        lesson: "第 5 課《為梨花撐傘》",
+        pronunciations: [
+          { sound: "ㄐㄧㄤˋ (四聲)", mean: "①統率士兵的人。如：將領。②高級軍階。如：上將。③傑出人才。如：游泳健將。" },
+          { sound: "ㄐㄧㄤ (一聲)", mean: "①快要接近。如：將近。②就會。如：將引起注意。③把（介詞）。如：將門關好。" }
+        ]
+      },
+      {
+        char: "結",
+        lesson: "第 5 課《為梨花撐傘》",
+        pronunciations: [
+          { sound: "ㄐㄧㄝˊ (二聲)", mean: "①終了收束。如：結局、結帳。②聯合關係。如：結婚。③繩紐。如：蝴蝶結。④凝聚。如：結冰、凝結。" },
+          { sound: "ㄐㄧㄝ (一聲)", mean: "①長出果實。如：結出甜美果實。②堅固。如：結實。" }
+        ]
+      },
+      {
+        char: "當",
+        lesson: "第 5 課《為梨花撐傘》",
+        pronunciations: [
+          { sound: "ㄉㄤˋ (四聲)", mean: "①認為視為。如：當真、當作。②合宜。如：恰當、適當。③圈套。如：上當、勾當。" },
+          { sound: "ㄉㄤ (一聲)", mean: "①時間位置某點。如：當時。②主管。如：當家。③對著。如：當面。④擔任。如：當老師。" }
+        ]
+      },
+      {
+        char: "種",
+        lesson: "第 5 課《為梨花撐傘》",
+        pronunciations: [
+          { sound: "ㄓㄨㄥˋ (四聲)", mean: "①種植作物。如：種田、種花。②注入疫苗。如：接種疫苗。" },
+          { sound: "ㄓㄨㄥˇ (三聲)", mean: "①植物種子。如：播種、菜種。②類別。如：種類、兩種人。" }
+        ]
+      },
+      {
+        char: "分",
+        lesson: "第 6 課《小鉛筆大學問》",
+        pronunciations: [
+          { sound: "ㄈㄣˋ (四聲)", mean: "①全體中的局部。如：部分。②名位職責權利。如：身分、本分、名分。" },
+          { sound: "ㄈㄣ (一聲)", mean: "競賽考試成績或切開。如：分數、滿分、分開、分離。" }
+        ]
+      },
+      {
+        char: "切",
+        lesson: "第 6 課《小鉛筆大學問》",
+        pronunciations: [
+          { sound: "ㄑㄧㄝ (一聲)", mean: "從中割斷、劃分。如：切菜、切斷、切割。" },
+          { sound: "ㄑㄧㄝˋ (四聲)", mean: "①咬磨。如：咬牙切齒。②符合。如：貼切、密切。③急迫。如：急切。④千萬務必。如：切記。" }
+        ]
+      },
+      {
+        char: "削",
+        lesson: "第 6 課《小鉛筆大學問》",
+        pronunciations: [
+          { sound: "ㄒㄧㄠ (一聲)", mean: "用刀颳除。如：削皮、削鉛筆。" },
+          { sound: "ㄒㄩㄝˋ (四聲)", mean: "①用刀斜刮。如：削髮。②刪除減省。如：削減、削職、削足適履。" }
+        ]
+      }
+    ];
+
+    /* ============================================================
+       2. Web Audio API 音效合成引擎（無外部相依，離線可用）
+       ============================================================ */
+    class RetroAudioEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+
+      initCtx() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playClick() {
+        if (!this.enabled) return;
+        this.initCtx();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(440, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.05);
+        gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.06);
+      }
+
+      playHit() {
+        if (!this.enabled) return;
+        this.initCtx();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.16);
+      }
+
+      playCorrect() {
+        if (!this.enabled) return;
+        this.initCtx();
+        const now = this.ctx.currentTime;
+        [523.25, 659.25, 783.99].forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+          gain.gain.setValueAtTime(0.2, now + idx * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.08 + 0.12);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + idx * 0.08);
+          osc.stop(now + idx * 0.08 + 0.13);
+        });
+      }
+
+      playWrong() {
+        if (!this.enabled) return;
+        this.initCtx();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(200, this.ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(110, this.ctx.currentTime + 0.25);
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.26);
+      }
+
+      playFanfare() {
+        if (!this.enabled) return;
+        this.initCtx();
+        const now = this.ctx.currentTime;
+        const notes = [
+          { f: 523.25, d: 0.1 },
+          { f: 659.25, d: 0.1 },
+          { f: 783.99, d: 0.1 },
+          { f: 1046.50, d: 0.35 }
+        ];
+        let delay = 0;
+        notes.forEach(n => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(n.f, now + delay);
+          gain.gain.setValueAtTime(0.25, now + delay);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + delay + n.d);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + delay);
+          osc.stop(now + delay + n.d + 0.02);
+          delay += n.d;
+        });
+      }
+    }
+
+    const sound = new RetroAudioEngine();
+
+    function toggleAudio() {
+      sound.enabled = !sound.enabled;
+      document.getElementById('audio-toggle').innerText = sound.enabled ? '🔊' : '🔇';
+      if (sound.enabled) sound.playClick();
+    }
+
+    /* ============================================================
+       3. 玩家進度與遊戲狀態機
+       ============================================================ */
+    const STORAGE_KEY = 'POLYPHONE_RPG_SAVE_V1';
+
+    let userState = {
+      level: 1,
+      exp: 0,
+      coins: 0,
+      completedStages: {}, // { stage01: 3, stage02: 2 } (紀錄星數)
+      unlockedBadges: []
+    };
+
+    function loadSave() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          userState = JSON.parse(saved);
+        }
+      } catch (e) {
+        console.error("載入存檔失敗", e);
+      }
+      updateTopBar();
+    }
+
+    function saveGame() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(userState));
+      } catch (e) {
+        console.error("儲存失敗", e);
+      }
+      updateTopBar();
+    }
+
+    function resetGameData() {
+      if (confirm("確定要重置所有冒險紀錄與徽章嗎？")) {
+        localStorage.removeItem(STORAGE_KEY);
+        userState = {
+          level: 1,
+          exp: 0,
+          coins: 0,
+          completedStages: {},
+          unlockedBadges: []
+        };
+        updateTopBar();
+        renderMap();
+        renderBadges();
+        alert("已重置冒險進度，請重新啟程！");
+      }
+    }
+
+    function updateTopBar() {
+      document.getElementById('player-level').innerText = `Lv. ${userState.level}`;
+      document.getElementById('player-coins').innerText = userState.coins;
+      const expNeeded = userState.level * 100;
+      const pct = Math.min(100, Math.round((userState.exp / expNeeded) * 100));
+      document.getElementById('player-exp-bar').style.width = `${pct}%`;
+    }
+
+    function addExpAndCoins(expGain, coinGain) {
+      userState.exp += expGain;
+      userState.coins += coinGain;
+      const expNeeded = userState.level * 100;
+      if (userState.exp >= expNeeded) {
+        userState.level += 1;
+        userState.exp -= expNeeded;
+        sound.playFanfare();
+      }
+      saveGame();
+    }
+
+    /* ============================================================
+       4. 介面導航（切換 View）
+       ============================================================ */
+    function switchView(viewName) {
+      sound.playClick();
+      document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+      const target = document.getElementById(`view-${viewName}`);
+      if (target) target.classList.add('active');
+
+      const tabs = {
+        map: 0,
+        pokedex: 1,
+        badges: 2
+      };
+      if (tabs[viewName] !== undefined) {
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        if (tabBtns[tabs[viewName]]) tabBtns[tabs[viewName]].classList.add('active');
+      }
+
+      if (viewName === 'map') renderMap();
+      if (viewName === 'pokedex') renderPokedex();
+      if (viewName === 'badges') renderBadges();
+    }
+
+    /* ============================================================
+       5. 冒險地圖渲染
+       ============================================================ */
+    function renderMap() {
+      const container = document.getElementById('stages-container');
+      container.innerHTML = '';
+
+      GAME_DATA.forEach((stage, idx) => {
+        // 第一關預設解鎖，其餘關卡需上一關至少有 1 顆星
+        const prevStageId = idx > 0 ? GAME_DATA[idx - 1].stageId : null;
+        const isUnlocked = idx === 0 || (prevStageId && (userState.completedStages[prevStageId] || 0) > 0);
+        const starsCount = userState.completedStages[stage.stageId] || 0;
+        let starStr = '';
+        for (let i = 0; i < 3; i++) {
+          starStr += i < starsCount ? '⭐' : '☆';
+        }
+
+        const card = document.createElement('div');
+        card.className = `stage-card ${isUnlocked ? '' : 'locked'}`;
+        card.onclick = () => {
+          if (isUnlocked) startStage(stage.stageId);
+        };
+
+        card.innerHTML = `
+          <div class="stage-header">
+            <div class="stage-icon">${stage.icon}</div>
+            <div class="stage-stars">${isUnlocked ? starStr : '🔒 未解鎖'}</div>
+          </div>
+          <div>
+            <div class="stage-lesson">${stage.lesson}</div>
+            <div class="stage-title">${stage.stageName}</div>
+          </div>
+          <div class="stage-chars">
+            ${stage.polyChars.map(c => `<span class="char-pill">多音字【${c}】</span>`).join('')}
+          </div>
+          <button class="stage-card-btn">${isUnlocked ? (starsCount > 0 ? '再次挑戰 ⚔️' : '進入關卡 ⚔️') : '尚未解鎖'}</button>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    /* ============================================================
+       6. 戰鬥系統（Battle Engine）
+       ============================================================ */
+    let currentStage = null;
+    let battleIndex = 0;
+    let currentBattle = null;
+    let currentQuestion = null;
+    let enemyCurrentHp = 0;
+    let playerCurrentHp = 3; // 每次關卡 3 點血量
+    let stageMistakes = 0;
+
+    function startStage(stageId) {
+      sound.playClick();
+      currentStage = GAME_DATA.find(s => s.stageId === stageId);
+      battleIndex = 0;
+      stageMistakes = 0;
+      playerCurrentHp = 3;
+
+      document.getElementById('battle-stage-title').innerText = `${currentStage.icon} ${currentStage.stageName}`;
+      updatePlayerHpUI();
+
+      switchView('battle');
+      loadBattle(battleIndex);
+    }
+
+    function loadBattle(idx) {
+      currentBattle = currentStage.battles[idx];
+      enemyCurrentHp = currentBattle.maxHp;
+
+      document.getElementById('battle-progress').innerText = `第 ${idx + 1} / ${currentStage.battles.length} 隻守護獸`;
+      document.getElementById('enemy-name').innerText = currentBattle.enemyName;
+      document.getElementById('enemy-tag').innerHTML = currentBattle.isBoss ? '<span class="boss-tag">館主BOSS</span>' : '';
+      document.getElementById('enemy-avatar').innerHTML = currentBattle.svg;
+      updateEnemyHpUI();
+
+      // 從該怪物的題庫中隨機選一題
+      const qPool = currentBattle.questions;
+      currentQuestion = qPool[Math.floor(Math.random() * qPool.length)];
+      renderQuestion(currentQuestion);
+    }
+
+    function renderQuestion(q) {
+      document.getElementById('hint-box').classList.remove('show');
+      document.getElementById('hint-box').innerText = q.hint;
+
+      // 替換多音字為醒目標示
+      const promptEl = document.getElementById('question-text');
+      const highlightedText = q.text.replace(/【(.*?)】/g, '<span class="highlight-char">【$1】</span>');
+      promptEl.innerHTML = highlightedText;
+
+      const optsContainer = document.getElementById('options-container');
+      optsContainer.innerHTML = '';
+
+      const letters = ['A', 'B', 'C', 'D'];
+      q.options.forEach((opt, oIdx) => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.innerHTML = `<div class="opt-badge">${letters[oIdx]}</div><span>${opt.text}</span>`;
+        btn.onclick = () => selectOption(btn, opt);
+        optsContainer.appendChild(btn);
+      });
+    }
+
+    function toggleHint() {
+      sound.playClick();
+      const hintBox = document.getElementById('hint-box');
+      hintBox.classList.toggle('show');
+    }
+
+    function selectOption(btn, opt) {
+      // 禁用所有按鈕防止重複點擊
+      const allBtns = document.querySelectorAll('.opt-btn');
+      allBtns.forEach(b => b.disabled = true);
+
+      if (opt.isCorrect) {
+        btn.classList.add('correct');
+        sound.playCorrect();
+        // 攻擊動畫
+        triggerAttackAnimation();
+      } else {
+        btn.classList.add('wrong');
+        sound.playWrong();
+        stageMistakes++;
+        playerCurrentHp = Math.max(1, playerCurrentHp - 1); // 答錯扣我方血量但至少保底 1
+        updatePlayerHpUI();
+
+        // 抖動提示
+        const pf = document.getElementById('player-fighter');
+        pf.classList.add('shake');
+        setTimeout(() => pf.classList.remove('shake'), 400);
+
+        // 展開提示與解析
+        document.getElementById('hint-box').classList.add('show');
+
+        // 標出正確選項
+        allBtns.forEach((b, idx) => {
+          if (currentQuestion.options[idx].isCorrect) {
+            b.classList.add('correct');
+          }
+        });
+
+        setTimeout(() => {
+          allBtns.forEach(b => b.disabled = false);
+        }, 1200);
+      }
+    }
+
+    function triggerAttackAnimation() {
+      const pf = document.getElementById('player-fighter');
+      const ef = document.getElementById('enemy-fighter');
+      const dmg = document.getElementById('enemy-dmg');
+
+      pf.classList.add('attack');
+      setTimeout(() => {
+        pf.classList.remove('attack');
+        sound.playHit();
+        ef.classList.add('shake');
+        dmg.style.display = 'block';
+
+        enemyCurrentHp -= 1;
+        updateEnemyHpUI();
+
+        setTimeout(() => {
+          ef.classList.remove('shake');
+          dmg.style.display = 'none';
+
+          if (enemyCurrentHp <= 0) {
+            // 該隻怪擊敗
+            battleIndex++;
+            if (battleIndex >= currentStage.battles.length) {
+              // 通關
+              finishStage();
+            } else {
+              loadBattle(battleIndex);
+            }
+          } else {
+            // 尚未擊敗，換另一題
+            const qPool = currentBattle.questions;
+            currentQuestion = qPool[Math.floor(Math.random() * qPool.length)];
+            renderQuestion(currentQuestion);
+          }
+        }, 600);
+      }, 250);
+    }
+
+    function updateEnemyHpUI() {
+      const pct = Math.max(0, Math.round((enemyCurrentHp / currentBattle.maxHp) * 100));
+      document.getElementById('enemy-hp-bar').style.width = `${pct}%`;
+    }
+
+    function updatePlayerHpUI() {
+      const pct = Math.round((playerCurrentHp / 3) * 100);
+      document.getElementById('player-hp-bar').style.width = `${pct}%`;
+      document.getElementById('player-hp-text').innerText = `${pct}%`;
+    }
+
+    function quitBattle() {
+      if (confirm("確定要撤退返回地圖嗎？")) {
+        sound.playClick();
+        switchView('map');
+      }
+    }
+
+    function finishStage() {
+      sound.playFanfare();
+
+      // 計算星級 (全對 3星, 錯1~2次 2星, 錯3次以上 1星)
+      let stars = 3;
+      if (stageMistakes >= 3) stars = 1;
+      else if (stageMistakes >= 1) stars = 2;
+
+      // 保存星數
+      const prevStars = userState.completedStages[currentStage.stageId] || 0;
+      if (stars > prevStars) {
+        userState.completedStages[currentStage.stageId] = stars;
+      }
+
+      // 解鎖徽章
+      if (!userState.unlockedBadges.includes(currentStage.stageId)) {
+        userState.unlockedBadges.push(currentStage.stageId);
+      }
+
+      addExpAndCoins(stars * 40, stars * 15);
+
+      // 彈窗通知
+      document.getElementById('modal-icon').innerText = currentStage.badgeEmoji;
+      document.getElementById('modal-title').innerText = `【${currentStage.stageName}】通關大勝利！`;
+      let starIcons = '';
+      for (let i = 0; i < stars; i++) starIcons += '⭐';
+      document.getElementById('modal-stars').innerText = starIcons;
+      document.getElementById('modal-desc').innerText = `獲得【${currentStage.badgeName}】！成功學會了多音字『${currentStage.polyChars.join('、')}』的正確讀音與詞語運用！`;
+
+      document.getElementById('victory-modal').classList.add('active');
+    }
+
+    function closeVictoryModal() {
+      sound.playClick();
+      document.getElementById('victory-modal').classList.remove('active');
+      switchView('map');
+    }
+
+    /* ============================================================
+       7. 多音字寶典渲染
+       ============================================================ */
+    function renderPokedex() {
+      const container = document.getElementById('pokedex-container');
+      container.innerHTML = '';
+
+      POLY_DICT.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'pokedex-card';
+        card.innerHTML = `
+          <div class="poke-header">
+            <div class="poke-char">${item.char}</div>
+            <div class="poke-lesson">${item.lesson}</div>
+          </div>
+          <div>
+            ${item.pronunciations.map(p => `
+              <div class="poke-sound-item">
+                <div class="poke-sound-title">🎵 ${p.sound}</div>
+                <div class="poke-sound-mean">${p.mean}</div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    /* ============================================================
+       8. 榮譽徽章室渲染
+       ============================================================ */
+    function renderBadges() {
+      const container = document.getElementById('badges-container');
+      container.innerHTML = '';
+
+      GAME_DATA.forEach(stage => {
+        const isUnlocked = userState.unlockedBadges.includes(stage.stageId);
+        const item = document.createElement('div');
+        item.className = `badge-item ${isUnlocked ? 'unlocked' : 'locked'}`;
+
+        item.innerHTML = `
+          <div class="badge-big-icon">${stage.badgeEmoji}</div>
+          <div class="badge-name">${stage.badgeName}</div>
+          <div class="badge-sub">${isUnlocked ? '已獲得（' + stage.stageName + '）' : '未解鎖（挑戰館主獲得）'}</div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    /* ============================================================
+       9. 初始啟動
+       ============================================================ */
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSave();
+      renderMap();
+    });
+  </script>
+</body>
+</html>

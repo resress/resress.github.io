@@ -148,7 +148,7 @@
           <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-semibold tracking-wide uppercase">
             <span>✨ 智慧教室必備</span>
             <span class="w-1.5 h-1.5 rounded-full bg-amber-300 animate-pulse"></span>
-            <span>12 款高互動教學與闖關遊戲</span>
+            <span>15 款高互動教學與闖關遊戲</span>
           </div>
           <h2 class="text-2xl sm:text-3xl font-black tracking-tight text-white">
             打造身歷其境的課堂互動與自主學習
@@ -161,7 +161,7 @@
         <!-- 快速統計卡 -->
         <div class="grid grid-cols-2 gap-3 w-full md:w-auto shrink-0">
           <div class="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-3.5 text-center">
-            <div class="text-2xl font-black text-amber-300" id="totalToolsCount">12</div>
+            <div class="text-2xl font-black text-amber-300" id="totalToolsCount">15</div>
             <div class="text-xs font-medium text-emerald-100">精選工具總數</div>
           </div>
           <div class="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-3.5 text-center">
@@ -180,7 +180,7 @@
         <button onclick="setCategory('all')" data-cat="all" class="cat-btn px-4 py-2 rounded-xl bg-emerald-600 text-white shadow-sm font-bold transition flex items-center space-x-1.5 shrink-0">
           <i class="fa-solid fa-shapes"></i>
           <span>全部項目</span>
-          <span class="ml-1 text-xs px-1.5 py-0.5 rounded-full bg-white/20" id="badge-all">12</span>
+          <span class="ml-1 text-xs px-1.5 py-0.5 rounded-full bg-white/20" id="badge-all">15</span>
         </button>
         <button onclick="setCategory('games')" data-cat="games" class="cat-btn px-4 py-2 rounded-xl bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition flex items-center space-x-1.5 shrink-0">
           <i class="fa-solid fa-gamepad text-amber-500"></i>
@@ -555,6 +555,45 @@
     // 官方初始預設工具清單
     const initialDefaultTools = [
       {
+        id: "zhuyin-hero",
+        title: "注音勇者：多音字王國",
+        subtitle: "收集聲音拯救多音字王國 · 冒險地圖",
+        file: "polyphone_voice_rpg.html",
+        category: "games",
+        icon: "fa-microphone-lines",
+        gradient: "from-cyan-500 to-blue-600",
+        shadow: "shadow-cyan-500/20",
+        desc: "化身注音勇者探索多音字王國！透過辨別易混淆多音字讀音收集聲音碎片、解鎖冒險地圖與完整多音字圖鑑！",
+        tags: ["注音勇者", "多音字破音字", "聲音冒險", "地圖闖關", "圖鑑收集"],
+        badge: "熱門冒險 🎙️"
+      },
+      {
+        id: "idiom-card-island",
+        title: "成語島探險隊",
+        subtitle: "情境配牌卡牌冒險 · 收集 34 則成語寶石",
+        file: "idiom_card_island.html",
+        category: "games",
+        icon: "fa-map-location-dot",
+        gradient: "from-emerald-500 via-teal-500 to-cyan-600",
+        shadow: "shadow-teal-500/20",
+        desc: "超好玩的成語卡牌情境對抗遊戲！走遍六座小島進行情境配牌挑戰，具備抽牌挑戰、錯題重練與成語寶藏庫！",
+        tags: ["成語卡牌", "島嶼探險", "情境配對", "寶石收集", "寓教於樂"],
+        badge: "卡牌對戰 🎴"
+      },
+      {
+        id: "idiom-secret-agent",
+        title: "成語特務大冒險",
+        subtitle: "三年級核心 34 則成語 · 特務闖關推理",
+        file: "idiom_secret_agent.html",
+        category: "games",
+        icon: "fa-user-secret",
+        gradient: "from-amber-500 via-orange-600 to-rose-600",
+        shadow: "shadow-orange-500/20",
+        desc: "化身神秘成語特務執行機密任務！收錄國小三年級核心 34 則高頻成語，透過情境問答與特務晉級解鎖最高榮譽！",
+        tags: ["成語特務", "三年級成語", "情境推理", "特務挑戰", "成語圖鑑"],
+        badge: "特務出擊 🕵️"
+      },
+      {
         id: "polyphone-rpg",
         title: "多音獸之島：音字覺醒傳奇",
         subtitle: "國小國語多音字 RPG 回合制冒險戰鬥",
@@ -736,10 +775,10 @@
     };
 
     // 從 LocalStorage 載入工具資料 (若無則使用官方預設)
-    let toolsData = JSON.parse(localStorage.getItem('classroom_hub_tools_v2') || 'null');
+    let toolsData = JSON.parse(localStorage.getItem('classroom_hub_tools_v3') || 'null');
     if (!toolsData || !Array.isArray(toolsData) || toolsData.length === 0) {
       toolsData = JSON.parse(JSON.stringify(initialDefaultTools));
-      localStorage.setItem('classroom_hub_tools_v2', JSON.stringify(toolsData));
+      localStorage.setItem('classroom_hub_tools_v3', JSON.stringify(toolsData));
     }
 
     // 當前狀態管理
@@ -1211,7 +1250,7 @@
 
     // 儲存至 LocalStorage
     function saveToolsToStorage() {
-      localStorage.setItem('classroom_hub_tools_v2', JSON.stringify(toolsData));
+      localStorage.setItem('classroom_hub_tools_v3', JSON.stringify(toolsData));
     }
 
     // 還原為預設項目
