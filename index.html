@@ -101,13 +101,13 @@
         </div>
 
         <!-- ➕ 新增軟體按鈕 -->
-        <button onclick="openToolModal()" class="p-2 sm:px-3.5 sm:py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-sm font-bold shadow-md shadow-emerald-500/20 transition flex items-center space-x-1.5" title="新增自訂教學軟體或外部網站">
+        <button onclick="safeOpenToolModal()" class="p-2 sm:px-3.5 sm:py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-sm font-bold shadow-md shadow-emerald-500/20 transition flex items-center space-x-1.5" title="新增自訂教學軟體或外部網站">
           <i class="fa-solid fa-plus text-base"></i>
           <span class="hidden sm:inline">新增軟體</span>
         </button>
 
         <!-- ⚙️ 管理模式切換 -->
-        <button onclick="toggleManageMode()" id="manageModeBtn" class="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm font-medium transition flex items-center space-x-1.5" title="開啟編輯與刪除管理模式">
+        <button onclick="safeToggleManageMode()" id="manageModeBtn" class="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm font-medium transition flex items-center space-x-1.5" title="開啟編輯與刪除管理模式">
           <i class="fa-solid fa-sliders text-base"></i>
           <span class="hidden sm:inline" id="manageModeText">管理項目</span>
         </button>
@@ -231,6 +231,14 @@
             <i class="fa-solid fa-rotate-left"></i>
             <span class="hidden md:inline">還原預設</span>
           </button>
+          <button onclick="openChangePwdModal()" class="px-2.5 py-2 rounded-xl bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-200 font-bold flex items-center space-x-1" title="變更管理密碼">
+            <i class="fa-solid fa-key"></i>
+            <span class="hidden md:inline">改密碼</span>
+          </button>
+          <button onclick="lockAdminMode()" class="px-2.5 py-2 rounded-xl bg-slate-800 text-amber-400 hover:bg-slate-900 font-bold flex items-center space-x-1" title="立刻鎖定並退出管理">
+            <i class="fa-solid fa-lock"></i>
+            <span class="hidden md:inline">鎖定退出</span>
+          </button>
         </div>
 
         <!-- 關鍵字搜尋框 -->
@@ -334,6 +342,83 @@
         <p class="text-sm">正在載入工具模組...</p>
       </div>
       <iframe id="appIframe" src="" class="w-full h-full border-0" allow="fullscreen; autoplay; clipboard-write; microphone" onload="onIframeLoaded()"></iframe>
+    </div>
+  </div>
+
+  <!-- 🔒 教師管理密碼認證彈窗 Modal -->
+  <div id="passwordModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-4 animate-scale-up">
+      
+      <div class="flex items-center space-x-3 pb-3 border-b border-slate-100 dark:border-slate-700">
+        <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center text-lg">
+          <i class="fa-solid fa-lock"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-900 dark:text-white">教師管理認證</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">請輸入管理密碼以繼續操作</p>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <div class="relative">
+          <input 
+            type="password" 
+            id="adminPasswordInput" 
+            placeholder="請輸入密碼..." 
+            class="w-full pl-3.5 pr-10 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500 font-mono tracking-wider"
+            onkeydown="if(event.key === 'Enter') confirmPasswordAuth()"
+          >
+          <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm">
+            <i class="fa-solid fa-eye" id="pwdEyeIcon"></i>
+          </button>
+        </div>
+        <p id="passwordErrorMsg" class="text-xs text-rose-500 font-semibold hidden flex items-center space-x-1">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <span>密碼錯誤，請重新輸入！</span>
+        </p>
+      </div>
+
+      <div class="pt-2 flex items-center justify-end space-x-2">
+        <button type="button" onclick="closePasswordModal()" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-semibold hover:bg-slate-200 transition">
+          取消
+        </button>
+        <button type="button" onclick="confirmPasswordAuth()" class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold shadow-md shadow-amber-500/20 transition flex items-center space-x-1">
+          <i class="fa-solid fa-unlock text-xs"></i>
+          <span>驗證解鎖</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 🔑 修改密碼彈窗 Modal -->
+  <div id="changePwdModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-4">
+      <div class="flex items-center space-x-3 pb-3 border-b border-slate-100 dark:border-slate-700">
+        <div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-lg">
+          <i class="fa-solid fa-key"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-900 dark:text-white">變更教師管理密碼</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">請設定新的 4~8 位數密碼</p>
+        </div>
+      </div>
+      <div class="space-y-3">
+        <input 
+          type="text" 
+          id="newPasswordInput" 
+          placeholder="輸入新密碼..." 
+          class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+        >
+      </div>
+      <div class="pt-2 flex items-center justify-end space-x-2">
+        <button type="button" onclick="closeChangePwdModal()" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-semibold hover:bg-slate-200 transition">
+          取消
+        </button>
+        <button type="button" onclick="saveNewPassword()" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition">
+          儲存新密碼
+        </button>
+      </div>
     </div>
   </div>
 
@@ -1119,6 +1204,113 @@
       }
     }
 
+
+    // ==========================================
+    // 🔒 教師管理密碼保護與權限邏輯 (預設 1781)
+    // ==========================================
+    const DEFAULT_ADMIN_PWD = '1781';
+    let isAdminUnlocked = false; // 是否已解鎖管理員權限
+    let pendingAuthCallback = null; // 認證後待執行的動作
+
+    function getAdminPassword() {
+      return localStorage.getItem('classroom_hub_admin_pwd') || DEFAULT_ADMIN_PWD;
+    }
+
+    function requireAdminAuth(callback) {
+      if (isAdminUnlocked) {
+        callback();
+      } else {
+        pendingAuthCallback = callback;
+        openPasswordModal();
+      }
+    }
+
+    function openPasswordModal() {
+      const modal = document.getElementById('passwordModal');
+      const input = document.getElementById('adminPasswordInput');
+      const errorMsg = document.getElementById('passwordErrorMsg');
+      input.value = '';
+      errorMsg.classList.add('hidden');
+      modal.classList.remove('hidden');
+      setTimeout(() => input.focus(), 150);
+    }
+
+    function closePasswordModal() {
+      document.getElementById('passwordModal').classList.add('hidden');
+      pendingAuthCallback = null;
+    }
+
+    function togglePasswordVisibility() {
+      const input = document.getElementById('adminPasswordInput');
+      const icon = document.getElementById('pwdEyeIcon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fa-solid fa-eye-slash';
+      } else {
+        input.type = 'password';
+        icon.className = 'fa-solid fa-eye';
+      }
+    }
+
+    function confirmPasswordAuth() {
+      const input = document.getElementById('adminPasswordInput');
+      const errorMsg = document.getElementById('passwordErrorMsg');
+      const pwd = input.value.trim();
+
+      if (pwd === getAdminPassword()) {
+        isAdminUnlocked = true;
+        closePasswordModal();
+        if (pendingAuthCallback) {
+          const cb = pendingAuthCallback;
+          pendingAuthCallback = null;
+          cb();
+        }
+      } else {
+        errorMsg.classList.remove('hidden');
+        input.classList.add('border-rose-500', 'ring-2', 'ring-rose-500');
+        input.select();
+        setTimeout(() => input.classList.remove('border-rose-500', 'ring-2', 'ring-rose-500'), 1000);
+      }
+    }
+
+    // 鎖定並退出管理員模式
+    function lockAdminMode() {
+      isAdminUnlocked = false;
+      if (isManageMode) {
+        toggleManageMode();
+      }
+      alert("🔒 已成功鎖定！已切換回一般學生瀏覽模式。");
+    }
+
+    // 修改密碼相關
+    function openChangePwdModal() {
+      document.getElementById('newPasswordInput').value = '';
+      document.getElementById('changePwdModal').classList.remove('hidden');
+    }
+
+    function closeChangePwdModal() {
+      document.getElementById('changePwdModal').classList.add('hidden');
+    }
+
+    function saveNewPassword() {
+      const val = document.getElementById('newPasswordInput').value.trim();
+      if (!val || val.length < 3) {
+        alert("新密碼長度請至少包含 3 個字元！");
+        return;
+      }
+      localStorage.setItem('classroom_hub_admin_pwd', val);
+      closeChangePwdModal();
+      alert(`✅ 教師管理密碼已成功變更為：【${val}】！請妥善保存。`);
+    }
+
+    // 安全包裝按鈕
+    function safeOpenToolModal() {
+      requireAdminAuth(() => openToolModal());
+    }
+
+    function safeToggleManageMode() {
+      requireAdminAuth(() => toggleManageMode());
+    }
 
     // ==========================================
     // 🛠️ 軟體增減與自訂管理邏輯
