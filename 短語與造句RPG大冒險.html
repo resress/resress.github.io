@@ -1,0 +1,2947 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>句構魔法使：聖言之塔的試煉 ｜ 國小三年級短語與造句 RPG 冒險</title>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4338ca;
+      --accent: #f59e0b;
+      --accent-glow: #fbbf24;
+      --success: #10b981;
+      --danger: #ef4444;
+      --bg-gradient: linear-gradient(135deg, #090d16 0%, #1e1b4b 45%, #2e1065 100%);
+      --card-bg: rgba(30, 41, 59, 0.92);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --font-family: 'PingFang TC', 'Microsoft JhengHei', '微軟正黑體', system-ui, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100vh;
+      font-family: var(--font-family);
+      background: var(--bg-gradient);
+      color: var(--text);
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 頂部導航與狀態欄（44px） */
+    header {
+      height: 44px;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      z-index: 100;
+      position: sticky;
+      top: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .brand-icon {
+      font-size: 20px;
+      filter: drop-shadow(0 0 6px var(--accent-glow));
+    }
+
+    .brand-title {
+      font-size: 0.98rem;
+      font-weight: 800;
+      background: linear-gradient(45deg, #38bdf8, #c084fc, #fbbf24);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 0.5px;
+    }
+
+    .player-stats {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 3px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--card-border);
+    }
+
+    .stat-badge {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .exp-bar-wrap {
+      width: 50px;
+      height: 6px;
+      background: #334155;
+      border-radius: 999px;
+      overflow: hidden;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .exp-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981, #34d399);
+      width: 0%;
+      transition: width 0.3s;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 4px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .tab-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .tab-btn.active {
+      color: #fff;
+      background: var(--primary);
+    }
+
+    .audio-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--card-border);
+      color: #fff;
+      padding: 3px 6px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    /* 主容器（支援自適應高度與必要時順暢捲動） */
+    main {
+      flex: 1;
+      width: 100%;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .view-section {
+      display: none;
+      width: 100%;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .view-section.active {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 1. 地圖視圖 */
+    .hero-banner {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.22), rgba(217, 70, 239, 0.18));
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 10px 14px;
+    }
+
+    .hero-banner h2 {
+      font-size: 1.05rem;
+      margin-bottom: 2px;
+      color: #fff;
+    }
+
+    .hero-banner p {
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      line-height: 1.35;
+    }
+
+    .stages-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 10px;
+    }
+
+    .stage-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .stage-card:hover:not(.locked) {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+      box-shadow: 0 6px 14px -6px rgba(245, 158, 11, 0.3);
+    }
+
+    .stage-card.locked {
+      opacity: 0.5;
+      filter: grayscale(0.7);
+      cursor: not-allowed;
+    }
+
+    .stage-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .stage-icon {
+      font-size: 24px;
+      background: rgba(255, 255, 255, 0.05);
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+    }
+
+    .stage-stars {
+      color: #facc15;
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+    }
+
+    .stage-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .stage-lesson {
+      font-size: 0.75rem;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .stage-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .tag-pill {
+      background: rgba(255, 255, 255, 0.08);
+      font-size: 0.72rem;
+      padding: 2px 6px;
+      border-radius: 999px;
+      color: #cbd5e1;
+    }
+
+    .stage-card-btn {
+      margin-top: auto;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 7px;
+      border-radius: 6px;
+      font-weight: 700;
+      text-align: center;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    /* 2. 戰鬥畫面 View（極致緊湊戰鬥條） */
+    #view-battle {
+      gap: 8px;
+    }
+
+    .battle-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .stage-progress {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #38bdf8;
+    }
+
+    .battle-stage-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+    }
+
+    .btn-quit {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 2px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    /* 緊湊對戰橫條（高度僅 68px，節省大量垂直高度！） */
+    .combat-strip {
+      height: 68px;
+      background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.18) 0%, rgba(15, 23, 42, 0.6) 80%);
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 14px;
+      position: relative;
+    }
+
+    .fighter-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+    }
+
+    .fighter-avatar {
+      width: 46px;
+      height: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
+    }
+
+    .fighter-details {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      width: 110px;
+    }
+
+    .fighter-name-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .hp-bar-bg {
+      width: 100%;
+      height: 6px;
+      background: #334155;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .hp-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
+      width: 100%;
+      transition: width 0.3s;
+    }
+
+    .vs-badge {
+      font-size: 0.95rem;
+      font-weight: 900;
+      color: #fbbf24;
+      text-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
+    }
+
+    .boss-tag {
+      background: linear-gradient(45deg, #ef4444, #f97316);
+      color: #fff;
+      font-size: 0.62rem;
+      padding: 1px 3px;
+      border-radius: 3px;
+      font-weight: 900;
+    }
+
+    .fighter-box.shake {
+      animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+
+    .fighter-box.attack {
+      animation: dashAttack 0.3s ease-in-out;
+    }
+
+    @keyframes shake {
+      10%, 90% { transform: translate3d(-3px, 0, 0); }
+      20%, 80% { transform: translate3d(3px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-3px, 0, 0); }
+      40%, 60% { transform: translate3d(3px, 0, 0); }
+    }
+
+    @keyframes dashAttack {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.12); }
+      100% { transform: scale(1); }
+    }
+
+    .dmg-popup {
+      position: absolute;
+      top: -12px;
+      right: 10px;
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: #facc15;
+      text-shadow: 0 0 6px #ef4444;
+      pointer-events: none;
+      animation: floatUp 0.8s forwards ease-out;
+    }
+
+    @keyframes floatUp {
+      0% { opacity: 0; transform: translateY(0) scale(0.6); }
+      30% { opacity: 1; transform: translateY(-8px) scale(1.1); }
+      100% { opacity: 0; transform: translateY(-20px) scale(1); }
+    }
+
+    /* 題目與作答卡片（完整展示，絕不遮擋！） */
+    .quest-card {
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.96), rgba(15, 23, 42, 0.96));
+      border: 2px solid #818cf8;
+      border-radius: 12px;
+      padding: 12px 14px;
+      box-shadow: 0 6px 14px -6px rgba(99, 102, 241, 0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .quest-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .quest-type-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid #818cf8;
+      color: #c7d2fe;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .quest-pool-counter {
+      font-size: 0.75rem;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .quest-prompt {
+      font-size: 1.05rem;
+      line-height: 1.45;
+      font-weight: 600;
+      color: #f1f5f9;
+      white-space: pre-line;
+    }
+
+    .structure-guide {
+      background: rgba(255, 255, 255, 0.05);
+      border-left: 3px solid var(--accent);
+      padding: 4px 8px;
+      border-radius: 0 4px 4px 0;
+      font-size: 0.8rem;
+      color: #fde68a;
+    }
+
+    /* 模式 1：點選依序排列區塊 */
+    .ordering-area {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 2px;
+    }
+
+    .target-slots-container {
+      min-height: 48px;
+      background: rgba(15, 23, 42, 0.75);
+      border: 2px dashed rgba(99, 102, 241, 0.5);
+      border-radius: 8px;
+      padding: 6px 8px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .target-slots-container.active-target {
+      border-color: #818cf8;
+      background: rgba(99, 102, 241, 0.12);
+    }
+
+    .slot-item {
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(79, 70, 229, 0.4);
+    }
+
+    .slot-item:hover {
+      background: #ef4444;
+    }
+
+    .slot-item:hover::after {
+      content: " ✕";
+      font-size: 0.75rem;
+    }
+
+    .empty-slot-tip {
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      font-style: italic;
+      padding-left: 4px;
+    }
+
+    .words-pool-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 2px 0;
+    }
+
+    .word-block-btn {
+      background: rgba(255, 255, 255, 0.09);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      color: #f8fafc;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .word-block-btn:hover {
+      background: rgba(99, 102, 241, 0.3);
+      border-color: #818cf8;
+      transform: translateY(-2px);
+    }
+
+    .word-block-btn.used {
+      opacity: 0.2;
+      pointer-events: none;
+      transform: scale(0.95);
+    }
+
+    .ordering-action-bar {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .btn-action-order {
+      background: linear-gradient(90deg, #10b981, #059669);
+      color: #fff;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(16, 185, 129, 0.35);
+    }
+
+    .btn-action-order:hover {
+      transform: scale(1.03);
+    }
+
+    .btn-action-clear {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 7px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    /* 模式 2：選擇題選項 */
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 600px) {
+      .options-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .opt-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #f8fafc;
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s;
+    }
+
+    .opt-btn:hover {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: #818cf8;
+    }
+
+    .opt-badge {
+      width: 24px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.8rem;
+      flex-shrink: 0;
+    }
+
+    .opt-btn.correct {
+      background: rgba(16, 185, 129, 0.3) !important;
+      border-color: #10b981 !important;
+      color: #34d399 !important;
+    }
+
+    .opt-btn.wrong {
+      background: rgba(239, 68, 68, 0.3) !important;
+      border-color: #ef4444 !important;
+      color: #f87171 !important;
+    }
+
+    .battle-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .hint-btn {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fbbf24;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .hint-box {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fde68a;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      line-height: 1.35;
+      display: none;
+    }
+
+    .hint-box.show {
+      display: block;
+    }
+
+    /* 3. 語法聖典 View */
+    .grimoire-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .grimoire-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .grim-header {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #38bdf8;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 4px;
+    }
+
+    .grim-sec-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #facc15;
+      margin-top: 4px;
+    }
+
+    .grim-content-box {
+      background: rgba(255, 255, 255, 0.04);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      color: #cbd5e1;
+    }
+
+    /* 4. 徽章榮譽室 View */
+    .badges-shelf {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+      padding: 8px 0;
+    }
+
+    .badge-item {
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px 10px;
+      text-align: center;
+    }
+
+    .badge-item.unlocked {
+      border-color: #facc15;
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.9), rgba(245, 158, 11, 0.12));
+    }
+
+    .badge-item.locked {
+      opacity: 0.45;
+      filter: grayscale(1);
+    }
+
+    .badge-big-icon {
+      font-size: 40px;
+      margin-bottom: 4px;
+    }
+
+    .badge-name {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .badge-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* 結算彈窗 Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 14px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+      animation: fadeIn 0.25s;
+    }
+
+    .modal-card {
+      background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+      border: 2px solid var(--accent);
+      border-radius: 16px;
+      padding: 20px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .modal-badge-icon {
+      font-size: 48px;
+      margin-bottom: 6px;
+      filter: drop-shadow(0 0 10px var(--accent-glow));
+    }
+
+    .modal-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .modal-stars {
+      color: #facc15;
+      font-size: 1.6rem;
+      letter-spacing: 3px;
+      margin-bottom: 8px;
+    }
+
+    .modal-desc {
+      color: #cbd5e1;
+      font-size: 0.88rem;
+      line-height: 1.45;
+      margin-bottom: 16px;
+    }
+
+    .modal-btn {
+      background: linear-gradient(90deg, #f59e0b, #d97706);
+      color: #1e1b4b;
+      border: none;
+      padding: 8px 22px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 頂部資訊欄（44px） -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">📜</div>
+      <div class="brand-title">句構魔法使</div>
+    </div>
+
+    <div class="player-stats">
+      <div class="stat-badge">
+        <span>🧙</span>
+        <span id="player-level" style="color: #38bdf8;">Lv. 1</span>
+      </div>
+      <div class="stat-badge">
+        <span>EXP</span>
+        <div class="exp-bar-wrap">
+          <div class="exp-bar-fill" id="player-exp-bar"></div>
+        </div>
+      </div>
+      <div class="stat-badge">
+        <span>💎</span>
+        <span id="player-coins" style="color: #facc15;">0</span>
+      </div>
+    </div>
+
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="switchView('map')">🗺️ 地圖</button>
+      <button class="tab-btn" onclick="switchView('grimoire')">📖 聖典</button>
+      <button class="tab-btn" onclick="switchView('badges')">🏆 勳章</button>
+      <button class="audio-btn" id="audio-toggle" onclick="toggleAudio()" title="音效開關">🔊</button>
+    </div>
+  </header>
+
+  <!-- 主容器 -->
+  <main>
+    <!-- 1. 冒險地圖 View -->
+    <section id="view-map" class="view-section active">
+      <div class="hero-banner">
+        <h2>✨ 聖言之塔試煉地圖</h2>
+        <p>完整收錄 1~6 課教材全部短語、造句與句型！全量題庫隨機抽取絕不重複出題。請依序拼出短語，選用關聯詞擊敗守護魔物！</p>
+      </div>
+      <div class="stages-grid" id="stages-container"></div>
+    </section>
+
+    <!-- 2. 戰鬥畫面 View（極致緊湊，下半部全部清楚可見） -->
+    <section id="view-battle" class="view-section">
+      <div class="battle-header">
+        <div class="stage-progress" id="battle-progress">第 1 / 3 隻守護獸</div>
+        <div class="battle-stage-title" id="battle-stage-title">時光鐘樓</div>
+        <button class="btn-quit" onclick="quitBattle()">🏃 暫離聖殿</button>
+      </div>
+
+      <!-- 緊湊對戰橫條（68px） -->
+      <div class="combat-strip">
+        <!-- 我方法師 -->
+        <div class="fighter-box" id="player-fighter">
+          <div class="fighter-avatar">
+            <svg width="44" height="44" viewBox="0 0 100 100">
+              <polygon points="50,10 20,45 80,45" fill="#4338ca" />
+              <ellipse cx="50" cy="45" rx="36" ry="7" fill="#6366f1" />
+              <polygon points="50,10 44,25 56,25" fill="#facc15" />
+              <circle cx="50" cy="60" r="22" fill="#fed7aa" />
+              <circle cx="43" cy="58" r="3" fill="#1e1b4b" />
+              <circle cx="57" cy="58" r="3" fill="#1e1b4b" />
+              <line x1="72" y1="50" x2="90" y2="28" stroke="#d97706" stroke-width="4" stroke-linecap="round" />
+              <polygon points="90,28 92,20 85,25" fill="#fbbf24" />
+            </svg>
+          </div>
+          <div class="fighter-details">
+            <div class="fighter-name-line">
+              <span>句構法師</span>
+              <span id="player-hp-text" style="color: #10b981;">100%</span>
+            </div>
+            <div class="hp-bar-bg">
+              <div class="hp-bar-fill" id="player-hp-bar" style="width: 100%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="vs-badge">⚡ VS ⚡</div>
+
+        <!-- 敵方魔物 -->
+        <div class="fighter-box" id="enemy-fighter">
+          <div id="enemy-dmg" class="dmg-popup" style="display: none;">-1 HP!</div>
+          <div class="fighter-details" style="text-align: right;">
+            <div class="fighter-name-line" style="justify-content: flex-end; gap: 4px;">
+              <span id="enemy-tag"></span>
+              <span id="enemy-name">魔物名稱</span>
+            </div>
+            <div class="hp-bar-bg">
+              <div class="hp-bar-fill" id="enemy-hp-bar" style="width: 100%;"></div>
+            </div>
+          </div>
+          <div class="fighter-avatar" id="enemy-avatar"></div>
+        </div>
+      </div>
+
+      <!-- 題目與互動區（完整顯露，按鈕與詞塊就在眼前！） -->
+      <div class="quest-card">
+        <div class="quest-top-row">
+          <div class="quest-type-badge" id="quest-badge">✨ 短語依序拼裝</div>
+          <div class="quest-pool-counter" id="quest-pool-counter">全新例句</div>
+        </div>
+
+        <div class="quest-prompt" id="quest-prompt">題目載入中...</div>
+        <div class="structure-guide" id="quest-guide">結構引導：...</div>
+
+        <!-- 模式 1：點選依序排列區塊（短語題型） -->
+        <div class="ordering-area" id="ordering-area">
+          <div class="target-slots-container" id="target-slots"></div>
+          <div class="words-pool-container" id="words-pool"></div>
+          <div class="ordering-action-bar">
+            <button class="btn-action-clear" onclick="clearOrderingSlots()">清空重排</button>
+            <button class="btn-action-order" onclick="submitOrdering()">發動咒文符文擊 ⚔️</button>
+          </div>
+        </div>
+
+        <!-- 模式 2：選項按鈕區塊（造句題與複句詠唱題型） -->
+        <div class="options-grid" id="options-container" style="display: none;"></div>
+
+        <div class="battle-footer">
+          <button class="hint-btn" onclick="toggleHint()">
+            <span>💡 語法提示</span>
+          </button>
+          <span style="font-size: 0.78rem; color: #94a3b8;" id="battle-tip-text">點選下方詞塊依序拼出正確短語！</span>
+        </div>
+        <div class="hint-box" id="hint-box"></div>
+      </div>
+    </section>
+
+    <!-- 3. 語法聖典 View -->
+    <section id="view-grimoire" class="view-section">
+      <div class="hero-banner">
+        <h2>📖 三年級短語與造句大聖典</h2>
+        <p>收錄第 1 至 6 課全部短語結構公式、課本例句、造句精選詞彙與複句關聯詞解析。</p>
+      </div>
+      <div class="grimoire-grid" id="grimoire-container"></div>
+    </section>
+
+    <!-- 4. 榮譽勳章 View -->
+    <section id="view-badges" class="view-section">
+      <div class="hero-banner">
+        <h2>🏆 聖言守護者榮譽勳章室</h2>
+        <p>通關各大迷宮修復失落的文法聖典，即可解鎖對應章節的榮譽勳章！</p>
+      </div>
+      <div class="badges-shelf" id="badges-container"></div>
+    </section>
+  </main>
+
+  <!-- 通關結算彈窗 Modal -->
+  <div class="modal-overlay" id="victory-modal">
+    <div class="modal-card">
+      <div class="modal-badge-icon" id="modal-icon">🏆</div>
+      <div class="modal-title" id="modal-title">章節通關！</div>
+      <div class="modal-stars" id="modal-stars">⭐⭐⭐</div>
+      <div class="modal-desc" id="modal-desc">太厲害了！你成功用豐富的短語與句型淨化了迷宮魔獸！</div>
+      <button class="modal-btn" onclick="closeVictoryModal()">領取魔力獎勵並返回地圖</button>
+    </div>
+  </div>
+
+  <script>
+    /* ============================================================
+       1. 龐大全量題庫（完整收錄 1~6 課教材所有例句，絕不重複）
+       ============================================================ */
+    const RAW_STAGE_QUESTIONS = {
+      stage01: [
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請將打散的詞塊依序排列，拼出正確的短語：",
+          guide: "結構：動詞（動作）＋得＋實在＋形容詞（怎麼樣）",
+          correctSequence: ["跑得", "實在", "太快了"],
+          shuffledBlocks: ["太快了", "實在", "跑得"],
+          hint: "💡 提示：先放動作『跑得』，加上『實在』強調，最後放形容詞『太快了』！"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出讚賞書法作品的短語：",
+          guide: "結構：動詞（動作）＋得＋實在＋形容詞（怎麼樣）",
+          correctSequence: ["寫得", "實在", "太好了"],
+          shuffledBlocks: ["寫得", "太好了", "實在"],
+          hint: "💡 提示：動作是『寫得』，接著放『實在』，最後是『太好了』！"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出飽餐一頓後的短語：",
+          guide: "結構：動詞（動作）＋得＋實在＋形容詞（怎麼樣）",
+          correctSequence: ["吃得", "實在", "太飽了"],
+          shuffledBlocks: ["實在", "太飽了", "吃得"],
+          hint: "💡 提示：動作是『吃得』，接著放『實在』與『太飽了』！"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出長途跋涉的短語：",
+          guide: "結構：動詞（動作）＋得＋實在＋形容詞（怎麼樣）",
+          correctSequence: ["走得", "實在", "太遠了"],
+          shuffledBlocks: ["太遠了", "走得", "實在"],
+          hint: "💡 提示：走路的動作『走得』放第一位！"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出長時間等候的短語：",
+          guide: "結構：動詞（動作）＋得＋實在＋形容詞（怎麼樣）",
+          correctSequence: ["等得", "實在", "太久了"],
+          shuffledBlocks: ["實在", "等得", "太久了"],
+          hint: "💡 提示：等候動作『等得』＋『實在』＋『太久了』！"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出最恰當的造句詞彙：\n「弟弟雖然做事【　　】，但他很細心，不容易出錯。」",
+          guide: "詞義：說話或動作很慢的樣子。",
+          options: [{ text: "慢吞吞", isCorrect: true }, { text: "急匆匆", isCorrect: false }, { text: "亂糟糟", isCorrect: false }, { text: "灰濛濛", isCorrect: false }],
+          hint: "💡 提示：形容做事動作緩慢，填入『慢吞吞』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出符合情境的造句詞彙：\n「你有什麼事就快點說，別【　　】的，真令人著急。」",
+          guide: "詞義：說話或動作很慢的樣子。",
+          options: [{ text: "慢吞吞", isCorrect: true }, { text: "氣沖沖", isCorrect: false }, { text: "鬧哄哄", isCorrect: false }, { text: "喜洋洋", isCorrect: false }],
+          hint: "💡 提示：說話不爽快、拖拖拉拉令人著急，填『慢吞吞』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出正確的詞彙：\n「大家都放學了，妹妹才開始【　　】的收拾書包。」",
+          guide: "詞義：動作很慢的樣子。",
+          options: [{ text: "慢吞吞", isCorrect: true }, { text: "靜悄悄", isCorrect: false }, { text: "冷冰冰", isCorrect: false }, { text: "乾巴巴", isCorrect: false }],
+          hint: "💡 提示：動作緩慢、拖拖拉拉，用『慢吞吞』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出合適的詞彙：\n「她說話總是【　　】的，讓人越聽越急。」",
+          guide: "詞義：說話緩慢。",
+          options: [{ text: "慢吞吞", isCorrect: true }, { text: "急促促", isCorrect: false }, { text: "笑瞇瞇", isCorrect: false }, { text: "熱騰騰", isCorrect: false }],
+          hint: "💡 提示：說話語速過慢讓人著急，填『慢吞吞』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出最恰當的造句詞彙：\n「捷運通車後，【　　】了媽媽上班的通勤時間。」",
+          guide: "詞義：由長變短。",
+          options: [{ text: "縮短", isCorrect: true }, { text: "延長", isCorrect: false }, { text: "耽誤", isCorrect: false }, { text: "倒退", isCorrect: false }],
+          hint: "💡 提示：通勤時間變少變短，使用『縮短』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出最恰當的造句詞彙：\n「微笑可以【　　】人和人之間的距離。」",
+          guide: "詞義：減少兩者間的隔閡與距離。",
+          options: [{ text: "縮短", isCorrect: true }, { text: "拉開", isCorrect: false }, { text: "分隔", isCorrect: false }, { text: "阻止", isCorrect: false }],
+          hint: "💡 提示：讓心靈與人際更親近，用『縮短』距離。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出最適當詞彙：\n「飛機的發明，大幅【　　】了交通時程。」",
+          guide: "詞義：交通時間大幅減省。",
+          options: [{ text: "縮短", isCorrect: true }, { text: "延展", isCorrect: false }, { text: "浪費", isCorrect: false }, { text: "消滅", isCorrect: false }],
+          hint: "💡 提示：搭飛機讓旅途時間變短，使用『縮短』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出正確詞彙：\n「小華努力讀書後，逐漸【　　】了與同學之間的差距。」",
+          guide: "詞義：差距由大變小、由遠變近。",
+          options: [{ text: "縮短", isCorrect: true }, { text: "擴大", isCorrect: false }, { text: "保持", isCorrect: false }, { text: "增加", isCorrect: false }],
+          hint: "💡 提示：原本落後的差距變小了，填入『縮短』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【並列複句】請選出交替出現的關聯詞：\n「最近的天氣讓人捉摸不定，【　　】是晴天，【　　】是雨天。」",
+          guide: "說明：表示兩種情況交替出現。",
+          options: [{ text: "一會兒……一會兒……", isCorrect: true }, { text: "因為……所以……", isCorrect: false }, { text: "雖然……可是……", isCorrect: false }, { text: "只要……就……", isCorrect: false }],
+          hint: "💡 提示：晴天與雨天交替轉變，填『一會兒……一會兒……』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【並列複句】請選出變幻莫測的關聯詞：\n「白雲是魔術師，【　　】變成鯨魚，【　　】變成恐龍。」",
+          guide: "說明：表示兩種形象短時間內交替變換。",
+          options: [{ text: "一會兒……一會兒……", isCorrect: true }, { text: "不只……還要……", isCorrect: false }, { text: "如果……就……", isCorrect: false }, { text: "為了……還要……", isCorrect: false }],
+          hint: "💡 提示：形狀一下變成這個、一下變成那個，用『一會兒……一會兒……』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【並列複句】請選出描述忙碌切換的關聯詞：\n「老師真忙碌，【　　】要上課，【　　】要改作業。」",
+          guide: "說明：上課與改作業交替進行。",
+          options: [{ text: "一會兒……一會兒……", isCorrect: true }, { text: "雖然……但是……", isCorrect: false }, { text: "因此……所以……", isCorrect: false }, { text: "只要……就……", isCorrect: false }],
+          hint: "💡 提示：交替進行兩種工作，用『一會兒……一會兒……』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【並列複句】請選出提醒身體保健的句子填空：\n「你【　　】吃冰，【　　】喝熱湯，要小心拉肚子。」",
+          guide: "說明：冷熱食物交替吃。",
+          options: [{ text: "一會兒……一會兒……", isCorrect: true }, { text: "不但……而且……", isCorrect: false }, { text: "如果……就……", isCorrect: false }, { text: "為了……所以……", isCorrect: false }],
+          hint: "💡 提示：短時間內吃冰又喝熱湯，用『一會兒……一會兒……』。"
+        }
+      ],
+
+      stage02: [
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出便利貼放置處的短語：",
+          guide: "結構：動詞（動作）＋在＋形容詞（怎麼樣）＋的＋地方",
+          correctSequence: ["貼在", "明顯的", "地方"],
+          shuffledBlocks: ["地方", "貼在", "明顯的"],
+          hint: "💡 提示：動作『貼在』＋形容詞『明顯的』＋名詞『地方』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出寫筆記位置的短語：",
+          guide: "結構：動詞（動作）＋在＋形容詞（怎麼樣）＋的＋地方",
+          correctSequence: ["寫在", "空白的", "內頁"],
+          shuffledBlocks: ["內頁", "空白的", "寫在"],
+          hint: "💡 提示：動作『寫在』＋『空白的』＋『內頁』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出農作物栽種的短語：",
+          guide: "結構：動詞（動作）＋在＋形容詞（怎麼樣）＋的＋地方",
+          correctSequence: ["種在", "肥沃的", "土地"],
+          shuffledBlocks: ["肥沃的", "土地", "種在"],
+          hint: "💡 提示：動作『種在』放第一位！"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出放鬆休息的短語：",
+          guide: "結構：動詞（動作）＋在＋形容詞（怎麼樣）＋的＋地方",
+          correctSequence: ["躺在", "舒服的", "床上"],
+          shuffledBlocks: ["床上", "躺在", "舒服的"],
+          hint: "💡 提示：動作『躺在』＋『舒服的』＋『床上』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出地面就坐的短語：",
+          guide: "結構：動詞（動作）＋在＋形容詞（怎麼樣）＋的＋地方",
+          correctSequence: ["坐在", "冰冷的", "地上"],
+          shuffledBlocks: ["坐在", "地上", "冰冷的"],
+          hint: "💡 提示：動作『坐在』＋『冰冷的』＋『地上』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出事情改變的短語：",
+          guide: "結構：（事情）＋變得有＋（不同的改變）",
+          correctSequence: ["做事", "變得有", "次序"],
+          shuffledBlocks: ["次序", "變得有", "做事"],
+          hint: "💡 提示：事情是『做事』，接『變得有』，改變是『次序』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請拼出言論具有說服力的短語：",
+          guide: "結構：（事情）＋變得有＋（不同的改變）",
+          correctSequence: ["說話", "變得有", "道理"],
+          shuffledBlocks: ["道理", "說話", "變得有"],
+          hint: "💡 提示：事情是『說話』，改變是『道理』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請拼出衣著風格提升的短語：",
+          guide: "結構：（事情）＋變得有＋（不同的改變）",
+          correctSequence: ["穿著", "變得有", "品味"],
+          shuffledBlocks: ["變得有", "品味", "穿著"],
+          hint: "💡 提示：事情是『穿著』，改變是『品味』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請拼出條理分明的短語：",
+          guide: "結構：（事情）＋變得有＋（不同的改變）",
+          correctSequence: ["敘述", "變得有", "條理"],
+          shuffledBlocks: ["條理", "變得有", "敘述"],
+          hint: "💡 提示：事情是『敘述』，改變是『條理』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請拼出步伐自信的短語：",
+          guide: "結構：（事情）＋變得有＋（不同的改變）",
+          correctSequence: ["走路", "變得有", "自信"],
+          shuffledBlocks: ["自信", "走路", "變得有"],
+          hint: "💡 提示：事情是『走路』，改變是『自信』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出符合預料結果的詞彙：\n「天空突然變得陰沉沉的，不一會兒【　　】下起大雨。」",
+          guide: "說明：事情結果與預期完全相同。",
+          options: [{ text: "果然", isCorrect: true }, { text: "竟然", isCorrect: false }, { text: "雖然", isCorrect: false }, { text: "難道", isCorrect: false }],
+          hint: "💡 提示：烏雲密布後如期下雨，用『果然』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出符合預報結果的詞彙：\n「氣象報告說今晚會降溫，入夜後【　　】變得十分寒冷。」",
+          guide: "說明：結果與氣象預報一致。",
+          options: [{ text: "果然", isCorrect: true }, { text: "固然", isCorrect: false }, { text: "毅然", isCorrect: false }, { text: "忽然", isCorrect: false }],
+          hint: "💡 提示：如同氣象報告所說，用『果然』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出符合大家稱讚的詞彙：\n「老師說這本書很有趣，我翻開一看【　　】讓人愛不釋手。」",
+          guide: "說明：閱讀體驗正如老師所說。",
+          options: [{ text: "果然", isCorrect: true }, { text: "突然", isCorrect: false }, { text: "竟然", isCorrect: false }, { text: "偶然", isCorrect: false }],
+          hint: "💡 提示：印證了老師的推薦，填『果然』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出印證評價的詞彙：\n「大家都說這部電影很好看，看完後【　　】讓人意猶未盡。」",
+          guide: "說明：看完後的感受正如大家所評價。",
+          options: [{ text: "果然", isCorrect: true }, { text: "不然", isCorrect: false }, { text: "貿然", isCorrect: false }, { text: "茫然", isCorrect: false }],
+          hint: "💡 提示：正如眾人所言，用『果然』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【目的複句】請選出說明行動目的之關聯詞：\n「【　　】趕上公車，妹妹加快腳步往站牌跑。」",
+          guide: "說明：先敘述想達到的目的，後面說明行動。",
+          options: [{ text: "為了", isCorrect: true }, { text: "因為", isCorrect: false }, { text: "如果", isCorrect: false }, { text: "雖然", isCorrect: false }],
+          hint: "💡 提示：趕上公車是行動的目的，填入『為了』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【目的複句】請選出表示目標的關聯詞：\n「【　　】準備明天的考試，小安放學後到圖書館複習功課。」",
+          guide: "說明：去圖書館的目的。",
+          options: [{ text: "為了", isCorrect: true }, { text: "因此", isCorrect: false }, { text: "不只", isCorrect: false }, { text: "只要", isCorrect: false }],
+          hint: "💡 提示：達成考試目標所採取的行動，用『為了』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【目的複句】請選出關聯詞填空：\n「【　　】參加田徑賽，哥哥假日還到學校練習跑步。」",
+          guide: "說明：假日苦練的目的。",
+          options: [{ text: "為了", isCorrect: true }, { text: "既然", isCorrect: false }, { text: "假使", isCorrect: false }, { text: "除了", isCorrect: false }],
+          hint: "💡 提示：表示目的目標，填『為了』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【目的複句】請選出目的句首詞：\n「【　　】保暖，我穿上厚外套再出門。」",
+          guide: "說明：穿厚外套的目的。",
+          options: [{ text: "為了", isCorrect: true }, { text: "反而", isCorrect: false }, { text: "寧可", isCorrect: false }, { text: "哪怕", isCorrect: false }],
+          hint: "💡 提示：保暖是目的，填『為了』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【遞進複句】請選出意思更進一層的關聯詞：\n「這座沙發很便宜，【　　】寬敞又舒適。」",
+          guide: "說明：更進一步的優點。",
+          options: [{ text: "而且", isCorrect: true }, { text: "但是", isCorrect: false }, { text: "可是", isCorrect: false }, { text: "所以", isCorrect: false }],
+          hint: "💡 提示：便宜之外更進一步舒服，填『而且』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【遞進複句】請選出遞進關聯詞：\n「妹妹不但長高，【　　】變得懂事。」",
+          guide: "說明：除了長高，心智更進一步成長。",
+          options: [{ text: "而且", isCorrect: true }, { text: "反而", isCorrect: false }, { text: "不然", isCorrect: false }, { text: "難道", isCorrect: false }],
+          hint: "💡 提示：不但……而且……是標準遞進句。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【遞進複句】請選出能力更進一層的關聯詞：\n「弟弟自己能拼讀注音，【　　】會看簡單的繪本故事書。」",
+          guide: "說明：識字能力更進一步。",
+          options: [{ text: "而且", isCorrect: true }, { text: "不過", isCorrect: false }, { text: "所以", isCorrect: false }, { text: "即使", isCorrect: false }],
+          hint: "💡 提示：除拼音外更能看書，用『而且』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【遞進複句】請選出水果美味優點的關聯詞：\n「這顆蘋果不但外表紅通通的，【　　】吃起來又香又甜。」",
+          guide: "說明：內外兼具更進一層。",
+          options: [{ text: "而且", isCorrect: true }, { text: "可是", isCorrect: false }, { text: "因此", isCorrect: false }, { text: "或是", isCorrect: false }],
+          hint: "💡 提示：不但好看，更進一步好吃，填『而且』。"
+        }
+      ],
+
+      stage03: [
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出主角好習慣的短語：",
+          guide: "結構：名詞（誰）＋是不＋動詞（做什麼事）＋的",
+          correctSequence: ["媽媽是", "不遲到", "的"],
+          shuffledBlocks: ["的", "不遲到", "媽媽是"],
+          hint: "💡 提示：主詞『媽媽是』＋動作『不遲到』＋『的』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出早起習慣的短語：",
+          guide: "結構：名詞（誰）＋是不＋動詞（做什麼事）＋的",
+          correctSequence: ["哥哥是", "不賴床", "的"],
+          shuffledBlocks: ["不賴床", "的", "哥哥是"],
+          hint: "💡 提示：主詞『哥哥是』＋『不賴床』＋『的』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出健康習慣的短語：",
+          guide: "結構：名詞（誰）＋是不＋動詞（做什麼事）＋的",
+          correctSequence: ["爸爸是", "不抽菸", "的"],
+          shuffledBlocks: ["的", "爸爸是", "不抽菸"],
+          hint: "💡 提示：主詞『爸爸是』＋『不抽菸』＋『的』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出假花特性的短語：",
+          guide: "結構：名詞（誰）＋是不＋動詞（做什麼事）＋的",
+          correctSequence: ["假花是", "不凋謝", "的"],
+          shuffledBlocks: ["假花是", "的", "不凋謝"],
+          hint: "💡 提示：主詞『假花是』＋『不凋謝』＋『的』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出生活型態的短語：",
+          guide: "結構：名詞（誰）＋是不＋動詞（做什麼事）＋的",
+          correctSequence: ["你是", "不計畫", "的"],
+          shuffledBlocks: ["不計畫", "你是", "的"],
+          hint: "💡 提示：主詞『你是』＋『不計畫』＋『的』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出提早出門的好處短語：",
+          guide: "結構：不＋動詞（怎麼樣）＋就不＋（產生什麼結果）",
+          correctSequence: ["不趕", "就不容易", "出錯"],
+          shuffledBlocks: ["出錯", "就不容易", "不趕"],
+          hint: "💡 提示：『不趕』＋『就不容易』＋『出錯』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出實踐才能成功的短語：",
+          guide: "結構：不＋動詞（怎麼樣）＋就不＋（產生什麼結果）",
+          correctSequence: ["不做", "就不可能", "成功"],
+          shuffledBlocks: ["就不可能", "成功", "不做"],
+          hint: "💡 提示：『不做』＋『就不可能』＋『成功』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出自律防沉迷的短語：",
+          guide: "結構：不＋動詞（怎麼樣）＋就不＋（產生什麼結果）",
+          correctSequence: ["不玩", "就不會", "沉迷"],
+          shuffledBlocks: ["沉迷", "不玩", "就不會"],
+          hint: "💡 提示：『不玩』＋『就不會』＋『沉迷』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出節儉省錢的短語：",
+          guide: "結構：不＋動詞（怎麼樣）＋就不＋（產生什麼結果）",
+          correctSequence: ["不買", "就不必", "花錢"],
+          shuffledBlocks: ["就不必", "花錢", "不買"],
+          hint: "💡 提示：『不買』＋『就不必』＋『花錢』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出修養情緒的短語：",
+          guide: "結構：不＋動詞（怎麼樣）＋就不＋（產生什麼結果）",
+          correctSequence: ["不想", "就不會", "生氣"],
+          shuffledBlocks: ["生氣", "不想", "就不會"],
+          hint: "💡 提示：『不想』＋『就不會』＋『生氣』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出最恰當的造句詞彙：\n「一陣風吹來，我還【　　】按住帽子，它就被吹走了。」",
+          guide: "說明：無法趕上事情發生的速度。",
+          options: [{ text: "來不及", isCorrect: true }, { text: "用不上", isCorrect: false }, { text: "顧不得", isCorrect: false }, { text: "捨不得", isCorrect: false }],
+          hint: "💡 提示：動作趕不上狂風的速度，填『來不及』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出符合句意的詞彙：\n「如果我太晚回家，就【　　】看卡通節目了。」",
+          guide: "說明：時間晚了無法趕上看節目。",
+          options: [{ text: "來不及", isCorrect: true }, { text: "了不起", isCorrect: false }, { text: "對不起", isCorrect: false }, { text: "數不清", isCorrect: false }],
+          hint: "💡 提示：太晚到家趕不上開播，用『來不及』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出正確造句詞彙：\n「哥哥今天睡過頭了，所以【　　】坐校車。」",
+          guide: "說明：因遲起而趕不上校車時間。",
+          options: [{ text: "來不及", isCorrect: true }, { text: "買不起", isCorrect: false }, { text: "玩不起", isCorrect: false }, { text: "合不來", isCorrect: false }],
+          hint: "💡 提示：趕不上搭車時間，填『來不及』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出最適當詞彙：\n「我還【　　】寫完題目，老師就要收考卷了！」",
+          guide: "說明：時間緊迫無法在收卷前寫完。",
+          options: [{ text: "來不及", isCorrect: true }, { text: "看不起", isCorrect: false }, { text: "記不得", isCorrect: false }, { text: "配不上", isCorrect: false }],
+          hint: "💡 提示：趕不上交卷時間，用『來不及』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出最符合句意的詞彙：\n「經過不斷練習，我終於有了【　　】的勇氣參加鋼琴比賽。」",
+          guide: "詞義：充足、不缺乏。",
+          options: [{ text: "足夠", isCorrect: true }, { text: "貧乏", isCorrect: false }, { text: "微弱", isCorrect: false }, { text: "剩餘", isCorrect: false }],
+          hint: "💡 提示：勇氣充沛充足，填入『足夠』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出合適的造句詞彙：\n「他有【　　】的能力和經驗，可以順利完成這件工作。」",
+          guide: "詞義：具備充裕、充分的能力。",
+          options: [{ text: "足夠", isCorrect: true }, { text: "多餘", isCorrect: false }, { text: "缺乏", isCorrect: false }, { text: "落後", isCorrect: false }],
+          hint: "💡 提示：能力充足不缺乏，填『足夠』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出正確的詞彙：\n「出國旅遊前必須做好【　　】的準備，才能有美好的體驗。」",
+          guide: "詞義：準備充分周詳。",
+          options: [{ text: "足夠", isCorrect: true }, { text: "匆促", isCorrect: false }, { text: "勉強", isCorrect: false }, { text: "馬虎", isCorrect: false }],
+          hint: "💡 提示：行前準備要充足，使用『足夠』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出合適詞彙：\n「我有【　　】的理由拒絕這個任務。」",
+          guide: "詞義：理由充分充足。",
+          options: [{ text: "足夠", isCorrect: true }, { text: "虛假", isCorrect: false }, { text: "勉強", isCorrect: false }, { text: "欠缺", isCorrect: false }],
+          hint: "💡 提示：理由很充分，填『足夠』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【承接複句】請選出使事件產生順承連接的字：\n「媽媽的不斷鼓勵，【　　】弟弟鼓起勇氣上臺說故事。」",
+          guide: "說明：前分句為事實，接續發生後面的情形。",
+          options: [{ text: "讓", isCorrect: true }, { text: "可是", isCorrect: false }, { text: "如果", isCorrect: false }, { text: "雖然", isCorrect: false }],
+          hint: "💡 提示：前面鼓勵，使後面產生勇氣，用『讓』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【承接複句】請選出表達自然轉變的字：\n「秋天的來臨，【　　】小草換上了秋天的衣裳。」",
+          guide: "說明：前事發生導致接續狀態。",
+          options: [{ text: "讓", isCorrect: true }, { text: "既然", isCorrect: false }, { text: "而且", isCorrect: false }, { text: "但是", isCorrect: false }],
+          hint: "💡 提示：秋天帶來了大地變裝，用『讓』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【承接複句】請選出作物生長良好的連接詞：\n「乾淨的水質與良好的氣候，【　　】這裡的作物長得十分肥美。」",
+          guide: "說明：環境好使得作物成長健康。",
+          options: [{ text: "讓", isCorrect: true }, { text: "可是", isCorrect: false }, { text: "難道", isCorrect: false }, { text: "哪怕", isCorrect: false }],
+          hint: "💡 提示：水質好使得作物生長肥美，填『讓』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【承接複句】請選出個性影響人際的句子填空：\n「他陰晴不定的個性，【　　】人不知要怎麼跟他相處才好。」",
+          guide: "說明：因其個性使得旁人不知所措。",
+          options: [{ text: "讓", isCorrect: true }, { text: "若是", isCorrect: false }, { text: "並且", isCorrect: false }, { text: "反而", isCorrect: false }],
+          hint: "💡 提示：使得人們難以相處，填『讓』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【因果複句】請選出最標準的因果關聯詞：\n「【　　】小明在家念書總是會分心，【　　】考前他都會去圖書館。」",
+          guide: "說明：原因與結果。",
+          options: [{ text: "因為……所以……", isCorrect: true }, { text: "不但……而且……", isCorrect: false }, { text: "雖然……可是……", isCorrect: false }, { text: "只要……就……", isCorrect: false }],
+          hint: "💡 提示：分心是原因，去圖書館是結果，填『因為……所以……』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【因果複句】請選出帶傘防雨的因果關聯詞：\n「【　　】姐姐出門總是帶折疊傘，【　　】下雨都不怕淋溼。」",
+          guide: "說明：帶傘習慣與不怕淋雨。",
+          options: [{ text: "因為……所以……", isCorrect: true }, { text: "一會兒……一會兒……", isCorrect: false }, { text: "為了……還要……", isCorrect: false }, { text: "如果……就……", isCorrect: false }],
+          hint: "💡 提示：原因與結果，用『因為……所以……』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【因果複句】請選出忘帶鑰匙的因果句子：\n「【　　】你出門總是忘了帶鑰匙，【　　】放學後都必須先到奶奶家。」",
+          guide: "說明：忘帶鑰匙導致的行動結果。",
+          options: [{ text: "因為……所以……", isCorrect: true }, { text: "雖然……但是……", isCorrect: false }, { text: "與其……不如……", isCorrect: false }, { text: "既然……那麼……", isCorrect: false }],
+          hint: "💡 提示：忘記帶鑰匙是原因，用『因為……所以……』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【因果複句】請選出運動受傷的因果關聯詞：\n「【　　】我運動前總是忘了暖身，【　　】常會不小心受傷。」",
+          guide: "說明：沒暖身是受傷的原因。",
+          options: [{ text: "因為……所以……", isCorrect: true }, { text: "不只……還要……", isCorrect: false }, { text: "只要……就……", isCorrect: false }, { text: "如果……就……", isCorrect: false }],
+          hint: "💡 提示：沒暖身是原因，用『因為……所以……』。"
+        }
+      ],
+
+      stage04: [
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出山林自然寧靜空間的短語：",
+          guide: "結構：疊字形容詞＋的＋名詞（特定空間）＋方位詞",
+          correctSequence: ["靜靜的", "山腳", "下"],
+          shuffledBlocks: ["下", "靜靜的", "山腳"],
+          hint: "💡 提示：『靜靜的』＋『山腳』＋『下』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出溫暖被窩的短語：",
+          guide: "結構：疊字形容詞＋的＋名詞（特定空間）＋方位詞",
+          correctSequence: ["暖暖的", "被窩", "裡"],
+          shuffledBlocks: ["裡", "被窩", "暖暖的"],
+          hint: "💡 提示：『暖暖的』＋『被窩』＋『裡』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出昏暗空間角落的短語：",
+          guide: "結構：疊字形容詞＋的＋名詞（特定空間）＋方位詞",
+          correctSequence: ["暗暗的", "角落", "旁"],
+          shuffledBlocks: ["角落", "旁", "暗暗的"],
+          hint: "💡 提示：『暗暗的』＋『角落』＋『旁』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出高空樹梢的短語：",
+          guide: "結構：疊字形容詞＋的＋名詞（特定空間）＋方位詞",
+          correctSequence: ["高高的", "樹梢", "上"],
+          shuffledBlocks: ["樹梢", "高高的", "上"],
+          hint: "💡 提示：『高高的』＋『樹梢』＋『上』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出濃霧迷濛空間的短語：",
+          guide: "結構：疊字形容詞＋的＋名詞（特定空間）＋方位詞",
+          correctSequence: ["濃濃的", "迷霧", "中"],
+          shuffledBlocks: ["中", "濃濃的", "迷霧"],
+          hint: "💡 提示：『濃濃的』＋『迷霧』＋『中』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出迎賓熱忱的短語：",
+          guide: "結構：動詞＋形容詞（怎麼樣）＋的＋名詞（誰）",
+          correctSequence: ["招呼", "遠方的", "客人"],
+          shuffledBlocks: ["客人", "招呼", "遠方的"],
+          hint: "💡 提示：『招呼』＋『遠方的』＋『客人』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出醫護愛心的短語：",
+          guide: "結構：動詞＋形容詞（怎麼樣）＋的＋名詞（誰）",
+          correctSequence: ["照顧", "受傷的", "病人"],
+          shuffledBlocks: ["病人", "受傷的", "照顧"],
+          hint: "💡 提示：『照顧』＋『受傷的』＋『病人』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出教練指導的短語：",
+          guide: "結構：動詞＋形容詞（怎麼樣）＋的＋名詞（誰）",
+          correctSequence: ["指導", "比賽的", "選手"],
+          shuffledBlocks: ["比賽的", "選手", "指導"],
+          hint: "💡 提示：『指導』＋『比賽的』＋『選手』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出景點迎客的短語：",
+          guide: "結構：動詞＋形容詞（怎麼樣）＋的＋名詞（誰）",
+          correctSequence: ["歡迎", "參觀的", "遊客"],
+          shuffledBlocks: ["遊客", "歡迎", "參觀的"],
+          hint: "💡 提示：『歡迎』＋『參觀的』＋『遊客』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出師長勉勵的短語：",
+          guide: "結構：動詞＋形容詞（怎麼樣）＋的＋名詞（誰）",
+          correctSequence: ["鼓勵", "失望的", "學生"],
+          shuffledBlocks: ["失望的", "學生", "鼓勵"],
+          hint: "💡 提示：『鼓勵』＋『失望的』＋『學生』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出最恰當的造句詞彙：\n「服務人員熱情的【　　】每一位進門的客人。」",
+          guide: "詞義：熱情迎接招待。",
+          options: [{ text: "接待", isCorrect: true }, { text: "驅趕", isCorrect: false }, { text: "檢查", isCorrect: false }, { text: "迴避", isCorrect: false }],
+          hint: "💡 提示：迎接客人入內，使用『接待』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出迎接貴賓的造句詞彙：\n「校長親自到校門口【　　】遠道而來的貴賓。」",
+          guide: "詞義：親自迎迓款待。",
+          options: [{ text: "接待", isCorrect: true }, { text: "歡送", isCorrect: false }, { text: "打聽", isCorrect: false }, { text: "婉拒", isCorrect: false }],
+          hint: "💡 提示：在門口迎接來賓，填『接待』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出志工服務的正確詞彙：\n「志工在入口處【　　】前來參加活動的人。」",
+          guide: "詞義：在會場入口迎接來賓。",
+          options: [{ text: "接待", isCorrect: true }, { text: "盤查", isCorrect: false }, { text: "阻擋", isCorrect: false }, { text: "指責", isCorrect: false }],
+          hint: "💡 提示：迎接引導參加者，填『接待』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出招待旅客的造句詞彙：\n「村民準備了豐盛的料理，【　　】遠道而來的旅客。」",
+          guide: "詞義：備佳餚以款待客人。",
+          options: [{ text: "接待", isCorrect: true }, { text: "打發", isCorrect: false }, { text: "盤問", isCorrect: false }, { text: "敷衍", isCorrect: false }],
+          hint: "💡 提示：熱情招待客人，使用『接待』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出克服住處難題的詞彙：\n「他租到了一間公寓，【　　】了沒有地方住的問題。」",
+          guide: "詞義：疏解紛亂，處理問題有了結果。",
+          options: [{ text: "解決", isCorrect: true }, { text: "保留", isCorrect: false }, { text: "放大", isCorrect: false }, { text: "掩蓋", isCorrect: false }],
+          hint: "💡 提示：問題順利處理完畢，用『解決』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出處理辦法的詞彙：\n「他提出了三個【　　】問題的辦法，但是都沒被老闆採納。」",
+          guide: "詞義：處理化解困難。",
+          options: [{ text: "解決", isCorrect: true }, { text: "製造", isCorrect: false }, { text: "衍生", isCorrect: false }, { text: "延宕", isCorrect: false }],
+          hint: "💡 提示：想辦法把問題化解，用『解決』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出化解爭端的詞彙：\n「紛爭的【　　】通常需要透過大量的溝通。」",
+          guide: "說明：透過溝通讓爭執平息。",
+          options: [{ text: "解決", isCorrect: true }, { text: "開始", isCorrect: false }, { text: "升溫", isCorrect: false }, { text: "爆發", isCorrect: false }],
+          hint: "💡 提示：處理並平息紛爭，填『解決』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出培養能力的詞彙：\n「這本書在告訴我們該如何培養【　　】問題的能力。」",
+          guide: "說明：面對困難時處理處理妥當的能力。",
+          options: [{ text: "解決", isCorrect: true }, { text: "忽略", isCorrect: false }, { text: "迴避", isCorrect: false }, { text: "製造", isCorrect: false }],
+          hint: "💡 提示：克服困難的必備能力，是『解決』問題能力。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【承接複句】請選出時間開頭的關聯詞：\n「【　　】下課鐘聲響起，同學們立刻衝出教室。」",
+          guide: "說明：某事件一發生，接續發生第二個事件。",
+          options: [{ text: "當", isCorrect: true }, { text: "假如", isCorrect: false }, { text: "為了", isCorrect: false }, { text: "既然", isCorrect: false }],
+          hint: "💡 提示：鐘聲響起的那個時刻，開頭填『當』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【承接複句】請選出課堂提問的時間開頭詞：\n「【　　】老師向全班提問，他馬上舉手回答。」",
+          guide: "說明：事件時間開端。",
+          options: [{ text: "當", isCorrect: true }, { text: "雖然", isCorrect: false }, { text: "如果", isCorrect: false }, { text: "不但", isCorrect: false }],
+          hint: "💡 提示：老師一發問的當下，填『當』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【承接複句】請選出夕陽落下的時間關聯詞：\n「【　　】太陽從西邊落下，路燈才一盞一盞的亮了起來。」",
+          guide: "說明：夕陽西下引發接續亮燈。",
+          options: [{ text: "當", isCorrect: true }, { text: "儘管", isCorrect: false }, { text: "即使", isCorrect: false }, { text: "除了", isCorrect: false }],
+          hint: "💡 提示：太陽落下的那個時機，填『當』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【承接複句】請選出公車停靠的時機詞：\n「【　　】我向司機招手，司機才把公車緩緩向右停靠。」",
+          guide: "說明：招手事件引發停靠。",
+          options: [{ text: "當", isCorrect: true }, { text: "既然", isCorrect: false }, { text: "若非", isCorrect: false }, { text: "因此", isCorrect: false }],
+          hint: "💡 提示：招手的瞬間，填『當』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【轉折複句】請選出結果不如預期的關聯詞：\n「他把鬧鐘往前調十分鐘，【　　】隔天還是睡過頭。」",
+          guide: "說明：結果與設想不同。",
+          options: [{ text: "可是", isCorrect: true }, { text: "所以", isCorrect: false }, { text: "而且", isCorrect: false }, { text: "只要", isCorrect: false }],
+          hint: "💡 提示：雖然調鬧鐘，但仍然睡過頭，轉折詞填『可是』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【轉折複句】請選出驗算依然錯誤的轉折詞：\n「我重新計算了這道題目，【　　】答案還是錯誤。」",
+          guide: "說明：重複檢查卻依然不如預期。",
+          options: [{ text: "可是", isCorrect: true }, { text: "因此", isCorrect: false }, { text: "進而", isCorrect: false }, { text: "從而", isCorrect: false }],
+          hint: "💡 提示：語氣轉折，填『可是』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【轉折複句】請選出換電池依然故障的轉折詞：\n「她換了新的電池，【　　】玩具依舊沒辦法開機。」",
+          guide: "說明：換了電池卻依舊無效。",
+          options: [{ text: "可是", isCorrect: true }, { text: "所以", isCorrect: false }, { text: "並且", isCorrect: false }, { text: "於是", isCorrect: false }],
+          hint: "💡 提示：轉折語氣，用『可是』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【轉折複句】請選出作畫修改依然不滿的轉折詞：\n「畫家修改了好幾次作品，【　　】仍然對它不滿意。」",
+          guide: "說明：付出很多努力但結果仍不滿意。",
+          options: [{ text: "可是", isCorrect: true }, { text: "因而", isCorrect: false }, { text: "因而", isCorrect: false }, { text: "所以", isCorrect: false }],
+          hint: "💡 提示：語氣轉折，填『可是』。"
+        }
+      ],
+
+      stage05: [
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出水果美味的短語：",
+          guide: "結構：事物（名詞）＋四字形容詞",
+          correctSequence: ["上將梨", "甜美多汁"],
+          shuffledBlocks: ["甜美多汁", "上將梨"],
+          hint: "💡 提示：名詞『上將梨』＋四字形容詞『甜美多汁』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出運動競賽緊張熱烈的短語：",
+          guide: "結構：事物（名詞）＋四字形容詞",
+          correctSequence: ["比賽", "精彩刺激"],
+          shuffledBlocks: ["精彩刺激", "比賽"],
+          hint: "💡 提示：事物『比賽』＋四字詞『精彩刺激』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出優質稻米的短語：",
+          guide: "結構：事物（名詞）＋四字形容詞",
+          correctSequence: ["稻米", "香甜飽滿"],
+          shuffledBlocks: ["香甜飽滿", "稻米"],
+          hint: "💡 提示：事物『稻米』＋『香甜飽滿』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出頂級海鮮滋味的短語：",
+          guide: "結構：事物（名詞）＋四字形容詞",
+          correctSequence: ["黑鮪魚", "鮮嫩可口"],
+          shuffledBlocks: ["鮮嫩可口", "黑鮪魚"],
+          hint: "💡 提示：事物『黑鮪魚』＋『鮮嫩可口』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出傳統糕點香氣的短語：",
+          guide: "結構：事物（名詞）＋四字形容詞",
+          correctSequence: ["蘿蔔糕", "香氣四溢"],
+          shuffledBlocks: ["香氣四溢", "蘿蔔糕"],
+          hint: "💡 提示：食物『蘿蔔糕』＋『香氣四溢』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出碗盤翻轉的短語：",
+          guide: "結構：把＋名詞（什麼事物）＋動作",
+          correctSequence: ["把空碗", "倒過來"],
+          shuffledBlocks: ["倒過來", "把空碗"],
+          hint: "💡 提示：『把空碗』＋動作『倒過來』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出雨傘收納的短語：",
+          guide: "結構：把＋名詞（什麼事物）＋動作",
+          correctSequence: ["把雨傘", "收起來"],
+          shuffledBlocks: ["收起來", "把雨傘"],
+          hint: "💡 提示：『把雨傘』＋動作『收起來』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出平板電腦方向轉換的短語：",
+          guide: "結構：把＋名詞（什麼事物）＋動作",
+          correctSequence: ["把平板", "轉過來"],
+          shuffledBlocks: ["轉過來", "把平板"],
+          hint: "💡 提示：『把平板』＋動作『轉過來』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出閱讀翻頁的短語：",
+          guide: "結構：把＋名詞（什麼事物）＋動作",
+          correctSequence: ["把書本", "翻開來"],
+          shuffledBlocks: ["翻開來", "把書本"],
+          hint: "💡 提示：『把書本』＋動作『翻開來』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出海報收拾的短語：",
+          guide: "結構：把＋名詞（什麼事物）＋動作",
+          correctSequence: ["把海報", "捲起來"],
+          shuffledBlocks: ["捲起來", "把海報"],
+          hint: "💡 提示：『把海報』＋動作『捲起來』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出使農作物更加優良的詞彙：\n「洋香瓜經過品種【　　】後，味道更甜美了。」",
+          guide: "詞義：除去缺點使其更加優良。",
+          options: [{ text: "改良", isCorrect: true }, { text: "拋棄", isCorrect: false }, { text: "腐爛", isCorrect: false }, { text: "破壞", isCorrect: false }],
+          hint: "💡 提示：調整改進讓品質更好，填『改良』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出產品提升續航力的詞彙：\n「這款手機經過【　　】後，電池的續航力變得更久了。」",
+          guide: "說明：產品設計改進。",
+          options: [{ text: "改良", isCorrect: true }, { text: "老化", isCorrect: false }, { text: "折舊", isCorrect: false }, { text: "生鏽", isCorrect: false }],
+          hint: "💡 提示：技術經過改進升級，用『改良』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出發明家突破的詞彙：\n「經過多次實驗，愛迪生終於成功【　　】了燈泡。」",
+          guide: "說明：改善燈泡缺點讓壽命延長。",
+          options: [{ text: "改良", isCorrect: true }, { text: "損壞", isCorrect: false }, { text: "拆卸", isCorrect: false }, { text: "隱匿", isCorrect: false }],
+          hint: "💡 提示：除去缺點並提升效能，填『改良』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出提升學習效率的詞彙：\n「為了提升讀書效率，他【　　】了自己的筆記方法，成績進步了。」",
+          guide: "說明：改善方法習慣。",
+          options: [{ text: "改良", isCorrect: true }, { text: "遺忘", isCorrect: false }, { text: "放棄", isCorrect: false }, { text: "隱藏", isCorrect: false }],
+          hint: "💡 提示：修正筆記方式讓效率更好，填『改良』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出往事湧上心頭的詞彙：\n「見到眼前的景象，十幾年前的往事一一【　　】心頭。」",
+          guide: "詞義：顯現、湧現。",
+          options: [{ text: "浮現", isCorrect: true }, { text: "沉沒", isCorrect: false }, { text: "飄走", isCorrect: false }, { text: "隱退", isCorrect: false }],
+          hint: "💡 提示：記憶湧現心頭，用『浮現』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出回憶出現在腦海的詞彙：\n「看到這張照片，童年的快樂回憶立刻【　　】在我的腦海裡。」",
+          guide: "說明：記憶鮮明湧現。",
+          options: [{ text: "浮現", isCorrect: true }, { text: "退落", isCorrect: false }, { text: "蒸發", isCorrect: false }, { text: "消散", isCorrect: false }],
+          hint: "💡 提示：回憶顯現於腦中，填『浮現』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出笑容顯露在臉上的詞彙：\n「聽到老師的稱讚，他的臉上【　　】出得意的笑容。」",
+          guide: "說明：神情顯露。",
+          options: [{ text: "浮現", isCorrect: true }, { text: "潛藏", isCorrect: false }, { text: "掩飾", isCorrect: false }, { text: "沉重", isCorrect: false }],
+          hint: "💡 提示：臉龐露出了笑容，用『浮現』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出琴聲喚起回憶的詞彙：\n「聽到熟悉的旋律，練琴的點點滴滴又【　　】在眼前。」",
+          guide: "說明：歷歷在目的景象重現。",
+          options: [{ text: "浮現", isCorrect: true }, { text: "逃跑", isCorrect: false }, { text: "掩埋", isCorrect: false }, { text: "隱蔽", isCorrect: false }],
+          hint: "💡 提示：畫面重現於眼前，填『浮現』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【遞進複句】請選出加重更費力步驟的關聯詞：\n「梨農為梨花遮雨，【　　】要貼膠帶，【　　】要綁線，實在很花時間。」",
+          guide: "說明：強調第二件更費力的事，語意更進一層。",
+          options: [{ text: "不只……還要……", isCorrect: true }, { text: "因為……所以……", isCorrect: false }, { text: "雖然……但是……", isCorrect: false }, { text: "只要……就……", isCorrect: false }],
+          hint: "💡 提示：除貼膠帶外更進一步要綁線，填『不只……還要……』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【遞進複句】請選出煮晚餐步驟的遞進詞：\n「爸爸準備晚餐，【　　】要洗菜、切菜，【　　】要控制火候。」",
+          guide: "說明：控制火候比洗切更進一層。",
+          options: [{ text: "不只……還要……", isCorrect: true }, { text: "一會兒……一會兒……", isCorrect: false }, { text: "如果……就……", isCorrect: false }, { text: "為了……還要……", isCorrect: false }],
+          hint: "💡 提示：多個步驟且難度遞進，用『不只……還要……』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【遞進複句】請選出打掃教室的遞進詞：\n「值日生打掃教室，【　　】要掃地、拖地，【　　】要清理垃圾桶。」",
+          guide: "說明：多項清潔工作遞進。",
+          options: [{ text: "不只……還要……", isCorrect: true }, { text: "哪怕……也是……", isCorrect: false }, { text: "既然……就要……", isCorrect: false }, { text: "除了……只要……", isCorrect: false }],
+          hint: "💡 提示：強調責任更多更細，填『不只……還要……』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【遞進複句】請選出贏球關鍵的遞進詞：\n「球員參加比賽，【　　】要加強體能，【　　】要培養默契，才有機會奪冠。」",
+          guide: "說明：默契比體能更難能可貴。",
+          options: [{ text: "不只……還要……", isCorrect: true }, { text: "雖然……可是……", isCorrect: false }, { text: "無論……都……", isCorrect: false }, { text: "要是……就……", isCorrect: false }],
+          hint: "💡 提示：除了體能外更要默契，填『不只……還要……』。"
+        }
+      ],
+
+      stage06: [
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出新文具光彩奪目的短語：",
+          guide: "結構：疊字形容詞（怎麼樣）＋的＋名詞（東西）",
+          correctSequence: ["閃亮亮的", "鉛筆"],
+          shuffledBlocks: ["鉛筆", "閃亮亮的"],
+          hint: "💡 提示：『閃亮亮的』＋『鉛筆』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出漆黑深邃洞穴的短語：",
+          guide: "結構：疊字形容詞（怎麼樣）＋的＋名詞（東西）",
+          correctSequence: ["黑漆漆的", "山洞"],
+          shuffledBlocks: ["山洞", "黑漆漆的"],
+          hint: "💡 提示：『黑漆漆的』＋『山洞』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出熟透水果的短語：",
+          guide: "結構：疊字形容詞（怎麼樣）＋的＋名詞（東西）",
+          correctSequence: ["紅通通的", "蘋果"],
+          shuffledBlocks: ["蘋果", "紅通通的"],
+          hint: "💡 提示：『紅通通的』＋『蘋果』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出春意盎然原野的短語：",
+          guide: "結構：疊字形容詞（怎麼樣）＋的＋名詞（東西）",
+          correctSequence: ["綠油油的", "草地"],
+          shuffledBlocks: ["草地", "綠油油的"],
+          hint: "💡 提示：『綠油油的』＋『草地』。"
+        },
+        {
+          type: "order",
+          category: "短語",
+          prompt: "請依序拼出陰沉天空的短語：",
+          guide: "結構：疊字形容詞（怎麼樣）＋的＋名詞（東西）",
+          correctSequence: ["灰濛濛的", "天空"],
+          shuffledBlocks: ["天空", "灰濛濛的"],
+          hint: "💡 提示：『灰濛濛的』＋『天空』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出調配新色彩的詞彙：\n「畫家將紅色與黃色顏料【　　】後，調配出像夕陽一樣的橘色。」",
+          guide: "詞義：摻雜調和在一起。",
+          options: [{ text: "混合", isCorrect: true }, { text: "分離", isCorrect: false }, { text: "蒸發", isCorrect: false }, { text: "風乾", isCorrect: false }],
+          hint: "💡 提示：將顏料拌在一起，填『混合』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出調製香濃拿鐵的詞彙：\n「爸爸喜歡在早晨，喝一杯由咖啡與鮮奶【　　】而成的拿鐵。」",
+          guide: "說明：液體調和。",
+          options: [{ text: "混合", isCorrect: true }, { text: "沉澱", isCorrect: false }, { text: "分層", isCorrect: false }, { text: "凝固", isCorrect: false }],
+          hint: "💡 提示：咖啡與鮮奶調勻，用『混合』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出大自然氣息交融的詞彙：\n「雨後的森林裡，空氣中【　　】著泥土的芳香與青草的氣息。」",
+          guide: "說明：兩種芬芳交融。",
+          options: [{ text: "混合", isCorrect: true }, { text: "對立", isCorrect: false }, { text: "消失", isCorrect: false }, { text: "抗拒", isCorrect: false }],
+          hint: "💡 提示：香氣交織在一起，填『混合』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出打綜合果汁的詞彙：\n「這杯果汁是用蘋果和香蕉【　　】打成的，喝起來香甜濃郁。」",
+          guide: "說明：水果食材攪拌調和。",
+          options: [{ text: "混合", isCorrect: true }, { text: "削皮", isCorrect: false }, { text: "切片", isCorrect: false }, { text: "烘烤", isCorrect: false }],
+          hint: "💡 提示：多種食材拌勻打汁，填『混合』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出筆芯受力折斷的詞彙：\n「如果你直接拿筆芯來書寫，不但容易【　　】，手還會變黑。」",
+          guide: "詞義：斷掉裂開。",
+          options: [{ text: "斷裂", isCorrect: true }, { text: "生長", isCorrect: false }, { text: "彎曲", isCorrect: false }, { text: "變粗", isCorrect: false }],
+          hint: "💡 提示：筆芯太細用力會折斷，用『斷裂』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出橋樑受損的詞彙：\n「這座橋因強烈地震而【　　】，造成往來交通的不便。」",
+          guide: "說明：建築物斷折損毀。",
+          options: [{ text: "斷裂", isCorrect: true }, { text: "延伸", isCorrect: false }, { text: "加固", isCorrect: false }, { text: "拓寬", isCorrect: false }],
+          hint: "💡 提示：橋身斷折裂開，填『斷裂』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出甲板損壞緊急情況的詞彙：\n「甲板都快【　　】了，如果現在還不棄船逃生，就來不及了！」",
+          guide: "說明：船身結構斷折破損。",
+          options: [{ text: "斷裂", isCorrect: true }, { text: "漂浮", isCorrect: false }, { text: "保養", isCorrect: false }, { text: "建造", isCorrect: false }],
+          hint: "💡 提示：木板即將折斷，用『斷裂』。"
+        },
+        {
+          type: "choice",
+          category: "造句",
+          prompt: "請選出牙齒折斷的詞彙：\n「妹妹因為騎車摔倒，造成門牙【　　】。」",
+          guide: "說明：硬物斷裂開損。",
+          options: [{ text: "斷裂", isCorrect: true }, { text: "增長", isCorrect: false }, { text: "換牙", isCorrect: false }, { text: "整齊", isCorrect: false }],
+          hint: "💡 提示：牙齒摔斷裂開，填『斷裂』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【假設複句】請選出假設前提與結果的關聯詞：\n「【　　】你能幫忙做家事，【　　】能為爸媽分擔許多工作。」",
+          guide: "說明：前面假設某件事，後面說明會有的結果。",
+          options: [{ text: "如果……就……", isCorrect: true }, { text: "因為……所以……", isCorrect: false }, { text: "不但……而且……", isCorrect: false }, { text: "雖然……可是……", isCorrect: false }],
+          hint: "💡 提示：假設條件句，用『如果……就……』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【假設複句】請選出分享玩具交友的關聯詞：\n「【　　】你願意把玩具分享給同學，【　　】能交到新朋友。」",
+          guide: "說明：假設主動分享，就會帶來人際好結果。",
+          options: [{ text: "如果……就……", isCorrect: true }, { text: "一會兒……一會兒……", isCorrect: false }, { text: "為了……還要……", isCorrect: false }, { text: "哪怕……也是……", isCorrect: false }],
+          hint: "💡 提示：假設與結果，填『如果……就……』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【假設複句】請選出冒雨衝回家的假設句：\n「【　　】你冒著大雨衝回家，衣服【　　】會全部溼透。」",
+          guide: "說明：假設冒雨的壞處結果。",
+          options: [{ text: "如果……就……", isCorrect: true }, { text: "只要……難道……", isCorrect: false }, { text: "既然……也是……", isCorrect: false }, { text: "即使……除非……", isCorrect: false }],
+          hint: "💡 提示：假設情況發生，用『如果……就……』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【假設複句】請選出堆放雜物的假設句：\n「【　　】你都把雜物堆在抽屜裡，抽屜【　　】會卡住打不開。」",
+          guide: "說明：不良習慣造成的後果。",
+          options: [{ text: "如果……就……", isCorrect: true }, { text: "雖然……因而……", isCorrect: false }, { text: "不只……因此……", isCorrect: false }, { text: "與其……何不……", isCorrect: false }],
+          hint: "💡 提示：假設把雜物亂塞，填『如果……就……』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【條件複句】請選出特定動作下產生結果的關聯詞：\n「你【　　】輕輕的按一按，筆芯【　　】會自動跑出來。」",
+          guide: "說明：在此條件下，結果必然發生。",
+          options: [{ text: "只要……就……", isCorrect: true }, { text: "雖然……可是……", isCorrect: false }, { text: "不但……而且……", isCorrect: false }, { text: "一會兒……一會兒……", isCorrect: false }],
+          hint: "💡 提示：按壓條件達成後筆芯即出，填『只要……就……』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【條件複句】請選出吹口哨喚狗的關聯詞：\n「我【　　】吹吹口哨，小狗【　　】會搖著尾巴跑過來。」",
+          guide: "說明：口哨條件引發小狗跑來。",
+          options: [{ text: "只要……就……", isCorrect: true }, { text: "因為……所以……", isCorrect: false }, { text: "為了……還要……", isCorrect: false }, { text: "即使……可是……", isCorrect: false }],
+          hint: "💡 提示：條件達成即產生結果，用『只要……就……』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【條件複句】請選出魔術變花的條件句：\n「魔術師【　　】往帽子點一下，一束花【　　】會從帽子裡跳出來。」",
+          guide: "說明：輕點帽子的奇妙條件。",
+          options: [{ text: "只要……就……", isCorrect: true }, { text: "如果……而且……", isCorrect: false }, { text: "雖然……但是……", isCorrect: false }, { text: "不只……並且……", isCorrect: false }],
+          hint: "💡 提示：一達到條件即刻變出花朵，用『只要……就……』。"
+        },
+        {
+          type: "choice",
+          category: "句型",
+          prompt: "【條件複句】請選出寫完作業安排時間的條件句：\n「放學後，我【　　】完成學校作業，【　　】能自由安排時間。」",
+          guide: "說明：完成作業的前提條件。",
+          options: [{ text: "只要……就……", isCorrect: true }, { text: "雖然……可是……", isCorrect: false }, { text: "即使……難道……", isCorrect: false }, { text: "不只……還是……", isCorrect: false }],
+          hint: "💡 提示：作業完成條件具備後即可自由活動，填『只要……就……』。"
+        }
+      ]
+    };
+
+    /* 關卡定義與怪物設定 */
+    const GAME_STAGES = [
+      {
+        stageId: "stage01",
+        stageName: "時光鐘樓",
+        lesson: "第 1 課《時間是什麼》",
+        icon: "⏳",
+        badgeName: "時之流轉勳章",
+        badgeEmoji: "⏳",
+        summaryTags: ["動詞+得+實在+形容詞", "慢吞吞", "縮短", "一會兒…一會兒…"],
+        battles: [
+          { enemyName: "時光發條獺", maxHp: 2, isBoss: false, svg: getSvg("otter") },
+          { enemyName: "慢速蝸牛靈", maxHp: 2, isBoss: false, svg: getSvg("snail") },
+          { enemyName: "時間斑馬魔像", maxHp: 3, isBoss: true, svg: getSvg("zebra") }
+        ]
+      },
+      {
+        stageId: "stage02",
+        stageName: "便利森林",
+        lesson: "第 2 課《妙用便利貼》",
+        icon: "📜",
+        badgeName: "妙用秩序勳章",
+        badgeEmoji: "📜",
+        summaryTags: ["動詞+在+形容詞+的+地方", "事情+變得有+改變", "果然", "為了…", "…而且…"],
+        battles: [
+          { enemyName: "便利飛蝠靈", maxHp: 2, isBoss: false, svg: getSvg("bat") },
+          { enemyName: "規律長頸鹿", maxHp: 2, isBoss: false, svg: getSvg("giraffe") },
+          { enemyName: "秩序列印巨魔", maxHp: 3, isBoss: true, svg: getSvg("printer") }
+        ]
+      },
+      {
+        stageId: "stage03",
+        stageName: "晨曦書齋",
+        lesson: "第 3 課《提早五分鐘》",
+        icon: "⏰",
+        badgeName: "提早明覺勳章",
+        badgeEmoji: "⏰",
+        summaryTags: ["誰是不做事的", "不…就不…", "來不及", "足夠", "…讓…", "因為…所以…"],
+        battles: [
+          { enemyName: "守時小鬧鐘靈", maxHp: 2, isBoss: false, svg: getSvg("clock") },
+          { enemyName: "匆忙小飛鳥", maxHp: 2, isBoss: false, svg: getSvg("bird") },
+          { enemyName: "暮鼓晨鐘領主", maxHp: 3, isBoss: true, svg: getSvg("bell") }
+        ]
+      },
+      {
+        stageId: "stage04",
+        stageName: "湧泉峽谷",
+        lesson: "第 4 課《水滾了》",
+        icon: "🍵",
+        badgeName: "沸騰靜定勳章",
+        badgeEmoji: "🔥",
+        summaryTags: ["疊字形容詞+的+空間+方位", "招呼/照顧某人", "接待", "解決", "當…", "…可是…"],
+        battles: [
+          { enemyName: "霧中清泉獸", maxHp: 2, isBoss: false, svg: getSvg("water") },
+          { enemyName: "溫泉迎賓龜", maxHp: 2, isBoss: false, svg: getSvg("turtle") },
+          { enemyName: "沸騰滾水炎魔", maxHp: 3, isBoss: true, svg: getSvg("flame") }
+        ]
+      },
+      {
+        stageId: "stage05",
+        stageName: "果香花園",
+        lesson: "第 5 課《為梨花撐傘》",
+        icon: "🌸",
+        badgeName: "梨花守護勳章",
+        badgeEmoji: "🌸",
+        summaryTags: ["事物+四字形容詞", "把+事物+動作", "改良", "浮現", "不只…還要…"],
+        battles: [
+          { enemyName: "花海甜露鹿", maxHp: 2, isBoss: false, svg: getSvg("deer") },
+          { enemyName: "撐傘小藤童", maxHp: 2, isBoss: false, svg: getSvg("sprout") },
+          { enemyName: "梨花守護傘仙", maxHp: 3, isBoss: true, svg: getSvg("umbrella") }
+        ]
+      },
+      {
+        stageId: "stage06",
+        stageName: "鉛筆工坊",
+        lesson: "第 6 課《小鉛筆大學問》",
+        icon: "✏️",
+        badgeName: "神工筆墨勳章",
+        badgeEmoji: "✏️",
+        summaryTags: ["疊字形容詞+的+名詞", "混合", "斷裂", "如果…就…", "只要…就…"],
+        battles: [
+          { enemyName: "彩色筆芯鳥", maxHp: 2, isBoss: false, svg: getSvg("pencil") },
+          { enemyName: "調色頑皮精", maxHp: 2, isBoss: false, svg: getSvg("paint") },
+          { enemyName: "刻印金筆魔導王", maxHp: 3, isBoss: true, svg: getSvg("wizard") }
+        ]
+      }
+    ];
+
+    function getSvg(type) {
+      switch(type) {
+        case "otter":
+          return `<svg width="44" height="44" viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" fill="#38bdf8"/><circle cx="38" cy="45" r="4" fill="#000"/><circle cx="62" cy="45" r="4" fill="#000"/><ellipse cx="50" cy="58" rx="8" ry="5" fill="#fff"/></svg>`;
+        case "snail":
+          return `<svg width="44" height="44" viewBox="0 0 100 100"><ellipse cx="45" cy="65" rx="35" ry="14" fill="#fde047"/><circle cx="60" cy="45" r="24" fill="#f59e0b" stroke="#b45309" stroke-width="3"/></svg>`;
+        case "zebra":
+          return `<svg width="44" height="44" viewBox="0 0 100 100"><circle cx="50" cy="50" r="36" fill="#e0e7ff" stroke="#4338ca" stroke-width="3"/><path d="M30 25 L45 50 L30 75" stroke="#1e1b4b" stroke-width="4" fill="none"/></svg>`;
+        case "bat":
+          return `<svg width="44" height="44" viewBox="0 0 100 100"><polygon points="50,20 15,75 85,75" fill="#6ee7b7"/><circle cx="50" cy="45" r="14" fill="#059669"/></svg>`;
+        case "giraffe":
+          return `<svg width="44" height="44" viewBox="0 0 100 100"><rect x="44" y="25" width="12" height="45" fill="#f59e0b" rx="6"/><circle cx="50" cy="22" r="14" fill="#fbbf24"/></svg>`;
+        case "printer":
+          return `<svg width="44" height="44" viewBox="0 0 100 100"><rect x="25" y="25" width="50" height="50" fill="#047857" rx="8" stroke="#facc15" stroke-width="3"/><rect x="35" y="32" width="30" height="14" fill="#a7f3d0"/></svg>`;
+        case "clock":
+          return `<svg width="44" height="44" viewBox="0 0 100 100"><circle cx="50" cy="55" r="28" fill="#facc15" stroke="#ca8a04" stroke-width="3"/><line x1="50" y1="55" x2="50" y2="40" stroke="#000" stroke-width="3"/></svg>`;
+        case "bird":
+          return `<svg width="44" height="44" viewBox="0 0 100 100"><circle cx="50" cy="50" r="26" fill="#fdba74"/><polygon points="50,50 75,55 50,60" fill="#ea580c"/></svg>`;
+        case "bell":
+          return `<svg width="44" height="44" viewBox="0 0 100 100"><polygon points="50,15 20,80 80,80" fill="#f59e0b" stroke="#78350f" stroke-width="4"/></svg>`;
+        case "water":
+          return `<svg width="44" height="44" viewBox="0 0 100 100"><circle cx="50" cy="55" r="28" fill="#f87171"/><path d="M44 64 Q50 70 56 64" stroke="#991b1b" stroke-width="3" fill="none"/></svg>`;
+        case "turtle":
+          return `<svg width="44" height="44" viewBox="0 0 100 100"><ellipse cx="50" cy="55" rx="30" ry="20" fill="#fda4af" stroke="#be123c" stroke-width="3"/><circle cx="76" cy="45" r="10" fill="#fda4af"/></svg>`;
+        case "flame":
+          return `<svg width="44" height="44" viewBox="0 0 100 100"><circle cx="50" cy="52" r="34" fill="#dc2626" stroke="#7f1d1d" stroke-width="3"/><path d="M35 45 Q50 20 65 45" stroke="#fef08a" stroke-width="5" fill="none"/></svg>`;
+        case "deer":
+          return `<svg width="44" height="44" viewBox="0 0 100 100"><circle cx="50" cy="55" r="26" fill="#fbcfe8"/><path d="M35 32 L25 15 M65 32 L75 15" stroke="#9d174d" stroke-width="3"/></svg>`;
+        case "sprout":
+          return `<svg width="44" height="44" viewBox="0 0 100 100"><path d="M25 45 Q50 15 75 45 Z" fill="#f43f5e"/><circle cx="50" cy="60" r="14" fill="#6ee7b7"/></svg>`;
+        case "umbrella":
+          return `<svg width="44" height="44" viewBox="0 0 100 100"><polygon points="50,15 20,45 80,45" fill="#f43f5e"/><circle cx="50" cy="62" r="26" fill="#fbcfe8" stroke="#be123c" stroke-width="3"/></svg>`;
+        case "pencil":
+          return `<svg width="44" height="44" viewBox="0 0 100 100"><polygon points="50,15 35,45 65,45" fill="#1e1b4b"/><rect x="42" y="45" width="16" height="30" fill="#facc15"/></svg>`;
+        case "paint":
+          return `<svg width="44" height="44" viewBox="0 0 100 100"><circle cx="50" cy="50" r="28" fill="#ddd6fe"/><circle cx="35" cy="60" r="5" fill="#ef4444"/><circle cx="50" cy="64" r="5" fill="#3b82f6"/></svg>`;
+        case "wizard":
+          return `<svg width="44" height="44" viewBox="0 0 100 100"><polygon points="50,5 20,85 80,85" fill="#4c1d95" stroke="#facc15" stroke-width="3"/><circle cx="50" cy="55" r="14" fill="#facc15"/></svg>`;
+        default:
+          return `<svg width="44" height="44" viewBox="0 0 100 100"><circle cx="50" cy="50" r="30" fill="#6366f1"/></svg>`;
+      }
+    }
+
+    /* ============================================================
+       2. Web Audio API 音效引擎
+       ============================================================ */
+    class RetroAudioEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+
+      initCtx() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playClick() {
+        if (!this.enabled) return;
+        this.initCtx();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.05);
+        gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.06);
+      }
+
+      playBlockPlace() {
+        if (!this.enabled) return;
+        this.initCtx();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(520, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(660, this.ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.09);
+      }
+
+      playHit() {
+        if (!this.enabled) return;
+        this.initCtx();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(160, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.16);
+        gain.gain.setValueAtTime(0.28, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.16);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.17);
+      }
+
+      playCorrect() {
+        if (!this.enabled) return;
+        this.initCtx();
+        const now = this.ctx.currentTime;
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.07);
+          gain.gain.setValueAtTime(0.2, now + idx * 0.07);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.07 + 0.12);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + idx * 0.07);
+          osc.stop(now + idx * 0.07 + 0.13);
+        });
+      }
+
+      playWrong() {
+        if (!this.enabled) return;
+        this.initCtx();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, this.ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(110, this.ctx.currentTime + 0.25);
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.26);
+      }
+
+      playFanfare() {
+        if (!this.enabled) return;
+        this.initCtx();
+        const now = this.ctx.currentTime;
+        const notes = [
+          { f: 523.25, d: 0.1 },
+          { f: 659.25, d: 0.1 },
+          { f: 783.99, d: 0.1 },
+          { f: 1046.50, d: 0.35 }
+        ];
+        let delay = 0;
+        notes.forEach(n => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(n.f, now + delay);
+          gain.gain.setValueAtTime(0.25, now + delay);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + delay + n.d);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + delay);
+          osc.stop(now + delay + n.d + 0.02);
+          delay += n.d;
+        });
+      }
+    }
+
+    const sound = new RetroAudioEngine();
+
+    function toggleAudio() {
+      sound.enabled = !sound.enabled;
+      document.getElementById('audio-toggle').innerText = sound.enabled ? '🔊' : '🔇';
+      if (sound.enabled) sound.playClick();
+    }
+
+    /* ============================================================
+       3. 存檔與狀態機
+       ============================================================ */
+    const STORAGE_KEY = 'SENTENCE_RPG_SAVE_V2';
+
+    let userState = {
+      level: 1,
+      exp: 0,
+      coins: 0,
+      completedStages: {},
+      unlockedBadges: []
+    };
+
+    function loadSave() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) userState = JSON.parse(saved);
+      } catch (e) {
+        console.error(e);
+      }
+      updateTopBar();
+    }
+
+    function saveGame() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(userState));
+      } catch (e) {
+        console.error(e);
+      }
+      updateTopBar();
+    }
+
+    function updateTopBar() {
+      document.getElementById('player-level').innerText = `Lv. ${userState.level}`;
+      document.getElementById('player-coins').innerText = userState.coins;
+      const expNeeded = userState.level * 100;
+      const pct = Math.min(100, Math.round((userState.exp / expNeeded) * 100));
+      document.getElementById('player-exp-bar').style.width = `${pct}%`;
+    }
+
+    function addExpAndCoins(expGain, coinGain) {
+      userState.exp += expGain;
+      userState.coins += coinGain;
+      const expNeeded = userState.level * 100;
+      if (userState.exp >= expNeeded) {
+        userState.level += 1;
+        userState.exp -= expNeeded;
+        sound.playFanfare();
+      }
+      saveGame();
+    }
+
+    function switchView(viewName) {
+      sound.playClick();
+      document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+      const target = document.getElementById(`view-${viewName}`);
+      if (target) target.classList.add('active');
+
+      const tabs = { map: 0, grimoire: 1, badges: 2 };
+      if (tabs[viewName] !== undefined) {
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        if (tabBtns[tabs[viewName]]) tabBtns[tabs[viewName]].classList.add('active');
+      }
+
+      if (viewName === 'map') renderMap();
+      if (viewName === 'grimoire') renderGrimoire();
+      if (viewName === 'badges') renderBadges();
+    }
+
+    /* ============================================================
+       4. 地圖渲染
+       ============================================================ */
+    function renderMap() {
+      const container = document.getElementById('stages-container');
+      container.innerHTML = '';
+
+      GAME_STAGES.forEach((stage, idx) => {
+        const prevStageId = idx > 0 ? GAME_STAGES[idx - 1].stageId : null;
+        const isUnlocked = idx === 0 || (prevStageId && (userState.completedStages[prevStageId] || 0) > 0);
+        const starsCount = userState.completedStages[stage.stageId] || 0;
+        let starStr = '';
+        for (let i = 0; i < 3; i++) starStr += i < starsCount ? '⭐' : '☆';
+
+        const card = document.createElement('div');
+        card.className = `stage-card ${isUnlocked ? '' : 'locked'}`;
+        card.onclick = () => { if (isUnlocked) startStage(stage.stageId); };
+
+        card.innerHTML = `
+          <div class="stage-header">
+            <div class="stage-icon">${stage.icon}</div>
+            <div class="stage-stars">${isUnlocked ? starStr : '🔒 未解鎖'}</div>
+          </div>
+          <div>
+            <div class="stage-lesson">${stage.lesson}</div>
+            <div class="stage-title">${stage.stageName}</div>
+          </div>
+          <div class="stage-tags">
+            ${stage.summaryTags.map(t => `<span class="tag-pill">${t}</span>`).join('')}
+          </div>
+          <button class="stage-card-btn">${isUnlocked ? (starsCount > 0 ? '再次挑戰 ⚔️' : '進入聖殿 ⚔️') : '尚未解鎖'}</button>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    /* ============================================================
+       5. 戰鬥系統（保證絕不重複的抽題洗牌隊列機制）
+       ============================================================ */
+    let currentStage = null;
+    let battleIndex = 0;
+    let currentBattle = null;
+    let currentQuestion = null;
+    let enemyCurrentHp = 0;
+    let playerCurrentHp = 3;
+    let stageMistakes = 0;
+
+    let stageQuestionQueue = [];
+    let chosenSlots = [];
+
+    function startStage(stageId) {
+      sound.playClick();
+      currentStage = GAME_STAGES.find(s => s.stageId === stageId);
+      battleIndex = 0;
+      stageMistakes = 0;
+      playerCurrentHp = 3;
+
+      const allQuestions = JSON.parse(JSON.stringify(RAW_STAGE_QUESTIONS[stageId] || []));
+      for (let i = allQuestions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [allQuestions[i], allQuestions[j]] = [allQuestions[j], allQuestions[i]];
+      }
+      stageQuestionQueue = allQuestions;
+
+      document.getElementById('battle-stage-title').innerText = `${currentStage.icon} ${currentStage.stageName}`;
+      updatePlayerHpUI();
+
+      switchView('battle');
+      loadBattle(battleIndex);
+    }
+
+    function loadBattle(idx) {
+      currentBattle = currentStage.battles[idx];
+      enemyCurrentHp = currentBattle.maxHp;
+
+      document.getElementById('battle-progress').innerText = `第 ${idx + 1} / ${currentStage.battles.length} 隻守護獸`;
+      document.getElementById('enemy-name').innerText = currentBattle.enemyName;
+      document.getElementById('enemy-tag').innerHTML = currentBattle.isBoss ? '<span class="boss-tag">BOSS</span>' : '';
+      document.getElementById('enemy-avatar').innerHTML = currentBattle.svg;
+      updateEnemyHpUI();
+
+      fetchNextQuestion();
+    }
+
+    function fetchNextQuestion() {
+      if (stageQuestionQueue.length === 0) {
+        const reload = JSON.parse(JSON.stringify(RAW_STAGE_QUESTIONS[currentStage.stageId] || []));
+        for (let i = reload.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [reload[i], reload[j]] = [reload[j], reload[i]];
+        }
+        stageQuestionQueue = reload;
+      }
+
+      currentQuestion = stageQuestionQueue.pop();
+      renderQuestion(currentQuestion);
+    }
+
+    function renderQuestion(q) {
+      document.getElementById('hint-box').classList.remove('show');
+      document.getElementById('hint-box').innerText = q.hint;
+      document.getElementById('quest-prompt').innerText = q.prompt;
+      document.getElementById('quest-guide').innerText = q.guide;
+      document.getElementById('quest-pool-counter').innerText = `全新例句（剩餘 ${stageQuestionQueue.length} 題）`;
+
+      const orderArea = document.getElementById('ordering-area');
+      const optArea = document.getElementById('options-container');
+
+      if (q.type === 'order') {
+        document.getElementById('quest-badge').innerText = '✨ 題型：短語依序拼裝';
+        document.getElementById('battle-tip-text').innerText = '點選詞塊放入槽中，再按發動！';
+        orderArea.style.display = 'flex';
+        optArea.style.display = 'none';
+
+        chosenSlots = [];
+        renderOrderingPool(q.shuffledBlocks);
+        renderTargetSlots();
+      } else {
+        document.getElementById('quest-badge').innerText = q.guide.includes('複句') ? '⚡ 題型：終極複句詠唱' : '🔮 題型：造句情境共鳴';
+        document.getElementById('battle-tip-text').innerText = '選出最適當的詞彙釋放魔法！';
+        orderArea.style.display = 'none';
+        optArea.style.display = 'grid';
+
+        renderChoiceOptions(q.options);
+      }
+    }
+
+    /* 模式 1：點選依序排列 */
+    function renderOrderingPool(blocks) {
+      const pool = document.getElementById('words-pool');
+      pool.innerHTML = '';
+
+      blocks.forEach((txt, bIdx) => {
+        const btn = document.createElement('button');
+        btn.className = 'word-block-btn';
+        btn.id = `block-${bIdx}`;
+        btn.innerText = txt;
+        btn.onclick = () => pickBlock(txt, bIdx);
+        pool.appendChild(btn);
+      });
+    }
+
+    function renderTargetSlots() {
+      const target = document.getElementById('target-slots');
+      target.innerHTML = '';
+
+      if (chosenSlots.length === 0) {
+        target.innerHTML = '<span class="empty-slot-tip">（請點選下方詞塊依序放入此處）</span>';
+        target.classList.remove('active-target');
+        return;
+      }
+
+      target.classList.add('active-target');
+      chosenSlots.forEach((item, sIdx) => {
+        const slotEl = document.createElement('div');
+        slotEl.className = 'slot-item';
+        slotEl.innerText = `${sIdx + 1}. ${item.text}`;
+        slotEl.onclick = () => removeSlot(sIdx);
+        target.appendChild(slotEl);
+      });
+    }
+
+    function pickBlock(text, blockIdx) {
+      sound.playBlockPlace();
+      chosenSlots.push({ text, blockIdx });
+      const blockBtn = document.getElementById(`block-${blockIdx}`);
+      if (blockBtn) blockBtn.classList.add('used');
+      renderTargetSlots();
+    }
+
+    function removeSlot(slotIndex) {
+      sound.playClick();
+      const removed = chosenSlots.splice(slotIndex, 1)[0];
+      const blockBtn = document.getElementById(`block-${removed.blockIdx}`);
+      if (blockBtn) blockBtn.classList.remove('used');
+      renderTargetSlots();
+    }
+
+    function clearOrderingSlots() {
+      sound.playClick();
+      chosenSlots = [];
+      document.querySelectorAll('.word-block-btn').forEach(b => b.classList.remove('used'));
+      renderTargetSlots();
+    }
+
+    function submitOrdering() {
+      const correct = currentQuestion.correctSequence;
+
+      if (chosenSlots.length !== correct.length) {
+        alert("請將所有詞塊依序排滿後再發動攻擊！");
+        return;
+      }
+
+      const isAllMatch = chosenSlots.every((item, idx) => item.text === correct[idx]);
+
+      if (isAllMatch) {
+        sound.playCorrect();
+        triggerAttackAnimation();
+      } else {
+        sound.playWrong();
+        stageMistakes++;
+        playerCurrentHp = Math.max(1, playerCurrentHp - 1);
+        updatePlayerHpUI();
+
+        const pf = document.getElementById('player-fighter');
+        pf.classList.add('shake');
+        setTimeout(() => pf.classList.remove('shake'), 400);
+
+        document.getElementById('hint-box').classList.add('show');
+        alert("語法結構排列順序有誤！請參考精靈提示再試一次。");
+      }
+    }
+
+    /* 模式 2：選擇題選項 */
+    function renderChoiceOptions(options) {
+      const container = document.getElementById('options-container');
+      container.innerHTML = '';
+      const letters = ['A', 'B', 'C', 'D'];
+
+      options.forEach((opt, oIdx) => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.innerHTML = `<div class="opt-badge">${letters[oIdx]}</div><span>${opt.text}</span>`;
+        btn.onclick = () => selectChoiceOption(btn, opt);
+        container.appendChild(btn);
+      });
+    }
+
+    function selectChoiceOption(btn, opt) {
+      const allBtns = document.querySelectorAll('.opt-btn');
+      allBtns.forEach(b => b.disabled = true);
+
+      if (opt.isCorrect) {
+        btn.classList.add('correct');
+        sound.playCorrect();
+        triggerAttackAnimation();
+      } else {
+        btn.classList.add('wrong');
+        sound.playWrong();
+        stageMistakes++;
+        playerCurrentHp = Math.max(1, playerCurrentHp - 1);
+        updatePlayerHpUI();
+
+        const pf = document.getElementById('player-fighter');
+        pf.classList.add('shake');
+        setTimeout(() => pf.classList.remove('shake'), 400);
+
+        document.getElementById('hint-box').classList.add('show');
+
+        allBtns.forEach((b, idx) => {
+          if (currentQuestion.options[idx].isCorrect) {
+            b.classList.add('correct');
+          }
+        });
+
+        setTimeout(() => {
+          allBtns.forEach(b => b.disabled = false);
+        }, 1200);
+      }
+    }
+
+    function triggerAttackAnimation() {
+      const pf = document.getElementById('player-fighter');
+      const ef = document.getElementById('enemy-fighter');
+      const dmg = document.getElementById('enemy-dmg');
+
+      pf.classList.add('attack');
+      setTimeout(() => {
+        pf.classList.remove('attack');
+        sound.playHit();
+        ef.classList.add('shake');
+        dmg.style.display = 'block';
+
+        enemyCurrentHp -= 1;
+        updateEnemyHpUI();
+
+        setTimeout(() => {
+          ef.classList.remove('shake');
+          dmg.style.display = 'none';
+
+          if (enemyCurrentHp <= 0) {
+            battleIndex++;
+            if (battleIndex >= currentStage.battles.length) {
+              finishStage();
+            } else {
+              loadBattle(battleIndex);
+            }
+          } else {
+            fetchNextQuestion();
+          }
+        }, 600);
+      }, 250);
+    }
+
+    function updateEnemyHpUI() {
+      const pct = Math.max(0, Math.round((enemyCurrentHp / currentBattle.maxHp) * 100));
+      document.getElementById('enemy-hp-bar').style.width = `${pct}%`;
+    }
+
+    function updatePlayerHpUI() {
+      const pct = Math.round((playerCurrentHp / 3) * 100);
+      document.getElementById('player-hp-bar').style.width = `${pct}%`;
+      document.getElementById('player-hp-text').innerText = `${pct}%`;
+    }
+
+    function toggleHint() {
+      sound.playClick();
+      document.getElementById('hint-box').classList.toggle('show');
+    }
+
+    function quitBattle() {
+      if (confirm("確定要暫離聖殿返回地圖嗎？")) {
+        sound.playClick();
+        switchView('map');
+      }
+    }
+
+    function finishStage() {
+      sound.playFanfare();
+
+      let stars = 3;
+      if (stageMistakes >= 3) stars = 1;
+      else if (stageMistakes >= 1) stars = 2;
+
+      const prevStars = userState.completedStages[currentStage.stageId] || 0;
+      if (stars > prevStars) {
+        userState.completedStages[currentStage.stageId] = stars;
+      }
+
+      if (!userState.unlockedBadges.includes(currentStage.stageId)) {
+        userState.unlockedBadges.push(currentStage.stageId);
+      }
+
+      addExpAndCoins(stars * 50, stars * 20);
+
+      document.getElementById('modal-icon').innerText = currentStage.badgeEmoji;
+      document.getElementById('modal-title').innerText = `【${currentStage.stageName}】試煉大勝利！`;
+      let starIcons = '';
+      for (let i = 0; i < stars; i++) starIcons += '⭐';
+      document.getElementById('modal-stars').innerText = starIcons;
+      document.getElementById('modal-desc').innerText = `恭喜獲得【${currentStage.badgeName}】！你已成功掌握了《${currentStage.lesson}》全部豐富的短語與造句例句！`;
+
+      document.getElementById('victory-modal').classList.add('active');
+    }
+
+    function closeVictoryModal() {
+      sound.playClick();
+      document.getElementById('victory-modal').classList.remove('active');
+      switchView('map');
+    }
+
+    /* ============================================================
+       6. 語法聖典與勳章渲染
+       ============================================================ */
+    function renderGrimoire() {
+      const container = document.getElementById('grimoire-container');
+      container.innerHTML = '';
+
+      GAME_STAGES.forEach(stage => {
+        const questions = RAW_STAGE_QUESTIONS[stage.stageId] || [];
+        const phrases = questions.filter(q => q.category === '短語');
+        const sentences = questions.filter(q => q.category === '造句');
+        const complex = questions.filter(q => q.category === '句型');
+
+        const card = document.createElement('div');
+        card.className = 'grimoire-card';
+
+        let phrasesHTML = phrases.map(p => `
+          <div class="grim-content-box" style="margin-bottom: 4px;">
+            <strong style="color: #67e8f9;">📝 結構：</strong> ${p.guide.replace('結構：', '')}<br>
+            <strong style="color: #a5f3fc;">🌟 例句：</strong> ${p.correctSequence.join(' ')}
+          </div>
+        `).join('');
+
+        let sentencesHTML = sentences.map(s => `
+          <div class="grim-content-box" style="margin-bottom: 4px;">
+            <span style="color: #fbbf24; font-weight: bold;">【${s.options.find(o=>o.isCorrect).text}】：</span> ${s.prompt.replace('\n', '<br>')}<br>
+            <span style="color: #94a3b8; font-size: 0.8rem;">💡 ${s.guide}</span>
+          </div>
+        `).join('');
+
+        let complexHTML = complex.map(c => `
+          <div class="grim-content-box" style="margin-bottom: 4px;">
+            <span style="color: #f472b6; font-weight: bold;">【${c.options.find(o=>o.isCorrect).text}】：</span> ${c.prompt.replace('\n', '<br>')}<br>
+            <span style="color: #94a3b8; font-size: 0.8rem;">💡 ${c.guide}</span>
+          </div>
+        `).join('');
+
+        card.innerHTML = `
+          <div class="grim-header">${stage.lesson} 完整例句秘笈</div>
+          <div>
+            <div class="grim-sec-title">🔹 短語練習例句庫（共 ${phrases.length} 題）</div>
+            ${phrasesHTML}
+            <div class="grim-sec-title">🔹 造句精選例句庫（共 ${sentences.length} 題）</div>
+            ${sentencesHTML}
+            <div class="grim-sec-title">🔹 句型複句例句庫（共 ${complex.length} 題）</div>
+            ${complexHTML}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderBadges() {
+      const container = document.getElementById('badges-container');
+      container.innerHTML = '';
+
+      GAME_STAGES.forEach(stage => {
+        const isUnlocked = userState.unlockedBadges.includes(stage.stageId);
+        const item = document.createElement('div');
+        item.className = `badge-item ${isUnlocked ? 'unlocked' : 'locked'}`;
+
+        item.innerHTML = `
+          <div class="badge-big-icon">${stage.badgeEmoji}</div>
+          <div class="badge-name">${stage.badgeName}</div>
+          <div class="badge-sub">${isUnlocked ? '已獲得（' + stage.stageName + '）' : '未解鎖（挑戰聖殿守護獸獲得）'}</div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSave();
+      renderMap();
+    });
+  </script>
+</body>
+</html>
