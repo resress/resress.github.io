@@ -1,6 +1,6 @@
-import {API_BASE} from './config.js?v=20261031-3';
-import {SEED} from './data.js';
-import {copy,validate,studentData,progressKey,applyEvent} from './domain.js';
+import {API_BASE} from './config.js?v=20261031-4';
+import {SEED} from './data.js?v=20261031-4';
+import {copy,validate,studentData,progressKey,applyEvent} from './domain.js?v=20261031-4';
 export const cloud=!!API_BASE;
 export const storage={get(k,fallback){try{const v=localStorage.getItem(k);return v?JSON.parse(v):fallback}catch{return fallback}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{throw Error('平板無法保存資料，請關閉無痕模式或釋放儲存空間後再試。')}}};
 let classKey=new URLSearchParams(location.hash.slice(1)).get('class')||storage.get('wind-class-key','');
@@ -18,10 +18,11 @@ export async function api(path,{method='GET',data,admin=false}={}){
 }
 function localState(){return storage.get('wind-v1-demo-state',{revision:1,draft:copy(SEED),published:copy(SEED),version:'initial-1',history:[{id:'initial-1',created:new Date().toISOString().slice(0,10),data:copy(SEED)}]})}
 function saveLocal(s){storage.set('wind-v1-demo-state',s)}
-export async function loadCurriculum(){
+export async function loadCurriculum({fresh=false}={}){
  if(!cloud){const s=localState();return{data:studentData(s.published),version:s.version}}
  if(!classKey)throw Error('請掃描老師提供的班級QR Code，或開啟班級專用連結。');
- try{const c=await api('student/curriculum');storage.set(key('curriculum'),c);return c}catch(e){if(e.status)throw e;const cached=storage.get(key('curriculum'),null);if(cached)return{...cached,offline:true};throw e}
+ let cached=storage.get(key('curriculum'),null);try{if(cached)validate(cached.data,true)}catch{cached=null}if(cached&&!fresh){api('student/curriculum').then(c=>storage.set(key('curriculum'),c)).catch(()=>{});return{...cached,offline:globalThis.navigator?.onLine===false}}
+ try{const c=await api('student/curriculum');storage.set(key('curriculum'),c);return c}catch(e){if(e.status)throw e;if(cached)return{...cached,offline:true};throw e}
 }
 export const records=seat=>storage.get(key('seat-'+seat),{});
 export const queue=()=>storage.get(key('queue'),[]);
@@ -31,9 +32,9 @@ export async function startSeat(seat){if(!cloud)return;try{const r=await api('st
 export function record(seat,lesson,char,version,c,event){
  const e={id:crypto.randomUUID(),seat,epoch:epoch(seat),lessonId:lesson.id,char,cardRevision:c.revision,version,...event},p=records(seat),k=progressKey(lesson.id,char,c.revision);p[k]=applyEvent(p[k],e);
  const before=queue();if(cloud)storage.set(key('queue'),[...before,e]);try{storage.set(key('seat-'+seat),p)}catch(err){if(cloud)storage.set(key('queue'),before);throw err}
- if(cloud)sync();return p[k];
+ if(cloud){clearTimeout(syncTimer);syncTimer=setTimeout(sync,150)}return p[k];
 }
-let syncing=false;
+let syncing=false,syncTimer;
 export async function sync(){if(!cloud||syncing)return;syncing=true;try{while(queue().length){const pending=queue(),seat=pending[0].seat,batch=pending.filter(e=>e.seat===seat).slice(0,80),r=await api('student/events',{method:'POST',data:{seat,events:batch}}),ids=new Set([...r.accepted,...r.stale]);if(!ids.size)break;storage.set(key('queue'),queue().filter(e=>!ids.has(e.id)));if(r.stale.length){storage.set(key('seat-'+seat),{});await api('student/start',{method:'POST',data:{seat}}).then(x=>storage.set(key('epoch-'+seat),x.epoch));notifySync('老師已重設進度，請重新進入課次。')}}notifySync('已同步給老師')}catch(e){notifySync(e.status?'同步暫停：'+e.message:`待同步${queue().length}筆；已保存在這台平板。`)}finally{syncing=false}}
 export const syncLabel=()=>cloud?(queue().length?`待同步${queue().length}筆`:'已保存在平板'):'本機體驗・紀錄不會回傳';
 window.addEventListener('online',sync);
@@ -46,4 +47,4 @@ export async function history(){return cloud?api('admin/history',{admin:true}):{
 export async function restore(version,revision){if(cloud)return api('admin/restore',{method:'POST',data:{version,revision},admin:true});const s=localState();if(revision!==s.revision)throw Error('教材已更新，請重新載入。');s.draft=copy(s.history.find(v=>v.id===version).data);s.revision++;saveLocal(s);return{revision:s.revision}}
 export async function report(){if(cloud)return api('admin/report',{admin:true});const seats={};for(let i=1;i<=99;i++){const p=records(i);if(Object.keys(p).length)seats[i]=p}return{seats}}
 export async function resetSeat(seat){if(cloud)return api('admin/reset',{method:'POST',data:{seat},admin:true});storage.set(key('seat-'+seat),{});return{ok:true}}
-if('serviceWorker'in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('./sw.js').catch(()=>notifySync('離線快取無法啟用，請保持網路連線。'));
+if('serviceWorker'in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('./sw.js?v=20261031-4').catch(()=>notifySync('離線快取無法啟用，請保持網路連線。'));

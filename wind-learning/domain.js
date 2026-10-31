@@ -1,6 +1,8 @@
 import {FACTS,SEED_BANK} from './data.js';
 export const copy=x=>JSON.parse(JSON.stringify(x));
 export const day=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Taipei'});
+export const sentenceLength=s=>Array.from(String(s).replace(/\s/gu,'')).length;
+export const COVER_THEMES=[['auto','依課次自動配色'],['wind','海風與雪山'],['forest','森林探險'],['ocean','藍海航行'],['town','小鎮生活'],['night','星空想像']];
 export function assert(ok,msg){if(!ok)throw Object.assign(new Error(msg),{status:400})}
 const text=(v,max)=>typeof v==='string'&&v.length>0&&v.length<=max&&!/[<>\u0000-\u0008]/.test(v);
 export function validate(data,publish=false){
@@ -16,10 +18,12 @@ export function validate(data,publish=false){
   assert(typeof c.reviewed==='boolean','請標記內容是否已審核。');
   assert(Array.isArray(c.words)&&c.words.length>=1&&c.words.length<=4,'每字需1–4個詞語。');
   for(const w of c.words)assert(text(w.word,12)&&w.word.includes(key)&&text(w.meaning,120)&&text(w.example,100)&&w.example.includes(w.word),`${key}的造詞或例句不完整，例句需包含完整詞語。`);
+  for(const w of c.words)assert(sentenceLength(w.example)>=15,`${key}的「${w.word}」例句至少15字，包含標點，空白不計。`);
   if(c.idiom)assert(text(c.idiom.word,12)&&c.idiom.word.includes(key)&&text(c.idiom.meaning,160)&&text(c.idiom.example,120)&&c.idiom.example.includes(c.idiom.word)&&/^https:\/\/dict\.(concised|idioms|revised)\.moe\.edu\.tw\//.test(c.idiom.source),`${key}的成語需有教育部來源與完整例句。`);
+  if(c.idiom)assert(sentenceLength(c.idiom.example)>=15,`${key}的成語例句至少15字，包含標點，空白不計。`);
  }
  assert(Array.isArray(data.lessons)&&data.lessons.length<=60,'課次最多60課。');const ids=new Set();
- for(const l of data.lessons){assert(/^[a-zA-Z0-9-]{1,64}$/.test(l.id)&&!ids.has(l.id),'課次代碼重複或不正確。');ids.add(l.id);assert(text(l.title,60)&&(!l.author||text(l.author,40))&&typeof l.published==='boolean','課名或課次狀態不正確。');assert(Array.isArray(l.items)&&l.items.length<=30&&new Set(l.items).size===l.items.length,'每課最多30字，不得重複。');assert(l.items.every(c=>data.bank[c]),'有生字尚未收錄。');if(publish&&l.published){assert(l.items.length>0,'公開課次至少需要一字。');assert(l.items.every(c=>data.bank[c].reviewed),'請先核准所有公開課次的生字內容。')}}return true;
+ for(const l of data.lessons){assert(!l.cover||COVER_THEMES.some(([id])=>id===l.cover),'封面主題不正確。');assert(/^[a-zA-Z0-9-]{1,64}$/.test(l.id)&&!ids.has(l.id),'課次代碼重複或不正確。');ids.add(l.id);assert(text(l.title,60)&&(!l.author||text(l.author,40))&&typeof l.published==='boolean','課名或課次狀態不正確。');assert(Array.isArray(l.items)&&l.items.length<=30&&new Set(l.items).size===l.items.length,'每課最多30字，不得重複。');assert(l.items.every(c=>data.bank[c]),'有生字尚未收錄。');if(publish&&l.published){assert(l.items.length>0,'公開課次至少需要一字。');assert(l.items.every(c=>data.bank[c].reviewed),'請先核准所有公開課次的生字內容。')}}return true;
 }
 export function questionSet(c,bank){
  const unique=x=>[...new Set(x)],others=Object.values({...SEED_BANK,...bank}).filter(x=>x.char!==c.char);
