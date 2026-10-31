@@ -1,0 +1,9 @@
+export const $=s=>document.querySelector(s);
+export const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+export const uid=()=>crypto.randomUUID();
+export const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+export function download(name,data,type='application/json'){const u=URL.createObjectURL(new Blob([data],{type})),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+export function speak(text){if(!('speechSynthesis'in window)){toast('此裝置沒有提供朗讀功能，請看文字跟讀。');return}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='zh-TW';u.rate=.8;const v=speechSynthesis.getVoices().find(x=>x.lang==='zh-TW');if(v)u.voice=v;speechSynthesis.speak(u)}
+export function toast(text){let t=$('#toast');if(!t){t=document.createElement('div');t.id='toast';t.role='status';document.body.append(t)}t.textContent=text;t.hidden=false;clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.hidden=true,6000)}
+export function errorView(e){return`<div class="notice" role="alert">${esc(e.message||e)}</div>`}
+export function sceneSvg(){return `<svg class="landscape" viewBox="0 0 560 300" role="img" aria-label="風從大海吹向雪山和原野"><circle cx="445" cy="58" r="35" fill="#efc96b"/><path d="M0 185 Q100 145 230 190 T560 185 V300 H0" fill="#bdd5cd"/><path d="M220 200 355 40 490 210" fill="#83a99f"/><path d="m355 40-55 65 43-11 24 17 31-20" fill="#fefcf4"/><path d="M0 245 Q140 170 310 245 T560 215 V300 H0" fill="#668d69"/><path d="M0 230 Q90 210 180 240 T330 240 V300 H0" fill="#6badaf"/><g fill="none" stroke="#faf6e8" stroke-width="5" stroke-linecap="round"><path d="M20 80 H200 Q240 80 240 55 T210 40"/><path d="M65 115 H275 Q310 115 310 135 T280 150"/><path d="M25 150 H145"/></g><path d="M405 225 Q445 140 470 170 Q480 210 405 225" fill="#b7cf87"/></svg>`}
