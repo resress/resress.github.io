@@ -1,4 +1,4 @@
-import{cloud,api,getToken,setToken,teacherState,saveDraft,publish,report,resetSeat,history,restore}from'./client.js';
+import{cloud,api,getToken,setToken,teacherState,saveDraft,publish,report,resetSeat,history,restore}from'./client.js?v=20261031-3';
 import{copy,validate,questionSet,summarize,progressKey,complete,ability}from'./domain.js';
 import{$,esc,toast,errorView,download,uid}from'./ui.js';
 let state,draft,page='lessons',selectedLesson='',selectedChar='',dirty=false,reportData;

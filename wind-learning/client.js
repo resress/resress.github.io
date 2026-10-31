@@ -1,4 +1,4 @@
-import {API_BASE} from './config.js';
+import {API_BASE} from './config.js?v=20261031-3';
 import {SEED} from './data.js';
 import {copy,validate,studentData,progressKey,applyEvent} from './domain.js';
 export const cloud=!!API_BASE;

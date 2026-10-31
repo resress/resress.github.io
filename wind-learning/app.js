@@ -1,4 +1,4 @@
-import{loadCurriculum,cloud,records,record as writeRecord,startSeat,sync,syncLabel}from'./client.js';
+import{loadCurriculum,cloud,records,record as writeRecord,startSeat,sync,syncLabel}from'./client.js?v=20261031-3';
 import{copy,progressKey,ability,complete,due,questionSet}from'./domain.js';
 import{$,esc,shuffle,speak,toast,errorView,sceneSvg}from'./ui.js';
 let curriculum,seat=0,lesson,char,tab=0,quizIndex=0,questions=[],isReview=false,reviewErrors=0,lastActivity=Date.now();
