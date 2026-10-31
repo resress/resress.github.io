@@ -5,6 +5,7 @@ export const sentenceLength=s=>Array.from(String(s).replace(/\s/gu,'')).length;
 export const COVER_THEMES=[['auto','依課次自動配色'],['wind','海風與雪山'],['forest','森林探險'],['ocean','藍海航行'],['town','小鎮生活'],['night','星空想像']];
 export function assert(ok,msg){if(!ok)throw Object.assign(new Error(msg),{status:400})}
 const text=(v,max)=>typeof v==='string'&&v.length>0&&v.length<=max&&!/[<>\u0000-\u0008]/.test(v);
+export function lessonCharacters(raw,bank){const chars=[...new Set(Array.from(raw).filter(c=>/\p{Script=Han}/u.test(c)))];assert(chars.length<=30,'每課最多30字。');return{items:chars.filter(c=>bank[c]),pendingChars:chars.filter(c=>!bank[c])}}
 export function validate(data,publish=false){
  assert(data&&text(data.className,40),'班級顯示名稱限1–40字。');
  assert(Number.isInteger(data.maxSeat)&&data.maxSeat>=1&&data.maxSeat<=99,'座號上限需為1–99。');
@@ -23,7 +24,7 @@ export function validate(data,publish=false){
   if(c.idiom)assert(sentenceLength(c.idiom.example)>=15,`${key}的成語例句至少15字，包含標點，空白不計。`);
  }
  assert(Array.isArray(data.lessons)&&data.lessons.length<=60,'課次最多60課。');const ids=new Set();
- for(const l of data.lessons){assert(!l.cover||COVER_THEMES.some(([id])=>id===l.cover),'封面主題不正確。');assert(/^[a-zA-Z0-9-]{1,64}$/.test(l.id)&&!ids.has(l.id),'課次代碼重複或不正確。');ids.add(l.id);assert(text(l.title,60)&&(!l.author||text(l.author,40))&&typeof l.published==='boolean','課名或課次狀態不正確。');assert(Array.isArray(l.items)&&l.items.length<=30&&new Set(l.items).size===l.items.length,'每課最多30字，不得重複。');assert(l.items.every(c=>data.bank[c]),'有生字尚未收錄。');if(publish&&l.published){assert(l.items.length>0,'公開課次至少需要一字。');assert(l.items.every(c=>data.bank[c].reviewed),'請先核准所有公開課次的生字內容。')}}return true;
+ for(const l of data.lessons){assert(!l.cover||COVER_THEMES.some(([id])=>id===l.cover),'封面主題不正確。');assert(/^[a-zA-Z0-9-]{1,64}$/.test(l.id)&&!ids.has(l.id),'課次代碼重複或不正確。');ids.add(l.id);assert(text(l.title,60)&&(!l.author||text(l.author,40))&&typeof l.published==='boolean','課名或課次狀態不正確。');assert(Array.isArray(l.items)&&l.items.length<=30&&new Set(l.items).size===l.items.length,'每課最多30字，不得重複。');assert(l.items.every(c=>data.bank[c]),'有生字尚未收錄。');assert(!l.pendingChars||(Array.isArray(l.pendingChars)&&l.items.length+l.pendingChars.length<=30&&new Set(l.pendingChars).size===l.pendingChars.length&&l.pendingChars.every(c=>typeof c==='string'&&Array.from(c).length===1&&/\p{Script=Han}/u.test(c)&&!data.bank[c])),'待補生字格式不正確。');if(publish&&l.published){assert(!l.pendingChars?.length,'課次還有待補生字，完成教材查核後才能發布。');assert(l.items.length>0,'公開課次至少需要一字。');assert(l.items.every(c=>data.bank[c].reviewed),'請先核准所有公開課次的生字內容。')}}return true;
 }
 export function questionSet(c,bank){
  const unique=x=>[...new Set(x)],others=Object.values({...SEED_BANK,...bank}).filter(x=>x.char!==c.char);
