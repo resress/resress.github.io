@@ -1,6 +1,6 @@
-import{loadCurriculum,cloud,records,record as writeRecord,startSeat,sync,syncLabel}from'./client.js?v=20261031-5';
-import{copy,progressKey,ability,complete,due,questionSet}from'./domain.js?v=20261031-5';
-import{$,esc,shuffle,speak,toast,errorView,sceneSvg,lessonCover}from'./ui.js?v=20261031-5';
+import{loadCurriculum,cloud,records,record as writeRecord,startSeat,sync,syncLabel}from'./client.js?v=20261031-6';
+import{copy,progressKey,ability,complete,due,questionSet}from'./domain.js?v=20261031-6';
+import{$,esc,shuffle,speak,toast,errorView,sceneSvg,lessonCover}from'./ui.js?v=20261031-6';
 let curriculum,seat=0,lesson,char,tab=0,quizIndex=0,questions=[],isReview=false,reviewErrors=0,lastActivity=Date.now();
 const app=$('#app');
 const speechSynthesis=globalThis.speechSynthesis;

@@ -1,6 +1,6 @@
-import {API_BASE} from './config.js?v=20261031-5';
-import {SEED} from './data.js?v=20261031-5';
-import {copy,validate,studentData,progressKey,applyEvent} from './domain.js?v=20261031-5';
+import {API_BASE} from './config.js?v=20261031-6';
+import {SEED} from './data.js?v=20261031-6';
+import {copy,validate,studentData,progressKey,applyEvent} from './domain.js?v=20261031-6';
 export const cloud=!!API_BASE;
 export const storage={get(k,fallback){try{const v=localStorage.getItem(k);return v?JSON.parse(v):fallback}catch{return fallback}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{throw Error('平板無法保存資料，請關閉無痕模式或釋放儲存空間後再試。')}}};
 let classKey=new URLSearchParams(location.hash.slice(1)).get('class')||storage.get('wind-class-key','');
@@ -47,4 +47,4 @@ export async function history(){return cloud?api('admin/history',{admin:true}):{
 export async function restore(version,revision){if(cloud)return api('admin/restore',{method:'POST',data:{version,revision},admin:true});const s=localState();if(revision!==s.revision)throw Error('教材已更新，請重新載入。');s.draft=copy(s.history.find(v=>v.id===version).data);s.revision++;saveLocal(s);return{revision:s.revision}}
 export async function report(){if(cloud)return api('admin/report',{admin:true});const seats={};for(let i=1;i<=99;i++){const p=records(i);if(Object.keys(p).length)seats[i]=p}return{seats}}
 export async function resetSeat(seat){if(cloud)return api('admin/reset',{method:'POST',data:{seat},admin:true});storage.set(key('seat-'+seat),{});return{ok:true}}
-if('serviceWorker'in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('./sw.js?v=20261031-5').catch(()=>notifySync('離線快取無法啟用，請保持網路連線。'));
+if('serviceWorker'in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('./sw.js?v=20261031-6').catch(()=>notifySync('離線快取無法啟用，請保持網路連線。'));

@@ -1,10 +1,11 @@
-import {FACTS,SEED_BANK} from './data.js';
+import {FACTS,SEED_BANK} from './data.js?v=20261031-6';
 export const copy=x=>JSON.parse(JSON.stringify(x));
 export const day=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Taipei'});
 export const sentenceLength=s=>Array.from(String(s).replace(/\s/gu,'')).length;
 export const COVER_THEMES=[['auto','依課次自動配色'],['wind','海風與雪山'],['forest','森林探險'],['ocean','藍海航行'],['town','小鎮生活'],['night','星空想像']];
 export function assert(ok,msg){if(!ok)throw Object.assign(new Error(msg),{status:400})}
 const text=(v,max)=>typeof v==='string'&&v.length>0&&v.length<=max&&!/[<>\u0000-\u0008]/.test(v);
+export function studentEntryUrl(state,base){const url=new URL(state?.studentUrl||'index.html',base);if(state?.classKey)url.hash='class='+encodeURIComponent(state.classKey);return url.href}
 export function lessonCharacters(raw,bank){const chars=[...new Set(Array.from(raw).filter(c=>/\p{Script=Han}/u.test(c)))];assert(chars.length<=30,'每課最多30字。');return{items:chars.filter(c=>bank[c]),pendingChars:chars.filter(c=>!bank[c])}}
 export function validate(data,publish=false){
  assert(data&&text(data.className,40),'班級顯示名稱限1–40字。');

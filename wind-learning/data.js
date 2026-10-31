@@ -1,3 +1,4 @@
+import {LESSON8_BANK} from './lesson8.js?v=20261031-6';
 // 字形事實來自教育部，教學文字自編。沒有課文全文。
 const rows = [
  ['鹹','ㄒㄧㄢˊ','鹵',20,'帶有鹽的味道。','鹹味|帶有鹽的味道。|媽媽煮的蔬菜湯鹹味剛剛好，大家都喝得很開心。','鹹水|含有鹽分的水。|我們在自然課認識鹹水，也知道海水不能直接飲用。','鹹淡|食物中鹽味的輕重。|爸爸煮湯時先試一試鹹淡，再決定要不要加鹽巴。','右邊是「咸」，左邊是「鹵」。','海邊'],
@@ -21,6 +22,7 @@ const idioms={
  '賞':['賞心悅目','看到美好的事物，覺得心情舒暢。','花園裡色彩繽紛的花朵，令人賞心悅目。','34864','ㄕㄤˇ ㄒㄧㄣ ㄩㄝˋ ㄇㄨˋ'],
  '瞞':['瞞天過海','用巧妙的手法欺騙、隱瞞別人。這是認識詞義，不是鼓勵欺騙。','他想瞞天過海藏起打破的花盆，最後還是誠實說明。','4130','ㄇㄢˊ ㄊㄧㄢ ㄍㄨㄛˋ ㄏㄞˇ']
 };
-export const FACTS=Object.fromEntries(rows.map(r=>[r[0],{sound:r[1],radical:r[2],strokes:r[3]}]));
+export const FACTS=Object.fromEntries([...rows.map(r=>[r[0],{sound:r[1],radical:r[2],strokes:r[3]}]),...Object.entries(LESSON8_BANK).map(([char,c])=>[char,{sound:c.sound,radical:c.radical,strokes:c.strokes}])]);
 export const SEED_BANK=Object.fromEntries(rows.map(r=>{const i=idioms[r[0]];return[r[0],{char:r[0],sound:r[1],radical:r[2],strokes:r[3],definition:r[4],words:r.slice(5,8).filter(Boolean).map(s=>{const[word,meaning,example]=s.split('|');return{word,meaning,example}}),hint:r[8],scene:r[9],revision:1,reviewed:true,idiom:i?{word:i[0],meaning:i[1],example:i[2],source:`https://dict.concised.moe.edu.tw/dictView.jsp?ID=${i[3]}&la=0`,sound:i[4]}:null,source:`https://stroke-order.learningweb.moe.edu.tw/dictView.jsp?ID=${r[0].codePointAt(0)}`,checkedAt:'2026-10-31'}]}));
+Object.assign(SEED_BANK,LESSON8_BANK);
 export const SEED={className:'三年級生字小旅行',maxSeat:30,bank:SEED_BANK,lessons:[{id:'lesson-7',cover:'wind',title:'第七課・風的味道',author:'賴伊麗',items:rows.map(r=>r[0]),published:true}],notice:'請搭配課本閱讀。網站不存放課文全文。'};
