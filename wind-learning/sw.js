@@ -1,4 +1,4 @@
-const CACHE='wind-v1-20261031-1';
+const CACHE='wind-v1-20261031-2';
 const BASE=['./','index.html','teacher.html','style.css','app.js','teacher.js','ui.js','client.js','data.js','domain.js','config.js','icon.svg','manifest.webmanifest','sources.html','vendor/qrcode.js',...'鹹蔚航乘橇坡野閉深吸欣賞瞞'.split('').map(c=>'assets/strokes/'+c.codePointAt(0).toString(16).toUpperCase()+'.png')];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(BASE))));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('wind-v1-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
