@@ -1,6 +1,6 @@
-import{cloud,api,getToken,setToken,teacherState,saveDraft,publish,report,resetSeat,history,restore}from'./client.js?v=20261031-7';
-import{copy,validate,questionSet,summarize,progressKey,complete,ability,COVER_THEMES,sentenceLength,lessonCharacters,studentEntryUrl,bankCharacters,lessonActivity,publicationChanges}from'./domain.js?v=20261031-7';
-import{$,esc,toast,errorView,download,uid,lessonCover}from'./ui.js?v=20261031-7';
+import{cloud,api,getToken,setToken,teacherState,saveDraft,publish,report,resetSeat,history,restore}from'./client.js?v=20261101-1';
+import{copy,validate,questionSet,summarize,progressKey,complete,ability,COVER_THEMES,sentenceLength,lessonCharacters,studentEntryUrl,bankCharacters,lessonActivity,publicationChanges}from'./domain.js?v=20261101-1';
+import{$,esc,toast,errorView,download,uid,lessonCover}from'./ui.js?v=20261101-1';
 let state,draft,page='lessons',selectedLesson='',selectedChar='',dirty=false,reportData,bankLessonId='',reportLessonId=null;
 const app=$('#app');
 let formDirty=false;
@@ -9,7 +9,7 @@ document.addEventListener('click',e=>{if(e.target.closest('[data-page],[data-edi
 document.addEventListener('change',e=>{if(['bank-char','bank-lesson'].includes(e.target.id)&&formDirty){if(!confirm('字卡欄位尚未儲存，確定捨棄修改並切換？')){e.target.value=e.target.id==='bank-char'?selectedChar:bankLessonId;e.stopImmediatePropagation()}else formDirty=false}},true);
 document.addEventListener('beforeunload',e=>{if(formDirty){e.preventDefault();e.returnValue=''}});
 async function login(){if(!cloud){app.innerHTML='<div class="card"><span class="tag">本機體驗</span><h1>先試試你的教師工作桌</h1><p>這裡只管理同一瀏覽器的教材與紀錄。正式集中報表請使用啟動程式或已部署的教師後台。</p><button id="demo">開啟本機工作桌</button></div>';$('#demo').onclick=load;return}if(getToken()){try{await load();return}catch{setToken('')}}app.innerHTML='<div class="card" style="max-width:620px;margin:40px auto"><span class="eyebrow">TEACHER WORKSPACE</span><h1>歡迎回到工作桌。</h1><p>登入後可以安排課次，查看各座號的學習情況。</p><form id="login"><label for="password">教師密碼</label><input id="password" type="password" autocomplete="current-password" required style="width:100%"><div class="toolbar"><button>登入教師後台</button></div><div id="login-error" role="alert"></div></form><p class="small">本機密碼顯示在啟動視窗；雲端密碼由部署者設定。密碼不會寫入公開檔案。</p></div>';$('#login').onsubmit=async e=>{e.preventDefault();const b=e.submitter;b.disabled=true;try{const r=await api('login',{method:'POST',data:{password:$('#password').value}});setToken(r.token);await load()}catch(err){$('#login-error').innerHTML=errorView(err);b.disabled=false}}}
-function classStudentUrl(){const url=new URL(studentEntryUrl(state,location.href));url.searchParams.set('v','20261031-7');return url.href}
+function classStudentUrl(){const url=new URL(studentEntryUrl(state,location.href));url.searchParams.set('v','20261101-1');return url.href}
 function wireStudentEntry(){document.querySelectorAll('[data-student-entry]').forEach(a=>{if(state){a.href=classStudentUrl();a.removeAttribute('aria-disabled');a.onclick=null}else{a.onclick=e=>{e.preventDefault();toast('請先登入教師後台，取得班級專用學生入口。')}}})}
 wireStudentEntry();
 async function load(){state=await teacherState();wireStudentEntry();draft=copy(state.draft);dirty=false;selectedLesson=draft.lessons[0]?.id||'';selectedChar=Object.keys(draft.bank)[0];render()}
