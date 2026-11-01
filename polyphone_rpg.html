@@ -2144,6 +2144,16 @@
       renderQuestion(currentQuestion);
     }
 
+    // 陣列隨機洗牌工具（Fisher-Yates 演算法）
+    function shuffleArray(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
     function renderQuestion(q) {
       document.getElementById('hint-box').classList.remove('show');
       document.getElementById('hint-box').innerText = q.hint;
@@ -2156,10 +2166,14 @@
       const optsContainer = document.getElementById('options-container');
       optsContainer.innerHTML = '';
 
+      // 隨機打亂選項順序，使正確答案隨機分佈在 A、B、C、D
+      const shuffledOptions = shuffleArray(q.options);
+
       const letters = ['A', 'B', 'C', 'D'];
-      q.options.forEach((opt, oIdx) => {
+      shuffledOptions.forEach((opt, oIdx) => {
         const btn = document.createElement('button');
         btn.className = 'opt-btn';
+        btn.dataset.isCorrect = opt.isCorrect ? 'true' : 'false';
         btn.innerHTML = `<div class="opt-badge">${letters[oIdx]}</div><span>${opt.text}</span>`;
         btn.onclick = () => selectOption(btn, opt);
         optsContainer.appendChild(btn);
@@ -2197,9 +2211,9 @@
         // 展開提示與解析
         document.getElementById('hint-box').classList.add('show');
 
-        // 標出正確選項
-        allBtns.forEach((b, idx) => {
-          if (currentQuestion.options[idx].isCorrect) {
+        // 標出正確選項（依據按鈕 dataset 正確標記）
+        allBtns.forEach(b => {
+          if (b.dataset.isCorrect === 'true') {
             b.classList.add('correct');
           }
         });
