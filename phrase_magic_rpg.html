@@ -2767,6 +2767,29 @@
       }
 
       currentQuestion = stageQuestionQueue.pop();
+
+      // 💥 關鍵修復：選擇題選項進行 Fisher-Yates 隨機洗牌，使正解隨機分布在 A、B、C、D 各位置
+      if (currentQuestion.options && Array.isArray(currentQuestion.options)) {
+        for (let i = currentQuestion.options.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [currentQuestion.options[i], currentQuestion.options[j]] = [currentQuestion.options[j], currentQuestion.options[i]];
+        }
+      }
+
+      // 💥 強化：短語排序題進行動態隨機打亂，確保詞塊初次排列不會剛好等於正解順序
+      if (currentQuestion.type === 'order' && currentQuestion.correctSequence && currentQuestion.correctSequence.length > 1) {
+        let blocks = [...currentQuestion.correctSequence];
+        let tries = 0;
+        do {
+          for (let i = blocks.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [blocks[i], blocks[j]] = [blocks[j], blocks[i]];
+          }
+          tries++;
+        } while (blocks.join('__') === currentQuestion.correctSequence.join('__') && tries < 20);
+        currentQuestion.shuffledBlocks = blocks;
+      }
+
       renderQuestion(currentQuestion);
     }
 
