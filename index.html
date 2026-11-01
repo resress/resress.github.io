@@ -70,6 +70,44 @@
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
 
+  <!-- 🔒 全平台 4 位數通行密碼鎖定畫面 -->
+  <div id="siteLockScreen" class="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-md flex items-center justify-center p-4 transition-opacity duration-300">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-7 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-6 text-center animate-scale-up">
+      
+      <div class="space-y-2">
+        <div class="w-16 h-16 mx-auto rounded-3xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center text-white text-2xl shadow-lg shadow-emerald-500/30">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <h2 class="text-xl font-black tracking-tight text-slate-900 dark:text-white">班級專屬教學平台</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400">請輸入 4 位數密碼以開啟平台</p>
+      </div>
+
+      <!-- 4 位數 PIN 碼輸入格 -->
+      <div class="flex justify-center items-center space-x-3 my-4">
+        <input type="password" maxlength="1" inputmode="numeric" class="pin-digit w-12 h-14 text-center text-2xl font-black rounded-2xl bg-slate-100 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 focus:outline-none focus:border-emerald-500 dark:focus:border-emerald-400 text-slate-800 dark:text-slate-100 font-mono transition-all">
+        <input type="password" maxlength="1" inputmode="numeric" class="pin-digit w-12 h-14 text-center text-2xl font-black rounded-2xl bg-slate-100 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 focus:outline-none focus:border-emerald-500 dark:focus:border-emerald-400 text-slate-800 dark:text-slate-100 font-mono transition-all">
+        <input type="password" maxlength="1" inputmode="numeric" class="pin-digit w-12 h-14 text-center text-2xl font-black rounded-2xl bg-slate-100 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 focus:outline-none focus:border-emerald-500 dark:focus:border-emerald-400 text-slate-800 dark:text-slate-100 font-mono transition-all">
+        <input type="password" maxlength="1" inputmode="numeric" class="pin-digit w-12 h-14 text-center text-2xl font-black rounded-2xl bg-slate-100 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 focus:outline-none focus:border-emerald-500 dark:focus:border-emerald-400 text-slate-800 dark:text-slate-100 font-mono transition-all">
+      </div>
+
+      <!-- 錯誤提示 -->
+      <p id="siteLockError" class="text-xs text-rose-500 font-bold hidden flex items-center justify-center space-x-1">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span>密碼錯誤，請重新輸入！</span>
+      </p>
+
+      <button onclick="checkSitePinManual()" class="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-sm shadow-md shadow-emerald-600/20 transition flex items-center justify-center space-x-2">
+        <i class="fa-solid fa-lock-open text-xs"></i>
+        <span>解鎖進入平台</span>
+      </button>
+
+      <div class="pt-2 text-[11px] text-slate-400">
+        如忘記密碼，請洽詢班級授課教師。
+      </div>
+
+    </div>
+  </div>
+
   <!-- 頂部導航欄 -->
   <header class="sticky top-0 z-30 glass-nav bg-white/85 dark:bg-slate-900/85 border-b border-slate-200/80 dark:border-slate-800/80 shadow-xs">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
@@ -112,6 +150,11 @@
           <span class="hidden sm:inline" id="manageModeText">管理項目</span>
         </button>
 
+        <!-- 🔒 手動鎖定平台 -->
+        <button onclick="lockSiteAccess()" class="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm font-medium transition flex items-center space-x-1.5" title="鎖定平台，離開座位防護">
+          <i class="fa-solid fa-lock text-base"></i>
+          <span class="hidden sm:inline">鎖定</span>
+        </button>
         <!-- 使用說明按鈕 -->
         <button onclick="toggleHelpModal()" class="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm font-medium transition flex items-center space-x-1.5" title="使用指南與教學提示">
           <i class="fa-regular fa-circle-question text-base"></i>
@@ -148,7 +191,7 @@
           <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-semibold tracking-wide uppercase">
             <span>✨ 智慧教室必備</span>
             <span class="w-1.5 h-1.5 rounded-full bg-amber-300 animate-pulse"></span>
-            <span>16 款高互動教學與闖關遊戲</span>
+            <span>17 款高互動教學與闖關遊戲</span>
           </div>
           <h2 class="text-2xl sm:text-3xl font-black tracking-tight text-white">
             打造身歷其境的課堂互動與自主學習
@@ -161,7 +204,7 @@
         <!-- 快速統計卡 -->
         <div class="grid grid-cols-2 gap-3 w-full md:w-auto shrink-0">
           <div class="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-3.5 text-center">
-            <div class="text-2xl font-black text-amber-300" id="totalToolsCount">16</div>
+            <div class="text-2xl font-black text-amber-300" id="totalToolsCount">17</div>
             <div class="text-xs font-medium text-emerald-100">精選工具總數</div>
           </div>
           <div class="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-3.5 text-center">
@@ -180,7 +223,7 @@
         <button onclick="setCategory('all')" data-cat="all" class="cat-btn px-4 py-2 rounded-xl bg-emerald-600 text-white shadow-sm font-bold transition flex items-center space-x-1.5 shrink-0">
           <i class="fa-solid fa-shapes"></i>
           <span>全部項目</span>
-          <span class="ml-1 text-xs px-1.5 py-0.5 rounded-full bg-white/20" id="badge-all">16</span>
+          <span class="ml-1 text-xs px-1.5 py-0.5 rounded-full bg-white/20" id="badge-all">17</span>
         </button>
         <button onclick="setCategory('games')" data-cat="games" class="cat-btn px-4 py-2 rounded-xl bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition flex items-center space-x-1.5 shrink-0">
           <i class="fa-solid fa-gamepad text-amber-500"></i>
@@ -640,6 +683,19 @@
     // 官方初始預設工具清單
     const initialDefaultTools = [
       {
+        id: "wind-learning",
+        title: "風的生字旅行",
+        subtitle: "依循步調慢學生字 · 筆順練習與部首探索",
+        file: "wind-learning/index.html",
+        category: "chinese",
+        icon: "fa-wind",
+        gradient: "from-teal-600 via-emerald-600 to-green-700",
+        shadow: "shadow-teal-500/20",
+        desc: "用自己的步調，讓每一個字慢慢長大！收錄國小各課生字動畫筆順、發音、部首結構與多元練習，專為自主學習精心設計。",
+        tags: ["風的生字旅行", "生字學習", "筆順動畫", "部首探索", "自學好物"],
+        badge: "人氣自學 🍃"
+      },
+      {
         id: "phrase-magic-rpg",
         title: "句構魔法使：聖言之塔的試煉",
         subtitle: "國小三年級短語與造句 · RPG 魔法冒險戰鬥",
@@ -873,10 +929,10 @@
     };
 
     // 從 LocalStorage 載入工具資料 (若無則使用官方預設)
-    let toolsData = JSON.parse(localStorage.getItem('classroom_hub_tools_v4') || 'null');
+    let toolsData = JSON.parse(localStorage.getItem('classroom_hub_tools_v5') || 'null');
     if (!toolsData || !Array.isArray(toolsData) || toolsData.length === 0) {
       toolsData = JSON.parse(JSON.stringify(initialDefaultTools));
-      localStorage.setItem('classroom_hub_tools_v4', JSON.stringify(toolsData));
+      localStorage.setItem('classroom_hub_tools_v5', JSON.stringify(toolsData));
     }
 
     // 當前狀態管理
@@ -885,8 +941,109 @@
     let isManageMode = false;
     let favorites = JSON.parse(localStorage.getItem('classroom_hub_favs') || '[]');
 
+
+    // ==========================================
+    // 🛡️ 全站 4 位數通行密碼防護邏輯 (預設 1781)
+    // ==========================================
+    const DEFAULT_SITE_PIN = '1781';
+    let isSiteUnlocked = false;
+
+    function getSitePin() {
+      // 與教師管理密碼共用，預設為 1781
+      return localStorage.getItem('classroom_hub_admin_pwd') || DEFAULT_SITE_PIN;
+    }
+
+    function initSiteLock() {
+      const lockScreen = document.getElementById('siteLockScreen');
+      const pinInputs = document.querySelectorAll('.pin-digit');
+
+      // 檢查 SessionStorage（同一次瀏覽器分頁關閉前保持登入，關閉後需重新輸入）
+      if (sessionStorage.getItem('classroom_hub_authenticated') === 'true') {
+        isSiteUnlocked = true;
+        lockScreen.classList.add('hidden');
+        return;
+      }
+
+      isSiteUnlocked = false;
+      lockScreen.classList.remove('hidden');
+
+      // 綁定 4 格 PIN 碼連續輸入與自動跳格
+      pinInputs.forEach((input, index) => {
+        input.value = '';
+        input.addEventListener('input', (e) => {
+          document.getElementById('siteLockError').classList.add('hidden');
+          if (input.value.length === 1 && index < pinInputs.length - 1) {
+            pinInputs[index + 1].focus();
+          }
+          checkSitePinAuto();
+        });
+
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace' && !input.value && index > 0) {
+            pinInputs[index - 1].focus();
+          } else if (e.key === 'Enter') {
+            checkSitePinManual();
+          }
+        });
+      });
+
+      setTimeout(() => {
+        if (!isSiteUnlocked && pinInputs[0]) pinInputs[0].focus();
+      }, 200);
+    }
+
+    function checkSitePinAuto() {
+      const pinInputs = document.querySelectorAll('.pin-digit');
+      let entered = '';
+      pinInputs.forEach(i => entered += i.value);
+      if (entered.length === 4) {
+        verifySitePin(entered);
+      }
+    }
+
+    function checkSitePinManual() {
+      const pinInputs = document.querySelectorAll('.pin-digit');
+      let entered = '';
+      pinInputs.forEach(i => entered += i.value);
+      verifySitePin(entered);
+    }
+
+    function verifySitePin(pin) {
+      const correctPin = getSitePin();
+      const lockScreen = document.getElementById('siteLockScreen');
+      const errorEl = document.getElementById('siteLockError');
+      const pinInputs = document.querySelectorAll('.pin-digit');
+
+      if (pin === correctPin) {
+        isSiteUnlocked = true;
+        sessionStorage.setItem('classroom_hub_authenticated', 'true');
+        lockScreen.classList.add('opacity-0');
+        setTimeout(() => lockScreen.classList.add('hidden'), 300);
+      } else {
+        errorEl.classList.remove('hidden');
+        pinInputs.forEach(i => {
+          i.value = '';
+          i.classList.add('border-rose-500', 'shake');
+          setTimeout(() => i.classList.remove('border-rose-500', 'shake'), 600);
+        });
+        pinInputs[0].focus();
+      }
+    }
+
+    function lockSiteAccess() {
+      sessionStorage.removeItem('classroom_hub_authenticated');
+      isSiteUnlocked = false;
+      const lockScreen = document.getElementById('siteLockScreen');
+      lockScreen.classList.remove('hidden', 'opacity-0');
+      const pinInputs = document.querySelectorAll('.pin-digit');
+      pinInputs.forEach(i => i.value = '');
+      document.getElementById('siteLockError').classList.add('hidden');
+      setTimeout(() => pinInputs[0].focus(), 200);
+    }
+
     // 初始化
     document.addEventListener('DOMContentLoaded', () => {
+      initSiteLock();
       // 檢查使用者偏好主題
       if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         document.documentElement.classList.add('dark');
@@ -1455,7 +1612,7 @@
 
     // 儲存至 LocalStorage
     function saveToolsToStorage() {
-      localStorage.setItem('classroom_hub_tools_v4', JSON.stringify(toolsData));
+      localStorage.setItem('classroom_hub_tools_v5', JSON.stringify(toolsData));
     }
 
     // 還原為預設項目
