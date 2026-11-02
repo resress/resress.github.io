@@ -1,8 +1,8 @@
-import {FACTS,SEED_BANK} from './data.js?v=20261102-2';
+import {FACTS,SEED_BANK} from './data.js?v=20261102-3';
 export const copy=x=>JSON.parse(JSON.stringify(x));
 export const day=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Taipei'});
 export const sentenceLength=s=>Array.from(String(s).replace(/\s/gu,'')).length;
-export const COVER_THEMES=[['auto','依課次自動配色'],['wind','海風與雪山'],['forest','森林探險'],['ocean','藍海航行'],['town','小鎮生活'],['night','星空想像']];
+export const COVER_THEMES=[['auto','依課次自動配色'],['wind','海風與雪山'],['forest','森林探險'],['ocean','藍海航行'],['town','小鎮生活'],['night','星空想像'],['road','公路旅行']];
 export function assert(ok,msg){if(!ok)throw Object.assign(new Error(msg),{status:400})}
 const text=(v,max)=>typeof v==='string'&&v.length>0&&v.length<=max&&!/[<>\u0000-\u0008]/.test(v);
 export function studentEntryUrl(state,base){const url=new URL(state?.studentUrl||'index.html',base);if(state?.classKey)url.hash='class='+encodeURIComponent(state.classKey);return url.href}
@@ -13,7 +13,7 @@ export function validate(data,publish=false){
  assert(data.bank&&typeof data.bank==='object'&&Object.keys(data.bank).length<=200,'字庫格式不正確。');
  for(const[key,c]of Object.entries(data.bank)){
   assert(FACTS[key]&&c.char===key,'字庫外的生字尚未完成事實查核。');
-  assert(c.source===`https://stroke-order.learningweb.moe.edu.tw/dictView.jsp?ID=${key.codePointAt(0)}`&&['海邊','雪山','原野'].includes(c.scene),'來源或情境欄位不正確。');
+  assert(c.source===`https://stroke-order.learningweb.moe.edu.tw/dictView.jsp?ID=${key.codePointAt(0)}`&&['海邊','雪山','原野','旅途'].includes(c.scene),'來源或情境欄位不正確。');
   assert(['sound','radical','strokes'].every(k=>c[k]===FACTS[key][k]),`${key}的權威欄位不可覆寫。`);
   assert(text(c.definition,120)&&text(c.hint,120),'字義與提醒需填寫且不超過120字。');
   assert(Number.isInteger(c.revision)&&c.revision>=1&&c.revision<=9999,'教材版本不正確。');
