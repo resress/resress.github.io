@@ -1,3 +1,4 @@
+import {LESSON12_BANK} from './lesson12.js?v=20261102-3';
 import {LESSON11_BANK} from './lesson11.js?v=20261102-3';
 import {LESSON10_BANK} from './lesson10.js?v=20261102-3';
 import {LESSON9_BANK} from './lesson9.js?v=20261102-3';
@@ -25,7 +26,7 @@ const idioms={
  '賞':['賞心悅目','看到美好的事物，覺得心情舒暢。','花園裡色彩繽紛的花朵，令人賞心悅目。','34864','ㄕㄤˇ ㄒㄧㄣ ㄩㄝˋ ㄇㄨˋ'],
  '瞞':['瞞天過海','用巧妙的手法欺騙、隱瞞別人。這是認識詞義，不是鼓勵欺騙。','他想瞞天過海藏起打破的花盆，最後還是誠實說明。','4130','ㄇㄢˊ ㄊㄧㄢ ㄍㄨㄛˋ ㄏㄞˇ']
 };
-const LESSON_BANK={...LESSON8_BANK,...LESSON9_BANK,...LESSON10_BANK,...LESSON11_BANK};
+const LESSON_BANK={...LESSON8_BANK,...LESSON9_BANK,...LESSON10_BANK,...LESSON11_BANK,...LESSON12_BANK};
 export const FACTS=Object.fromEntries([...rows.map(r=>[r[0],{sound:r[1],radical:r[2],strokes:r[3]}]),...Object.entries(LESSON_BANK).map(([char,c])=>[char,{sound:c.sound,radical:c.radical,strokes:c.strokes}])]);
 export const SEED_BANK=Object.fromEntries(rows.map(r=>{const i=idioms[r[0]];return[r[0],{char:r[0],sound:r[1],radical:r[2],strokes:r[3],definition:r[4],words:r.slice(5,8).filter(Boolean).map(s=>{const[word,meaning,example]=s.split('|');return{word,meaning,example}}),hint:r[8],scene:r[9],revision:1,reviewed:true,idiom:i?{word:i[0],meaning:i[1],example:i[2],source:`https://dict.concised.moe.edu.tw/dictView.jsp?ID=${i[3]}&la=0`,sound:i[4]}:null,source:`https://stroke-order.learningweb.moe.edu.tw/dictView.jsp?ID=${r[0].codePointAt(0)}`,checkedAt:'2026-10-31'}]}));
 Object.assign(SEED_BANK,LESSON_BANK);
