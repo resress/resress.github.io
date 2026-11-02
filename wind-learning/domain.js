@@ -1,4 +1,4 @@
-import {FACTS,SEED_BANK} from './data.js?v=20261102-3';
+import {FACTS,SEED_BANK} from './data.js?v=20261102-4';
 export const copy=x=>JSON.parse(JSON.stringify(x));
 export const day=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Taipei'});
 export const sentenceLength=s=>Array.from(String(s).replace(/\s/gu,'')).length;
