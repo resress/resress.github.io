@@ -1,0 +1,1778 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>期中期末定期評量看板</title>
+  <style>
+    :root {
+      --bg: #f3f6fa;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-light: #eff6ff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --card-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+      --red: #ef4444;
+      --red-bg: #fef2f2;
+      --green: #10b981;
+      --green-bg: #ecfdf5;
+      --amber: #f59e0b;
+      --amber-bg: #fffbeb;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 10%, #f8fafc 0%, #eef2f6 100%);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    }
+
+    /* 視圖切換器 */
+    .view-panel {
+      width: 100%;
+      height: 100%;
+      display: none;
+      flex-direction: column;
+    }
+
+    .view-panel.active {
+      display: flex;
+    }
+
+    /* ====================================================
+       【視圖一：考場投影主看板 (主畫面加大，右側緊湊)】
+    ==================================================== */
+    .board-header {
+      height: 52px;
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 2px solid var(--border);
+      padding: 0 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+      z-index: 20;
+    }
+
+    .main-title {
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: #1e3a8a;
+      letter-spacing: 1.5px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .main-title::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 22px;
+      background: linear-gradient(to bottom, #2563eb, #38bdf8);
+      border-radius: 4px;
+    }
+
+    .clock-pill {
+      font-family: "Courier New", Courier, monospace, sans-serif;
+      font-size: 1.95rem;
+      font-weight: 900;
+      color: #0f172a;
+      background: #f1f5f9;
+      padding: 0.1rem 1.1rem;
+      border-radius: 10px;
+      letter-spacing: 2.5px;
+      border: 1.5px solid #cbd5e1;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05), 0 2px 8px rgba(37, 99, 235, 0.06);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .clock-blink-colon {
+      animation: blink 1s infinite;
+      display: inline-block;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.25; }
+    }
+
+    .action-btns {
+      display: flex;
+      gap: 0.6rem;
+      align-items: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem 0.85rem;
+      border-radius: 9px;
+      border: 1.5px solid #cbd5e1;
+      background: white;
+      color: #334155;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .btn:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+      transform: translateY(-1px);
+    }
+
+    .btn-audio.active {
+      background: #ecfdf5;
+      color: #065f46;
+      border-color: #10b981;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: white;
+      border-color: transparent;
+    }
+
+    /* 看板中央主體 (主畫面加寬至 1.7fr，右側緊湊 1fr) */
+    .board-body {
+      flex: 1;
+      min-height: 0;
+      padding: 0.65rem 1.25rem;
+      display: grid;
+      grid-template-columns: 2.2fr 0.85fr;
+      gap: 1.2rem;
+    }
+
+    /* 左欄：超大主畫面 (科目 + 倒數 + 寬敞恐龍賽道 + 進度條) */
+    .left-col {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      min-height: 0;
+      height: 100%;
+    }
+
+    .subject-banner {
+      flex-shrink: 0;
+      height: 60px;
+      background: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #3b82f6 100%);
+      color: white;
+      border-radius: 14px;
+      padding: 0 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .subject-info {
+      display: flex;
+      align-items: baseline;
+      gap: 0.8rem;
+    }
+
+    .subject-info .label {
+      font-size: 0.95rem;
+      opacity: 0.9;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    .subject-info .name {
+      font-size: 2.35rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      line-height: 1;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    }
+
+    .period-badge {
+      text-align: right;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(8px);
+      padding: 0.35rem 0.95rem;
+      border-radius: 9px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .period-badge .p-label {
+      font-size: 0.72rem;
+      opacity: 0.85;
+      font-weight: 600;
+    }
+
+    .period-badge .p-time {
+      font-size: 1.3rem;
+      font-weight: 800;
+    }
+
+    /* 倒數計時卡片 */
+    .countdown-card {
+      flex: 1;
+      min-height: 0;
+      background: var(--card-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 0.65rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      text-align: center;
+      box-shadow: var(--card-shadow);
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .countdown-card.warning-glow {
+      border-color: #fca5a5;
+      box-shadow: 0 0 25px rgba(239, 68, 68, 0.18), var(--card-shadow);
+    }
+
+    .countdown-prompt {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #475569;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .countdown-prompt .icon-spin {
+      display: inline-block;
+      animation: rotateHourglass 4s infinite ease-in-out;
+    }
+
+    @keyframes rotateHourglass {
+      0%, 40% { transform: rotate(0deg); }
+      50%, 90% { transform: rotate(180deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .countdown-digits {
+      font-family: "Courier New", Courier, monospace, sans-serif;
+      font-size: clamp(3.6rem, 9vh, 5.8rem);
+      font-weight: 900;
+      color: #0f172a;
+      letter-spacing: 4px;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .countdown-digits.urgent {
+      color: var(--red);
+      animation: pulseAlert 1.2s infinite ease-in-out;
+    }
+
+    @keyframes pulseAlert {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.03); text-shadow: 0 0 16px rgba(239, 68, 68, 0.3); }
+    }
+
+    /* ====================================================
+       【寬敞火龍追小人賽道 (加大版面 98px)】
+    ==================================================== */
+    .dino-arena {
+      width: 100%;
+      height: 106px;
+      background: linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%);
+      border-radius: 18px;
+      border: 1.5px solid #cbd5e1;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.04);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      margin: 0.2rem 0;
+    }
+
+    .dino-arena::after {
+      content: '';
+      position: absolute;
+      left: 15px;
+      right: 15px;
+      bottom: 10px;
+      height: 3px;
+      background: repeating-linear-gradient(90deg, #cbd5e1 0px, #cbd5e1 14px, transparent 14px, transparent 24px);
+    }
+
+    .finish-flag {
+      position: absolute;
+      right: 15px;
+      bottom: 8px;
+      font-size: 2.4rem;
+      z-index: 2;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    }
+
+    .dragon-img-actor {
+      position: absolute;
+      bottom: 8px;
+      height: 86px;
+      width: auto;
+      max-width: 52%; /* 避免火焰過長溢出右側 */
+      object-fit: contain;
+      transition: left 1s cubic-bezier(0.25, 0.8, 0.25, 1);
+      z-index: 5;
+      display: block;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.12));
+      animation: dragonBounce 0.5s infinite alternate ease-in-out;
+      transform-origin: bottom center;
+    }
+
+    @keyframes dragonBounce {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-4px); }
+    }
+
+    .runner-img-actor {
+      position: absolute;
+      bottom: 8px;
+      height: 82px;
+      width: auto;
+      transition: left 1s cubic-bezier(0.25, 0.8, 0.25, 1);
+      z-index: 6;
+      display: block;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.12));
+      animation: runnerBounce 0.4s infinite alternate ease-in-out;
+      transform-origin: bottom center;
+    }
+
+    @keyframes runnerBounce {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-5px); }
+    }
+
+    .countdown-hint {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #64748b;
+      min-height: 1.1rem;
+    }
+
+    /* 進度條容器 */
+    .progress-box {
+      width: 100%;
+    }
+
+    .progress-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: #64748b;
+      margin-bottom: 0.3rem;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 16px;
+      background: #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08);
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
+      border-radius: 8px;
+      transition: width 0.4s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%);
+      animation: shimmerFlow 2.5s infinite linear;
+    }
+
+    @keyframes shimmerFlow {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .progress-fill.warning-fill {
+      background: linear-gradient(90deg, #f59e0b 0%, #ef4444 100%);
+    }
+
+    /* 右欄：精巧出缺席 + 緊湊容納 6 科的考試時程清單 */
+    .right-col {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      min-height: 0;
+      height: 100%;
+    }
+
+    /* 出缺席狀況 (精巧單行橫條) */
+    .attendance-compact-bar {
+      flex-shrink: 0;
+      background: var(--card-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 0.35rem 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--card-shadow);
+      gap: 0.5rem;
+    }
+
+    .att-item-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .att-badge-label {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #1e3a8a;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      white-space: nowrap;
+    }
+
+    .att-stat-pill {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      padding: 0.15rem 0.55rem;
+      border-radius: 7px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #475569;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      white-space: nowrap;
+    }
+
+    .att-stat-pill.present {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+      color: #1d4ed8;
+    }
+
+    .att-stat-pill .num-strong {
+      font-size: 1.15rem;
+      font-weight: 900;
+    }
+
+    .absence-compact-pill {
+      background: var(--red-bg);
+      border: 1px solid #fecdd3;
+      padding: 0.15rem 0.55rem;
+      border-radius: 7px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #be123c;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      max-width: 45%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .seat-badge {
+      background: white;
+      border: 1px solid #f43f5e;
+      color: #be123c;
+      padding: 0.05rem 0.35rem;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .all-present {
+      color: #15803d;
+      font-weight: 800;
+    }
+
+    /* 今日考試時程卡片 (自適應 1~6 科，間距固定，絕不拉散) */
+    .schedule-card {
+      flex-shrink: 0;
+      background: var(--card-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 0.45rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--card-shadow);
+    }
+
+    .sched-head {
+      flex-shrink: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.35rem;
+      border-bottom: 1.5px solid #f1f5f9;
+      padding-bottom: 0.25rem;
+    }
+
+    .sched-head .t1 {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #1e3a8a;
+    }
+
+    .btn-sched-reset {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 0.15rem 0.45rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-sched-reset:hover {
+      background: #dbeafe;
+      border-color: #93c5fd;
+    }
+
+    .sched-head .t2 {
+      font-size: 0.75rem;
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    .sched-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.32rem;
+      overflow: hidden;
+    }
+
+    .sched-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0.32rem 0.65rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .sched-item:hover {
+      border-color: var(--primary);
+      background: #eff6ff;
+      transform: translateX(3px);
+    }
+
+    .sched-item.active {
+      background: #eff6ff;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 1.5px var(--primary), 0 2px 6px rgba(37, 99, 235, 0.12);
+    }
+
+    .sched-item .sub-left {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .active-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+      animation: pulseGreen 1.5s infinite;
+    }
+
+    @keyframes pulseGreen {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { transform: scale(1.1); box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .sched-item .sub-name {
+      font-size: 1.02rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .sched-item .sub-time {
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: #64748b;
+    }
+
+    .sched-item .status-pill {
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 0.15rem 0.5rem;
+      border-radius: 5px;
+      background: #e2e8f0;
+      color: #475569;
+    }
+
+    .sched-item.active .status-pill {
+      background: #2563eb;
+      color: white;
+    }
+
+    /* 考場叮嚀守則卡片 (自訂作答提醒，彈性伸縮填滿右下) */
+    .exam-rules-card {
+      flex: 1;
+      min-height: 0;
+      background: var(--card-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 0.55rem 0.8rem;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--card-shadow);
+      overflow: hidden;
+    }
+
+    .rules-head {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #1e3a8a;
+      border-bottom: 1.5px solid #f1f5f9;
+      padding-bottom: 0.35rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .rules-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      gap: 0.35rem;
+      padding: 0.2rem 0;
+    }
+
+    .rule-item {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0.45rem 0.65rem;
+    }
+
+    .rule-icon {
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .rule-text {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #334155;
+      line-height: 1.35;
+    }
+
+    /* 底部列 */
+    .board-footer {
+      height: 38px;
+      flex-shrink: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0 1rem;
+    }
+
+    .reminder-badge {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #b45309;
+      background: #fef3c7;
+      border: 1.5px solid #fde68a;
+      padding: 0.2rem 1.4rem;
+      border-radius: 20px;
+      box-shadow: 0 2px 6px rgba(245, 158, 11, 0.12);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .pencil-icon {
+      display: inline-block;
+      animation: pencilWiggle 2.5s infinite ease-in-out;
+    }
+
+    @keyframes pencilWiggle {
+      0%, 100% { transform: rotate(0deg); }
+      20% { transform: rotate(-15deg); }
+      40% { transform: rotate(10deg); }
+      60% { transform: rotate(-5deg); }
+      80% { transform: rotate(0deg); }
+    }
+
+    /* ====================================================
+       【視圖二：考場設定專用頁面】
+    ==================================================== */
+    .settings-view-header {
+      height: 54px;
+      flex-shrink: 0;
+      background: #ffffff;
+      border-bottom: 2px solid var(--border);
+      padding: 0 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .settings-view-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #1e3a8a;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .settings-view-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem;
+      max-width: 1000px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .form-card {
+      background: white;
+      border-radius: 14px;
+      border: 1.5px solid var(--border);
+      padding: 1.5rem 1.75rem;
+      box-shadow: var(--card-shadow);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .form-group label {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #334155;
+    }
+
+    .form-group input {
+      padding: 0.6rem 0.85rem;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .form-group input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .form-hint {
+      font-size: 0.82rem;
+      color: #64748b;
+    }
+
+    .table-manager-box {
+      background: #f8fafc;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-top: 0.5rem;
+    }
+
+    .table-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .table-top-bar h3 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #1e3a8a;
+    }
+
+    .sched-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 0.5rem;
+    }
+
+    .sched-table th, .sched-table td {
+      padding: 0.5rem 0.75rem;
+      text-align: left;
+    }
+
+    .sched-table th {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #64748b;
+      border-bottom: 2px solid #cbd5e1;
+    }
+
+    .sched-table td {
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .sched-table input {
+      padding: 0.4rem 0.6rem;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      font-size: 0.92rem;
+      width: 100%;
+    }
+
+    .btn-sm {
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      background: white;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-sm.primary {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .btn-sm.primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-sm.danger {
+      color: var(--red);
+      border-color: #fca5a5;
+    }
+    .btn-sm.danger:hover {
+      background: #fef2f2;
+    }
+
+    /* 時間到 全螢幕提示 */
+    .time-up-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(8px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+      cursor: pointer;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .time-up-overlay.open {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .time-up-modal {
+      background: white;
+      border-radius: 28px;
+      padding: 3rem 2.5rem;
+      text-align: center;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
+      animation: modalPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes modalPop {
+      0% { transform: scale(0.7); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .time-up-icon {
+      font-size: 5rem;
+      margin-bottom: 0.75rem;
+      display: inline-block;
+      animation: bellShake 0.7s infinite alternate ease-in-out;
+    }
+
+    @keyframes bellShake {
+      0% { transform: rotate(-18deg); }
+      100% { transform: rotate(18deg); }
+    }
+
+    .time-up-heading {
+      font-size: 3rem;
+      font-weight: 900;
+      color: var(--red);
+      margin-bottom: 0.5rem;
+      letter-spacing: 2px;
+    }
+
+    .time-up-sub {
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: #334155;
+      margin-bottom: 1.75rem;
+    }
+
+    .time-up-btn {
+      display: inline-block;
+      background: #f1f5f9;
+      color: #64748b;
+      font-size: 1.05rem;
+      font-weight: 700;
+      padding: 0.55rem 2rem;
+      border-radius: 25px;
+      border: 1px solid #cbd5e1;
+      transition: all 0.2s;
+    }
+    .time-up-btn:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ====================================================
+       【視圖一：考場投影主看板】
+  ==================================================== -->
+  <div class="view-panel active" id="viewBoard">
+    
+    <!-- 頂部列 -->
+    <header class="board-header">
+      <div class="main-title" id="dispExamTitle">期中定期評量</div>
+      <div class="clock-pill" id="clock">
+        <span id="clockHour">--</span><span class="clock-blink-colon">:</span><span id="clockMin">--</span><span class="clock-blink-colon">:</span><span id="clockSec">--</span>
+      </div>
+      <div class="action-btns">
+        <button class="btn btn-audio" id="btnAudioToggle">
+          <span id="audioIcon">🔈</span> <span id="audioText">點我啟用叮咚聲</span>
+        </button>
+        <button class="btn" id="btnOpenSettings">
+          ⚙️ 考場設定
+        </button>
+        <button class="btn btn-primary" id="btnFullscreen">
+          🖥️ 全螢幕投影
+        </button>
+      </div>
+    </header>
+
+    <!-- 看板主體 (左側主畫面放大至 1.7fr) -->
+    <main class="board-body">
+      
+      <!-- 左欄：主畫面 (考科 + 倒數計時 + 火龍追小人賽道 + 進度條) -->
+      <section class="left-col">
+        
+        <!-- 當前考科橫幅 -->
+        <div class="subject-banner">
+          <div class="subject-info">
+            <span class="label">考試科目</span>
+            <span class="name" id="dispSubject">國語</span>
+          </div>
+          <div class="period-badge">
+            <div class="p-label">考試時段</div>
+            <div class="p-time" id="dispTimeRange">08:40 – 09:20</div>
+          </div>
+        </div>
+
+        <!-- 倒數計時核心卡片 -->
+        <div class="countdown-card" id="countdownCard">
+          <div class="countdown-prompt">
+            <span class="icon-spin">⏳</span>
+            <span>距離考試結束還有</span>
+          </div>
+
+          <!-- 超大倒數數字 -->
+          <div class="countdown-digits" id="dispCountdown">--:--</div>
+
+          <!-- 🦖🔥🏃 加寬放大版火龍時間賽道 (98px高，完整不裁切) -->
+          <div class="dino-arena" id="dinoArena">
+            <!-- 終點旗幟 🏁 -->
+            <span class="finish-flag" title="終點線（考試結束）">🏁</span>
+
+            <!-- 火龍角色圖 (朝右，從無火變超級大火) -->
+            <img src="images/dragon/dragon_1_nofire.png" alt="火龍" class="dragon-img-actor" id="dragonActor" style="left: 2%;">
+
+            <!-- 奔跑小人角色圖 (朝右逃跑) -->
+            <img src="images/runner/runner_1_easy.png" alt="奔跑小人" class="runner-img-actor" id="runnerActor" style="left: 36%;">
+          </div>
+
+          <div class="countdown-hint" id="dispStatusHint"></div>
+
+          <!-- 時間進度條 -->
+          <div class="progress-box">
+            <div class="progress-labels">
+              <span id="dispStartTime">08:40</span>
+              <span id="dispProgressPct" style="font-weight:900; color:var(--primary);">0%</span>
+              <span id="dispEndTime">09:20</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- 右欄：出缺席狀況 (精巧橫條) + 6 科完整時程清單 -->
+      <section class="right-col">
+        
+        <!-- 出缺席狀況：精巧單行橫條 -->
+        <div class="attendance-compact-bar">
+          <div class="att-item-group">
+            <div class="att-badge-label">👥 出缺席</div>
+            <div class="att-stat-pill">應到 <span class="num-strong" id="dispTotal">30</span> 人</div>
+            <div class="att-stat-pill present">實到 <span class="num-strong" id="dispActual">30</span> 人</div>
+          </div>
+          <div class="absence-compact-pill" title="缺席名單">
+            <span>📌 缺席：</span>
+            <span id="dispAbsence"><span class="all-present">🎉 全員到齊</span></span>
+          </div>
+        </div>
+
+        <!-- 今日考試時程卡片 (支援 1~3 科，緊湊排列) -->
+        <div class="schedule-card">
+          <div class="sched-head">
+            <span class="t1">📅 今日考試時程一覽</span>
+            <div style="display:flex; align-items:center; gap:0.45rem;">
+              <button class="btn-sched-reset" onclick="resetToDefaultSchedule()" title="一鍵重設恢復為預設 6 個科目">🔄 恢復 6 科</button>
+              <span class="t2">點擊切換當前考科</span>
+            </div>
+          </div>
+          <div class="sched-list" id="timetableList">
+            <!-- 動態渲染考科清單 -->
+          </div>
+        </div>
+
+        <!-- 考場作答提醒卡片 (可於設定頁自訂，整齊填補右下方空間) -->
+        <div class="exam-rules-card">
+          <div class="rules-head">
+            <span>📋 考場作答提醒</span>
+          </div>
+          <div class="rules-body" id="dispExamRulesBody">
+            <!-- 動態渲染自訂作答提醒 -->
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- 底部資訊列 -->
+    <footer class="board-footer">
+      <div class="reminder-badge" id="dispReminder">
+        <span class="pencil-icon">✏️</span>
+        <span id="dispReminderText">寫完記得檢查姓名與座號喔</span>
+        <span class="pencil-icon">✏️</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- ====================================================
+       【視圖二：考場設定專用頁面】
+  ==================================================== -->
+  <div class="view-panel" id="viewSettings">
+    
+    <header class="settings-view-header">
+      <div class="settings-view-title">⚙️ 考場設定管理</div>
+      <button class="btn btn-primary" id="btnBackToBoard">
+        ✓ 儲存並返回考場看板
+      </button>
+    </header>
+
+    <div class="settings-view-body">
+      <div class="form-card">
+        <div class="form-grid">
+          
+          <div class="form-group">
+            <label for="inputExamTitle">考試名稱</label>
+            <input type="text" id="inputExamTitle" value="期中定期評量">
+          </div>
+
+          <div class="form-group">
+            <label for="inputTotal">應到人數</label>
+            <input type="number" id="inputTotal" value="30" min="0">
+          </div>
+
+          <div class="form-group">
+            <label for="inputActual">實到人數</label>
+            <input type="number" id="inputActual" placeholder="留空自動計算" min="0">
+            <div class="form-hint">留空會自動用「應到人數 − 缺席人數」計算</div>
+          </div>
+
+          <div class="form-group">
+            <label for="inputAbsence">缺席座號 (多個請用逗號隔開)</label>
+            <input type="text" id="inputAbsence" placeholder="例如：7, 19 或留空">
+          </div>
+
+          <div class="form-group">
+            <label>結束前提醒動畫與提示音（都填 0 就不提醒）</label>
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+              <input type="number" id="inputWarnMin" value="5" min="0" style="width:80px;"> 分
+              <input type="number" id="inputWarnSec" value="0" min="0" max="59" style="width:80px;"> 秒
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="inputReminder">底部小叮嚀文字</label>
+            <input type="text" id="inputReminder" value="寫完記得檢查姓名與座號喔">
+          </div>
+
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label for="inputExamRules">📋 考場作答提醒（每行一條提醒，主看板自動同步）</label>
+            <textarea id="inputExamRules" rows="3" style="width:100%; border:1.5px solid #cbd5e1; border-radius:8px; padding:0.5rem; font-size:0.92rem; font-family:inherit; resize:vertical;"></textarea>
+            <div class="form-hint">提示：輸入每一行即為看板右下方的一條作答守則（可自訂 1~5 行）。</div>
+          </div>
+
+          <!-- 各考科時程管理表格 (預設 6 科) -->
+          <div class="table-manager-box" style="grid-column: 1 / -1;">
+            <div class="table-top-bar">
+              <h3>📅 考試科目與時程排程（自由增修，看板即時同步）</h3>
+              <div style="display:flex; gap:0.5rem; align-items:center;">
+                <button class="btn-sm" onclick="resetToDefaultSchedule()" style="background:#eff6ff; color:#1d4ed8; border:1.5px solid #bfdbfe; font-weight:800; cursor:pointer; padding:0.3rem 0.65rem; border-radius:7px;">🔄 恢復預設 6 科</button>
+                <button class="btn-sm primary" onclick="addScheduleRow()">➕ 新增一節科目</button>
+              </div>
+            </div>
+            <table class="sched-table">
+              <thead>
+                <tr>
+                  <th style="width: 140px;">科目名稱</th>
+                  <th style="width: 140px;">開始時間</th>
+                  <th style="width: 140px;">結束時間</th>
+                  <th style="width: 130px;">操作</th>
+                </tr>
+              </thead>
+              <tbody id="scheduleTableBody">
+                <!-- 動態生成科目編輯列 -->
+              </tbody>
+            </table>
+            <div class="form-hint">提示：點擊「設為當前」即可將該科目設定為目前看板倒數主體。</div>
+          </div>
+
+          <div class="form-group" style="grid-column: 1 / -1; padding-top:0.4rem;">
+            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+              <input type="checkbox" id="checkPlaySound" checked style="width:1.2rem; height:1.2rem; accent-color:var(--primary);">
+              <span style="font-size:1rem; font-weight:700;">時間到播放叮咚聲</span>
+            </label>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 時間到 全螢幕提示 -->
+  <div class="time-up-overlay" id="timeUpModal" onclick="closeTimeUpModal()">
+    <div class="time-up-modal" onclick="event.stopPropagation(); closeTimeUpModal();">
+      <div class="time-up-icon">🔔</div>
+      <h2 class="time-up-heading">時間到！</h2>
+      <div class="time-up-sub">請停筆，把考卷蓋起來 ✋</div>
+      <div class="time-up-btn">點一下關閉</div>
+    </div>
+  </div>
+
+  <script>
+    /* ====================================================
+       1. 音效處理 (Web Audio API)
+    ==================================================== */
+    let audioCtx = null;
+    let isAudioEnabled = false;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playDingDong() {
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(880, now);
+        gain1.gain.setValueAtTime(0.4, now);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.8);
+
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(659.25, now + 0.35);
+        gain2.gain.setValueAtTime(0.45, now + 0.35);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 1.4);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start(now + 0.35);
+        osc2.stop(now + 1.4);
+      } catch (err) {
+        console.warn("音效播放失敗:", err);
+      }
+    }
+
+    /* ====================================================
+       2. 考試時程表資料管理 (依使用者要求精確預設 6 科)
+    ==================================================== */
+    const STORAGE_KEY_SCHEDULE = 'exam_schedule_six_official_v20261103';
+    const SCHEDULE_FORCE_TAG = 'force_six_reset_tag_v20261103';
+
+    const defaultSchedule = [
+      { subject: "國語", startTime: "08:40", endTime: "09:20" },
+      { subject: "自然", startTime: "09:30", endTime: "10:10" },
+      { subject: "英文", startTime: "10:30", endTime: "11:10" },
+      { subject: "社會", startTime: "08:40", endTime: "09:20" },
+      { subject: "數學", startTime: "09:30", endTime: "10:10" },
+      { subject: "健康", startTime: "10:30", endTime: "11:10" }
+    ];
+
+    let scheduleList = [];
+    let currentScheduleIndex = 0;
+
+    function loadSchedule() {
+      try {
+        // 檢查是否已執行過強制恢復 6 科
+        const hasForced = localStorage.getItem(SCHEDULE_FORCE_TAG);
+        if (!hasForced) {
+          // 首次載入新版本：強制載入完整的 6 個科目，覆蓋掉之前存留的 3 科舊快取
+          scheduleList = JSON.parse(JSON.stringify(defaultSchedule));
+          localStorage.setItem(SCHEDULE_FORCE_TAG, 'done');
+          saveSchedule();
+          return;
+        }
+
+        const saved = localStorage.getItem(STORAGE_KEY_SCHEDULE);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            scheduleList = parsed;
+          } else {
+            scheduleList = JSON.parse(JSON.stringify(defaultSchedule));
+          }
+        } else {
+          scheduleList = JSON.parse(JSON.stringify(defaultSchedule));
+        }
+      } catch(e) {
+        scheduleList = JSON.parse(JSON.stringify(defaultSchedule));
+      }
+    }
+
+    window.resetToDefaultSchedule = function() {
+      scheduleList = JSON.parse(JSON.stringify(defaultSchedule));
+      currentScheduleIndex = 0;
+      saveSchedule();
+      renderSchedules();
+      syncBoard();
+    };
+
+    function saveSchedule() {
+      try {
+        localStorage.setItem(STORAGE_KEY_SCHEDULE, JSON.stringify(scheduleList));
+      } catch(e) {}
+    }
+
+    /* ====================================================
+       2.1 考場作答提醒自訂資料管理
+    ==================================================== */
+    const STORAGE_KEY_RULES = 'exam_custom_rules_v2';
+    const defaultRules = [
+      "桌面僅放文具，保持乾淨不留多餘物品",
+      "細心審題不粗心，寫完逐題檢查姓名與座號",
+      "打鐘停筆蓋考卷，安靜等候老師收卷"
+    ];
+
+    function loadExamRules() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY_RULES);
+        if (saved !== null && saved.trim() !== "") {
+          inputExamRules.value = saved;
+        } else {
+          inputExamRules.value = defaultRules.join('\n');
+        }
+      } catch(e) {
+        inputExamRules.value = defaultRules.join('\n');
+      }
+      renderExamRules();
+    }
+
+    function renderExamRules() {
+      const raw = inputExamRules.value.trim();
+      const lines = raw ? raw.split('\n').map(s => s.trim()).filter(Boolean) : defaultRules;
+      const icons = ['✏️', '🔍', '🛑', '💡', '📌', '⭐', '📘'];
+      
+      dispExamRulesBody.innerHTML = lines.map((line, idx) => `
+        <div class="rule-item">
+          <span class="rule-icon">${icons[idx % icons.length]}</span>
+          <span class="rule-text">${line}</span>
+        </div>
+      `).join('');
+
+      try {
+        localStorage.setItem(STORAGE_KEY_RULES, inputExamRules.value);
+      } catch(e) {}
+    }
+
+    /* ====================================================
+       3. 角色圖片 5 階段路徑配置
+    ==================================================== */
+    const DRAGON_STAGES = [
+      "images/dragon/dragon_1_nofire.png",    // 0~20% 無火
+      "images/dragon/dragon_2_smallfire.png", // 21~45% 小火
+      "images/dragon/dragon_3_mediumfire.png",// 46~70% 中火
+      "images/dragon/dragon_4_largefire.png", // 71~90% 大火
+      "images/dragon/dragon_5_superfire.png"  // 91~100% 超級大火
+    ];
+
+    const RUNNER_STAGES = [
+      "images/runner/runner_1_easy.png",      // 0~20% 輕鬆跑
+      "images/runner/runner_2_alert.png",     // 21~45% 警覺回頭
+      "images/runner/runner_3_fast.png",      // 46~70% 加速跑
+      "images/runner/runner_4_sweat.png",     // 71~90% 大汗狂奔
+      "images/runner/runner_5_panic.png"      // 91~100% 驚恐衝刺
+    ];
+
+    /* ====================================================
+       4. 元件綁定
+    ==================================================== */
+    const viewBoard = document.getElementById('viewBoard');
+    const viewSettings = document.getElementById('viewSettings');
+
+    const clockHour = document.getElementById('clockHour');
+    const clockMin = document.getElementById('clockMin');
+    const clockSec = document.getElementById('clockSec');
+
+    const dispExamTitle = document.getElementById('dispExamTitle');
+    const dispSubject = document.getElementById('dispSubject');
+    const dispTimeRange = document.getElementById('dispTimeRange');
+    const dispCountdown = document.getElementById('dispCountdown');
+    const countdownCard = document.getElementById('countdownCard');
+    
+    const dragonActor = document.getElementById('dragonActor');
+    const runnerActor = document.getElementById('runnerActor');
+
+    const dispStatusHint = document.getElementById('dispStatusHint');
+    const dispStartTime = document.getElementById('dispStartTime');
+    const dispEndTime = document.getElementById('dispEndTime');
+    const dispProgressPct = document.getElementById('dispProgressPct');
+    const progressFill = document.getElementById('progressFill');
+    const dispTotal = document.getElementById('dispTotal');
+    const dispActual = document.getElementById('dispActual');
+    const dispAbsence = document.getElementById('dispAbsence');
+    const dispReminderText = document.getElementById('dispReminderText');
+    const dispExamRulesBody = document.getElementById('dispExamRulesBody');
+    const inputExamRules = document.getElementById('inputExamRules');
+    const timetableList = document.getElementById('timetableList');
+    const scheduleTableBody = document.getElementById('scheduleTableBody');
+
+    const inputExamTitle = document.getElementById('inputExamTitle');
+    const inputTotal = document.getElementById('inputTotal');
+    const inputActual = document.getElementById('inputActual');
+    const inputAbsence = document.getElementById('inputAbsence');
+    const inputWarnMin = document.getElementById('inputWarnMin');
+    const inputWarnSec = document.getElementById('inputWarnSec');
+    const inputReminder = document.getElementById('inputReminder');
+    const checkPlaySound = document.getElementById('checkPlaySound');
+
+    const timeUpModal = document.getElementById('timeUpModal');
+    const btnAudioToggle = document.getElementById('btnAudioToggle');
+    const audioIcon = document.getElementById('audioIcon');
+    const audioText = document.getElementById('audioText');
+
+    let wasActive = false;
+    let hasAlertedForCurrentSession = false;
+
+    /* ====================================================
+       5. 視圖切換邏輯
+    ==================================================== */
+    document.getElementById('btnOpenSettings').addEventListener('click', () => {
+      viewBoard.classList.remove('active');
+      viewSettings.classList.add('active');
+    });
+
+    document.getElementById('btnBackToBoard').addEventListener('click', () => {
+      syncBoard();
+      renderSchedules();
+      viewSettings.classList.remove('active');
+      viewBoard.classList.add('active');
+    });
+
+    /* ====================================================
+       6. 渲染 6 科時程清單
+    ==================================================== */
+    function renderSchedules() {
+      if (currentScheduleIndex >= scheduleList.length) {
+        currentScheduleIndex = 0;
+      }
+
+      const now = new Date();
+      const currentMinOfDay = now.getHours() * 60 + now.getMinutes();
+
+      timetableList.innerHTML = scheduleList.map((item, idx) => {
+        const [sh, sm] = item.startTime.split(':').map(Number);
+        const [eh, em] = item.endTime.split(':').map(Number);
+        const sMin = sh * 60 + sm;
+        const eMin = eh * 60 + em;
+
+        let statusText = "尚未開始";
+        let isCurrentTimeRunning = false;
+        if (currentMinOfDay >= sMin && currentMinOfDay < eMin) {
+          statusText = "進行中";
+          isCurrentTimeRunning = true;
+        } else if (currentMinOfDay >= eMin) {
+          statusText = "已結束";
+        }
+
+        const isActive = (idx === currentScheduleIndex);
+
+        return `
+          <div class="sched-item ${isActive ? 'active' : ''}" onclick="selectSchedule(${idx})">
+            <div class="sub-left">
+              ${isCurrentTimeRunning ? '<span class="active-dot"></span>' : ''}
+              <span class="sub-name">${item.subject}</span>
+              <span class="sub-time">${item.startTime} – ${item.endTime}</span>
+            </div>
+            <div class="status-pill">${statusText}</div>
+          </div>
+        `;
+      }).join('');
+
+      scheduleTableBody.innerHTML = scheduleList.map((item, idx) => `
+        <tr>
+          <td><input type="text" value="${item.subject}" onchange="editScheduleItem(${idx}, 'subject', this.value)"></td>
+          <td><input type="time" value="${item.startTime}" onchange="editScheduleItem(${idx}, 'startTime', this.value)"></td>
+          <td><input type="time" value="${item.endTime}" onchange="editScheduleItem(${idx}, 'endTime', this.value)"></td>
+          <td>
+            <button class="btn-sm primary" onclick="selectSchedule(${idx})">設為當前</button>
+            <button class="btn-sm danger" onclick="removeScheduleRow(${idx})">刪除</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    window.selectSchedule = function(idx) {
+      currentScheduleIndex = idx;
+      wasActive = false;
+      hasAlertedForCurrentSession = false;
+      renderSchedules();
+      syncBoard();
+    };
+
+    window.editScheduleItem = function(idx, field, val) {
+      if (!scheduleList[idx]) return;
+      scheduleList[idx][field] = val;
+      saveSchedule();
+      renderSchedules();
+      syncBoard();
+    };
+
+    window.addScheduleRow = function() {
+      scheduleList.push({ subject: "健康", startTime: "10:30", endTime: "11:10" });
+      saveSchedule();
+      renderSchedules();
+    };
+
+    window.removeScheduleRow = function(idx) {
+      if (scheduleList.length <= 1) {
+        alert("至少保留一個考科！");
+        return;
+      }
+      scheduleList.splice(idx, 1);
+      if (currentScheduleIndex >= scheduleList.length) {
+        currentScheduleIndex = scheduleList.length - 1;
+      }
+      saveSchedule();
+      renderSchedules();
+      syncBoard();
+    };
+
+    /* ====================================================
+       7. 雙向同步看板文字
+    ==================================================== */
+    function syncBoard() {
+      dispExamTitle.textContent = inputExamTitle.value.trim() || "期中定期評量";
+
+      const current = scheduleList[currentScheduleIndex] || defaultSchedule[0];
+      dispSubject.textContent = current.subject;
+      dispTimeRange.textContent = `${current.startTime} – ${current.endTime}`;
+      dispStartTime.textContent = current.startTime;
+      dispEndTime.textContent = current.endTime;
+
+      dispReminderText.textContent = inputReminder.value.trim() || "寫完記得檢查姓名與座號喔";
+
+      const total = parseInt(inputTotal.value) || 0;
+      dispTotal.textContent = total;
+
+      const rawAbs = (inputAbsence.value || "").trim();
+      const seatList = rawAbs ? rawAbs.split(/[,，\s]+/).filter(Boolean) : [];
+
+      let actual = 0;
+      if (inputActual.value.trim() !== "" && !isNaN(parseInt(inputActual.value))) {
+        actual = parseInt(inputActual.value);
+      } else {
+        actual = Math.max(0, total - seatList.length);
+      }
+      dispActual.textContent = actual;
+
+      if (seatList.length === 0) {
+        dispAbsence.innerHTML = '<span class="all-present">🎉 全員到齊</span>';
+      } else {
+        dispAbsence.innerHTML = seatList.map(s => `<span class="seat-badge">${s} 號</span>`).join(' ');
+      }
+      renderExamRules();
+    }
+
+    /* ====================================================
+       8. 恐龍逼近與火焰階段切換演算法 (確保火焰不溢出裁切)
+    ==================================================== */
+    function updateDinoProgress(pct) {
+      let stage = 0;
+      if (pct <= 20) {
+        stage = 0;
+      } else if (pct <= 45) {
+        stage = 1;
+      } else if (pct <= 70) {
+        stage = 2;
+      } else if (pct <= 90) {
+        stage = 3;
+      } else {
+        stage = 4;
+      }
+
+      if (dragonActor.getAttribute('src') !== DRAGON_STAGES[stage]) {
+        dragonActor.src = DRAGON_STAGES[stage];
+      }
+      if (runnerActor.getAttribute('src') !== RUNNER_STAGES[stage]) {
+        runnerActor.src = RUNNER_STAGES[stage];
+      }
+
+      // 恐龍位移範圍 (1% -> 63%)：小火苗逐步逼近，100% 時猛烈大火舌緊貼小人身後！
+      // 小人位移範圍 (35% -> 82%)：向右奔向終點線 🏁
+      const dinoLeft = 1 + (pct * 0.62);
+      const runnerLeft = 35 + (pct * 0.47);
+
+      dragonActor.style.left = `${dinoLeft}%`;
+      runnerActor.style.left = `${runnerLeft}%`;
+    }
+
+    /* ====================================================
+       9. 每秒時間排程運算
+    ==================================================== */
+    function parseTodayTime(timeStr) {
+      if (!timeStr) return new Date();
+      const [h, m] = timeStr.split(':').map(Number);
+      const d = new Date();
+      d.setHours(h, m, 0, 0);
+      return d;
+    }
+
+    function tick() {
+      const now = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      
+      clockHour.textContent = pad(now.getHours());
+      clockMin.textContent = pad(now.getMinutes());
+      clockSec.textContent = pad(now.getSeconds());
+
+      const current = scheduleList[currentScheduleIndex];
+      if (!current) return;
+
+      const startDate = parseTodayTime(current.startTime);
+      const endDate = parseTodayTime(current.endTime);
+
+      const totalDuration = endDate.getTime() - startDate.getTime();
+      const remainingMs = endDate.getTime() - now.getTime();
+      const elapsedMs = now.getTime() - startDate.getTime();
+
+      // 狀態 1：尚未開始
+      if (elapsedMs < 0) {
+        wasActive = false;
+        hasAlertedForCurrentSession = false;
+
+        dispCountdown.textContent = "--:--";
+        dispCountdown.classList.remove('urgent');
+        countdownCard.classList.remove('warning-glow');
+        progressFill.classList.remove('warning-fill');
+        dispStatusHint.textContent = `考試尚未開始（預計 ${current.startTime} 開始）`;
+        dispProgressPct.textContent = "0%";
+        progressFill.style.width = "0%";
+        updateDinoProgress(0);
+        return;
+      }
+
+      // 狀態 2：考試進行中
+      if (remainingMs > 0) {
+        wasActive = true;
+        hasAlertedForCurrentSession = false;
+
+        const remainingSec = Math.floor(remainingMs / 1000);
+        const hours = Math.floor(remainingSec / 3600);
+        const minutes = Math.floor((remainingSec % 3600) / 60);
+        const seconds = remainingSec % 60;
+
+        if (hours > 0) {
+          dispCountdown.textContent = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+        } else {
+          dispCountdown.textContent = `${pad(minutes)}:${pad(seconds)}`;
+        }
+
+        dispStatusHint.textContent = "";
+
+        const pct = Math.min(100, Math.max(0, Math.round((elapsedMs / totalDuration) * 100)));
+        dispProgressPct.textContent = `${pct}%`;
+        progressFill.style.width = `${pct}%`;
+
+        updateDinoProgress(pct);
+
+        const warnSec = (parseInt(inputWarnMin.value) || 0) * 60 + (parseInt(inputWarnSec.value) || 0);
+        if (warnSec > 0 && remainingSec <= warnSec) {
+          dispCountdown.classList.add('urgent');
+          countdownCard.classList.add('warning-glow');
+          progressFill.classList.add('warning-fill');
+          dispStatusHint.textContent = `⚠️ 時間即將結束（剩餘 ${remainingSec} 秒），火龍追上來了！`;
+        } else {
+          dispCountdown.classList.remove('urgent');
+          countdownCard.classList.remove('warning-glow');
+          progressFill.classList.remove('warning-fill');
+        }
+        return;
+      }
+
+      // 狀態 3：考試已結束
+      dispCountdown.textContent = "00:00";
+      dispCountdown.classList.remove('urgent');
+      countdownCard.classList.remove('warning-glow');
+      progressFill.classList.remove('warning-fill');
+      dispStatusHint.textContent = "本次考試已結束";
+      dispProgressPct.textContent = "100%";
+      progressFill.style.width = "100%";
+      updateDinoProgress(100);
+
+      if (wasActive && !hasAlertedForCurrentSession) {
+        hasAlertedForCurrentSession = true;
+        wasActive = false;
+        triggerTimeUp();
+      }
+    }
+
+    function triggerTimeUp() {
+      timeUpModal.classList.add('open');
+      if (isAudioEnabled && checkPlaySound.checked) {
+        playDingDong();
+      }
+    }
+
+    function closeTimeUpModal() {
+      timeUpModal.classList.remove('open');
+    }
+
+    /* ====================================================
+       10. 全螢幕與按鈕事件
+    ==================================================== */
+    [inputExamTitle, inputTotal, inputActual, inputAbsence, inputWarnMin, inputWarnSec, inputReminder, inputExamRules, checkPlaySound].forEach(el => {
+      el.addEventListener('input', syncBoard);
+      el.addEventListener('change', syncBoard);
+    });
+
+    btnAudioToggle.addEventListener('click', () => {
+      getAudioContext();
+      isAudioEnabled = !isAudioEnabled;
+      if (isAudioEnabled) {
+        btnAudioToggle.classList.add('active');
+        audioIcon.textContent = '🔊';
+        audioText.textContent = '叮咚聲已啟用';
+        playDingDong();
+      } else {
+        btnAudioToggle.classList.remove('active');
+        audioIcon.textContent = '🔈';
+        audioText.textContent = '點我啟用叮咚聲';
+      }
+    });
+
+    document.getElementById('btnFullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeTimeUpModal();
+      }
+    });
+
+    /* ====================================================
+       11. 初始化啟動
+    ==================================================== */
+    loadSchedule();
+    loadExamRules();
+    renderSchedules();
+    syncBoard();
+    tick();
+    setInterval(tick, 1000);
+    setInterval(renderSchedules, 60000);
+  </script>
+</body>
+</html>
