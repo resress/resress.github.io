@@ -699,7 +699,7 @@
         id: "wind-learning",
         title: "風的生字旅行",
         subtitle: "依循步調慢學生字 · 筆順練習與部首探索",
-        file: "wind-learning/index.html",
+        file: "wind-learning/index.html#class=r8EQC8jpbXFwwxXzOzXTq7uLq79WZkWh" ,
         category: "chinese",
         icon: "fa-wind",
         gradient: "from-teal-600 via-emerald-600 to-green-700",
@@ -942,10 +942,19 @@
     };
 
     // 從 LocalStorage 載入工具資料 (若無則使用官方預設)
-    let toolsData = JSON.parse(localStorage.getItem('classroom_hub_tools_v7') || 'null');
+    let toolsData = JSON.parse(localStorage.getItem('classroom_hub_tools_v8') || 'null');
+    // 確保工具資料完整性並升級連結
+    if (toolsData && Array.isArray(toolsData)) {
+      toolsData.forEach(t => {
+        if (t.id === 'wind-learning') {
+          t.file = 'wind-learning/index.html#class=r8EQC8jpbXFwwxXzOzXTq7uLq79WZkWh';
+        }
+      });
+    }
+
     if (!toolsData || !Array.isArray(toolsData) || toolsData.length === 0) {
       toolsData = JSON.parse(JSON.stringify(initialDefaultTools));
-      localStorage.setItem('classroom_hub_tools_v7', JSON.stringify(toolsData));
+      localStorage.setItem('classroom_hub_tools_v8', JSON.stringify(toolsData));
     }
 
     // 當前狀態管理

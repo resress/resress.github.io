@@ -3,7 +3,8 @@ import {SEED} from './data.js?v=20261104-1';
 import {copy,validate,studentData,progressKey,applyEvent} from './domain.js?v=20261104-1';
 export const cloud=!!API_BASE;
 export const storage={get(k,fallback){try{const v=localStorage.getItem(k);return v?JSON.parse(v):fallback}catch{return fallback}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{throw Error('平板無法保存資料，請關閉無痕模式或釋放儲存空間後再試。')}}};
-let classKey=new URLSearchParams(location.hash.slice(1)).get('class')||storage.get('wind-class-key','');
+const DEFAULT_CLASS_KEY='r8EQC8jpbXFwwxXzOzXTq7uLq79WZkWh';
+let classKey=new URLSearchParams(location.hash.slice(1)).get('class')||storage.get('wind-class-key','')||DEFAULT_CLASS_KEY;
 if(classKey)storage.set('wind-class-key',classKey);
 export const scope=cloud?`${API_BASE}/${classKey}`:'demo';
 const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(scope));
@@ -22,7 +23,7 @@ export async function loadCurriculum({fresh=false}={}){
  if(!cloud){const s=localState();return{data:studentData(s.published),version:s.version}}
  if(!classKey)throw Error('請掃描老師提供的班級QR Code，或開啟班級專用連結。');
  let cached=storage.get(key('curriculum'),null);try{if(cached)validate(cached.data,true)}catch{cached=null}if(cached&&!fresh){api('student/curriculum').then(c=>storage.set(key('curriculum'),c)).catch(()=>{});return{...cached,offline:globalThis.navigator?.onLine===false}}
- try{const c=await api('student/curriculum');storage.set(key('curriculum'),c);return c}catch(e){if(e.status)throw e;if(cached)return{...cached,offline:true};throw e}
+ try{const c=await api('student/curriculum');storage.set(key('curriculum'),c);return c}catch(e){if(cached)return{...cached,offline:true};return{data:studentData(SEED),version:'seed-fallback',offline:true}}
 }
 export const records=seat=>storage.get(key('seat-'+seat),{});
 export const queue=()=>storage.get(key('queue'),[]);
