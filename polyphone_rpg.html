@@ -1429,13 +1429,13 @@
                 text: "「下列成語或詞語中，哪一個『倒』字讀音為四聲『ㄉㄠˋ』？」",
                 char: "倒",
                 options: [
-                  { text: "排山『倒』海（海水倒灌逆流）", isCorrect: true },
+                  { text: "本末『倒』置（顛倒先後順序）", isCorrect: true },
                   { text: "推『倒』圍牆（坍塌破壞）", isCorrect: false },
                   { text: "東『倒』西歪（搖晃站不穩）", isCorrect: false },
-                  { text: "公司『倒』閉（停業破產）", isCorrect: false }
+                  { text: "排山『倒』海（翻覆山海）", isCorrect: false }
                 ],
-                hint: "💡 洛托姆提示：海水方向反過來翻湧倒灌讀四聲『ㄉㄠˋ』！",
-                knowledge: "排山倒海之『倒』意指水流逆轉或傾瀉，讀作『ㄉㄠˋ』。"
+                hint: "💡 洛托姆提示：顛倒先後、方向相反讀四聲『ㄉㄠˋ』！注意排山倒海是翻倒，讀三聲『ㄉㄠˇ』喔！",
+                knowledge: "【本末倒置】讀作『ㄉㄠˋ』，指上下先後顛倒；【排山倒海】意思是推倒山、翻倒海，讀三聲『ㄉㄠˇ』。"
               }
             ]
           }
@@ -1509,13 +1509,13 @@
                 text: "「這棵水梨樹【結】了很多果實，樹枝長得很【結】實。」句中兩字讀音依序為何？",
                 char: "結",
                 options: [
-                  { text: "ㄐㄧㄝ，ㄐㄧㄝ (長出果實、堅固堅實)", isCorrect: true },
+                  { text: "ㄐㄧㄝˊ，ㄐㄧㄝ (長出果實、堅固耐用)", isCorrect: true },
+                  { text: "ㄐㄧㄝ，ㄐㄧㄝ", isCorrect: false },
                   { text: "ㄐㄧㄝˊ，ㄐㄧㄝˊ", isCorrect: false },
-                  { text: "ㄐㄧㄝˊ，ㄐㄧㄝ", isCorrect: false },
                   { text: "ㄐㄧㄝ，ㄐㄧㄝˊ", isCorrect: false }
                 ],
-                hint: "💡 洛托姆提示：植物長出果實、身體或物品很堅固，皆讀一聲『ㄐㄧㄝ』！",
-                knowledge: "【結】：植物結果、堅固結實讀『ㄐㄧㄝ』；結合、蝴蝶結、結束讀『ㄐㄧㄝˊ』。"
+                hint: "💡 洛托姆提示：植物長出果實讀二聲『ㄐㄧㄝˊ』；堅固健壯的結實讀一聲『ㄐㄧㄝ』！",
+                knowledge: "【結】：長出果實（結了果實、結果）讀『ㄐㄧㄝˊ』；堅固健壯（結實、結結實實）讀『ㄐㄧㄝ』。"
               },
               {
                 text: "「農夫在春暖花開時，忙著播【種】以及【種】田。」句中兩字讀音依序為何？",
@@ -1783,8 +1783,8 @@
         char: "倒",
         lesson: "第 4 課《水滾了》",
         pronunciations: [
-          { sound: "ㄉㄠˋ (四聲)", mean: "①向後退。如：倒車、倒退。②傾倒出來。如：倒垃圾、倒水。③方向相反。如：倒掛、海水倒灌。" },
-          { sound: "ㄉㄠˇ (三聲)", mean: "①仆下、橫躺。如：跌倒、摔倒。②坍塌。如：積木弄倒。③停業。如：倒閉。" }
+          { sound: "ㄉㄠˋ (四聲)", mean: "①向後退。如：倒車、倒退。②傾倒出來。如：倒垃圾、倒水。③方向相反、顛倒。如：倒掛、海水倒灌、本末倒置。" },
+          { sound: "ㄉㄠˇ (三聲)", mean: "①仆下、橫躺。如：跌倒、摔倒。②坍塌翻覆。如：積木弄倒、排山倒海。③停業。如：倒閉。" }
         ]
       },
       {
@@ -1799,8 +1799,8 @@
         char: "結",
         lesson: "第 5 課《為梨花撐傘》",
         pronunciations: [
-          { sound: "ㄐㄧㄝˊ (二聲)", mean: "①終了收束。如：結局、結帳。②聯合關係。如：結婚。③繩紐。如：蝴蝶結。④凝聚。如：結冰、凝結。" },
-          { sound: "ㄐㄧㄝ (一聲)", mean: "①長出果實。如：結出甜美果實。②堅固。如：結實。" }
+          { sound: "ㄐㄧㄝˊ (二聲)", mean: "①植物長出果實。如：結了果實、開花結果。②終了收束。如：結局、結帳。③聯合關係。如：結婚。④繩紐。如：蝴蝶結。⑤凝聚。如：結冰、凝結。" },
+          { sound: "ㄐㄧㄝ (一聲)", mean: "堅固、健壯。如：結實、結結實實。" }
         ]
       },
       {
@@ -2138,20 +2138,21 @@
       document.getElementById('enemy-avatar').innerHTML = currentBattle.svg;
       updateEnemyHpUI();
 
-      // 從該怪物的題庫中隨機選一題
-      const qPool = currentBattle.questions;
-      currentQuestion = qPool[Math.floor(Math.random() * qPool.length)];
-      renderQuestion(currentQuestion);
+      // 從該怪物的題庫中隨機選一題並隨機洗牌選項
+      fetchPolyQuestion();
     }
 
-    // 陣列隨機洗牌工具（Fisher-Yates 演算法）
-    function shuffleArray(array) {
-      const arr = [...array];
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
+        function fetchPolyQuestion() {
+      const qPool = currentBattle.questions;
+      const rawQ = qPool[Math.floor(Math.random() * qPool.length)];
+      currentQuestion = JSON.parse(JSON.stringify(rawQ));
+      if (currentQuestion.options && Array.isArray(currentQuestion.options)) {
+        for (let i = currentQuestion.options.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [currentQuestion.options[i], currentQuestion.options[j]] = [currentQuestion.options[j], currentQuestion.options[i]];
+        }
       }
-      return arr;
+      renderQuestion(currentQuestion);
     }
 
     function renderQuestion(q) {
@@ -2166,14 +2167,10 @@
       const optsContainer = document.getElementById('options-container');
       optsContainer.innerHTML = '';
 
-      // 隨機打亂選項順序，使正確答案隨機分佈在 A、B、C、D
-      const shuffledOptions = shuffleArray(q.options);
-
       const letters = ['A', 'B', 'C', 'D'];
-      shuffledOptions.forEach((opt, oIdx) => {
+      q.options.forEach((opt, oIdx) => {
         const btn = document.createElement('button');
         btn.className = 'opt-btn';
-        btn.dataset.isCorrect = opt.isCorrect ? 'true' : 'false';
         btn.innerHTML = `<div class="opt-badge">${letters[oIdx]}</div><span>${opt.text}</span>`;
         btn.onclick = () => selectOption(btn, opt);
         optsContainer.appendChild(btn);
@@ -2211,9 +2208,9 @@
         // 展開提示與解析
         document.getElementById('hint-box').classList.add('show');
 
-        // 標出正確選項（依據按鈕 dataset 正確標記）
-        allBtns.forEach(b => {
-          if (b.dataset.isCorrect === 'true') {
+        // 標出正確選項
+        allBtns.forEach((b, idx) => {
+          if (currentQuestion.options[idx].isCorrect) {
             b.classList.add('correct');
           }
         });
@@ -2253,10 +2250,8 @@
               loadBattle(battleIndex);
             }
           } else {
-            // 尚未擊敗，換另一題
-            const qPool = currentBattle.questions;
-            currentQuestion = qPool[Math.floor(Math.random() * qPool.length)];
-            renderQuestion(currentQuestion);
+            // 尚未擊敗，換另一題並洗牌選項
+            fetchPolyQuestion();
           }
         }, 600);
       }, 250);
