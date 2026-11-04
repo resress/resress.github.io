@@ -1,8 +1,9 @@
-import {LESSON12_BANK, LESSON12_CHARS} from './lesson12.js';
-import {LESSON11_BANK, LESSON11_CHARS} from './lesson11.js';
-import {LESSON10_BANK, LESSON10_CHARS} from './lesson10.js';
-import {LESSON9_BANK, LESSON9_CHARS} from './lesson9.js';
-import {LESSON8_BANK, LESSON8_CHARS} from './lesson8.js';
+import {LESSON12_BANK} from './lesson12.js?v=20261104-1';
+import {LESSON11_BANK} from './lesson11.js?v=20261104-1';
+import {LESSON10_BANK} from './lesson10.js?v=20261104-1';
+import {LESSON9_BANK} from './lesson9.js?v=20261104-1';
+import {LESSON8_BANK} from './lesson8.js?v=20261104-1';
+import {IDIOM_ADDITIONS} from './idiom-supplements.js?v=20261104-1';
 // 字形事實來自教育部，教學文字自編。沒有課文全文。
 const rows = [
  ['鹹','ㄒㄧㄢˊ','鹵',20,'帶有鹽的味道。','鹹味|帶有鹽的味道。|媽媽煮的蔬菜湯鹹味剛剛好，大家都喝得很開心。','鹹水|含有鹽分的水。|我們在自然課認識鹹水，也知道海水不能直接飲用。','鹹淡|食物中鹽味的輕重。|爸爸煮湯時先試一試鹹淡，再決定要不要加鹽巴。','右邊是「咸」，左邊是「鹵」。','海邊'],
@@ -30,17 +31,5 @@ const LESSON_BANK={...LESSON8_BANK,...LESSON9_BANK,...LESSON10_BANK,...LESSON11_
 export const FACTS=Object.fromEntries([...rows.map(r=>[r[0],{sound:r[1],radical:r[2],strokes:r[3]}]),...Object.entries(LESSON_BANK).map(([char,c])=>[char,{sound:c.sound,radical:c.radical,strokes:c.strokes}])]);
 export const SEED_BANK=Object.fromEntries(rows.map(r=>{const i=idioms[r[0]];return[r[0],{char:r[0],sound:r[1],radical:r[2],strokes:r[3],definition:r[4],words:r.slice(5,8).filter(Boolean).map(s=>{const[word,meaning,example]=s.split('|');return{word,meaning,example}}),hint:r[8],scene:r[9],revision:1,reviewed:true,idiom:i?{word:i[0],meaning:i[1],example:i[2],source:`https://dict.concised.moe.edu.tw/dictView.jsp?ID=${i[3]}&la=0`,sound:i[4]}:null,source:`https://stroke-order.learningweb.moe.edu.tw/dictView.jsp?ID=${r[0].codePointAt(0)}`,checkedAt:'2026-10-31'}]}));
 Object.assign(SEED_BANK,LESSON_BANK);
-export const SEED={
-  className:'三年級生字小旅行',
-  maxSeat:30,
-  bank:SEED_BANK,
-  lessons:[
-    {id:'lesson-7',cover:'wind',title:'第七課・風的味道',author:'賴伊麗',items:rows.map(r=>r[0]),published:true},
-    {id:'lesson-8',cover:'ocean',title:'第八課・寄居蟹找新家',author:'謝鴻文',items:LESSON8_CHARS,published:true},
-    {id:'lesson-9',cover:'forest',title:'第九課・阿塱壹古道',author:'陳淑玲',items:LESSON9_CHARS,published:true},
-    {id:'lesson-10',cover:'forest',title:'第十課・秋千上的婚禮',author:'陳靜婷',items:LESSON10_CHARS,published:true},
-    {id:'lesson-11',cover:'road',title:'第十一課・一路平安',author:'王文華',items:LESSON11_CHARS,published:true},
-    {id:'lesson-12',cover:'home',title:'第十二課・不一樣的團圓',author:'王文華',items:LESSON12_CHARS,published:true}
-  ],
-  notice:'請搭配課本閱讀。網站不存放課文全文。'
-};
+for(const{char,idiom}of IDIOM_ADDITIONS){const card=SEED_BANK[char];if(!card)throw Error(`成語目標字未收錄：${char}`);card.idioms??=[];if(card.idiom?.word===idiom.word||card.idioms.some(x=>x.word===idiom.word))throw Error(`成語重複：${idiom.word}`);card.idioms.push(idiom)}
+export const SEED={className:'三年級生字小旅行',maxSeat:30,bank:SEED_BANK,lessons:[{id:'lesson-7',cover:'wind',title:'第七課・風的味道',author:'賴伊麗',items:rows.map(r=>r[0]),published:true}],notice:'請搭配課本閱讀。網站不存放課文全文。'};

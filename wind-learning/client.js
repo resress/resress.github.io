@@ -1,6 +1,6 @@
-import {API_BASE} from './config.js?v=20261102-5';
-import {SEED} from './data.js?v=20261102-5';
-import {copy,validate,studentData,progressKey,applyEvent} from './domain.js?v=20261102-5';
+import {API_BASE} from './config.js?v=20261104-1';
+import {SEED} from './data.js?v=20261104-1';
+import {copy,validate,studentData,progressKey,applyEvent} from './domain.js?v=20261104-1';
 export const cloud=!!API_BASE;
 export const storage={get(k,fallback){try{const v=localStorage.getItem(k);return v?JSON.parse(v):fallback}catch{return fallback}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{throw Error('平板無法保存資料，請關閉無痕模式或釋放儲存空間後再試。')}}};
 let classKey=new URLSearchParams(location.hash.slice(1)).get('class')||storage.get('wind-class-key','');
@@ -16,8 +16,8 @@ export async function api(path,{method='GET',data,admin=false}={}){
  try{const r=await fetch(API_BASE.replace(/\/$/,'')+'/api/'+path,{method,headers:{'Content-Type':'application/json',...(admin?{Authorization:'Bearer '+getToken()}:{'X-Class-Key':classKey})},...(data!==undefined?{body:JSON.stringify(data)}:{}),signal:controller.signal,cache:'no-store'});let v;try{v=await r.json()}catch{throw Error('服務回應不正確，請檢查後端網址。')}if(!r.ok){if(r.status===401&&admin)setToken('');throw Object.assign(Error(v.error||'連線失敗。'),{status:r.status})}return v}
  catch(e){if(e.name==='AbortError')throw Error('連線逾時，紀錄仍保存在這台平板。');throw e}finally{clearTimeout(timer)}
 }
-function localState(){return storage.get('wind-v2-demo-state',{revision:1,draft:copy(SEED),published:copy(SEED),version:'initial-2',history:[{id:'initial-2',created:new Date().toISOString().slice(0,10),data:copy(SEED)}]})}
-function saveLocal(s){storage.set('wind-v2-demo-state',s)}
+function localState(){return storage.get('wind-v1-demo-state',{revision:1,draft:copy(SEED),published:copy(SEED),version:'initial-1',history:[{id:'initial-1',created:new Date().toISOString().slice(0,10),data:copy(SEED)}]})}
+function saveLocal(s){storage.set('wind-v1-demo-state',s)}
 export async function loadCurriculum({fresh=false}={}){
  if(!cloud){const s=localState();return{data:studentData(s.published),version:s.version}}
  if(!classKey)throw Error('請掃描老師提供的班級QR Code，或開啟班級專用連結。');
@@ -47,4 +47,4 @@ export async function history(){return cloud?api('admin/history',{admin:true}):{
 export async function restore(version,revision){if(cloud)return api('admin/restore',{method:'POST',data:{version,revision},admin:true});const s=localState();if(revision!==s.revision)throw Error('教材已更新，請重新載入。');s.draft=copy(s.history.find(v=>v.id===version).data);s.revision++;saveLocal(s);return{revision:s.revision}}
 export async function report(){if(cloud)return api('admin/report',{admin:true});const seats={};for(let i=1;i<=99;i++){const p=records(i);if(Object.keys(p).length)seats[i]=p}return{seats}}
 export async function resetSeat(seat){if(cloud)return api('admin/reset',{method:'POST',data:{seat},admin:true});storage.set(key('seat-'+seat),{});return{ok:true}}
-if('serviceWorker'in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('./sw.js?v=20261102-5').catch(()=>notifySync('離線快取無法啟用，請保持網路連線。'));
+if('serviceWorker'in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('./sw.js?v=20261104-1').catch(()=>notifySync('離線快取無法啟用，請保持網路連線。'));
