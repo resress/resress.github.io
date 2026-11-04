@@ -155,10 +155,10 @@
     .board-body {
       flex: 1;
       min-height: 0;
-      padding: 0.65rem 1.25rem;
+      padding: 0.5rem 1rem;
       display: grid;
-      grid-template-columns: 2.2fr 0.85fr;
-      gap: 1.2rem;
+      grid-template-columns: 2.9fr 0.72fr;
+      gap: 0.9rem;
     }
 
     /* 左欄：超大主畫面 (科目 + 倒數 + 寬敞恐龍賽道 + 進度條) */
@@ -172,7 +172,7 @@
 
     .subject-banner {
       flex-shrink: 0;
-      height: 60px;
+      height: 64px;
       background: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #3b82f6 100%);
       color: white;
       border-radius: 14px;
@@ -198,7 +198,7 @@
     }
 
     .subject-info .name {
-      font-size: 2.35rem;
+      font-size: 2.65rem;
       font-weight: 900;
       letter-spacing: 2px;
       line-height: 1;
@@ -221,7 +221,7 @@
     }
 
     .period-badge .p-time {
-      font-size: 1.3rem;
+      font-size: 1.45rem;
       font-weight: 800;
     }
 
@@ -232,7 +232,7 @@
       background: var(--card-bg);
       border: 1.5px solid var(--border);
       border-radius: 14px;
-      padding: 0.65rem 1.25rem;
+      padding: 0.5rem 1rem;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -270,10 +270,10 @@
 
     .countdown-digits {
       font-family: "Courier New", Courier, monospace, sans-serif;
-      font-size: clamp(3.6rem, 9vh, 5.8rem);
+      font-size: clamp(4.2rem, 11vh, 7.2rem);
       font-weight: 900;
       color: #0f172a;
-      letter-spacing: 4px;
+      letter-spacing: 5px;
       line-height: 1;
       font-variant-numeric: tabular-nums;
     }
@@ -293,7 +293,7 @@
     ==================================================== */
     .dino-arena {
       width: 100%;
-      height: 106px;
+      height: 114px;
       background: linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%);
       border-radius: 18px;
       border: 1.5px solid #cbd5e1;
@@ -327,7 +327,7 @@
     .dragon-img-actor {
       position: absolute;
       bottom: 8px;
-      height: 86px;
+      height: 92px;
       width: auto;
       max-width: 52%; /* 避免火焰過長溢出右側 */
       object-fit: contain;
@@ -347,7 +347,7 @@
     .runner-img-actor {
       position: absolute;
       bottom: 8px;
-      height: 82px;
+      height: 88px;
       width: auto;
       transition: left 1s cubic-bezier(0.25, 0.8, 0.25, 1);
       z-index: 6;
@@ -385,7 +385,7 @@
 
     .progress-track {
       width: 100%;
-      height: 16px;
+      height: 18px;
       background: #e2e8f0;
       border-radius: 8px;
       overflow: hidden;
@@ -429,18 +429,18 @@
       height: 100%;
     }
 
-    /* 出缺席狀況 (精巧單行橫條) */
+    /* 出缺席狀況 (極致精巧單行橫條) */
     .attendance-compact-bar {
       flex-shrink: 0;
       background: var(--card-bg);
       border: 1.5px solid var(--border);
-      border-radius: 12px;
-      padding: 0.35rem 0.75rem;
+      border-radius: 10px;
+      padding: 0.22rem 0.5rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
       box-shadow: var(--card-shadow);
-      gap: 0.5rem;
+      gap: 0.35rem;
     }
 
     .att-item-group {
@@ -450,26 +450,26 @@
     }
 
     .att-badge-label {
-      font-size: 0.9rem;
+      font-size: 0.78rem;
       font-weight: 800;
       color: #1e3a8a;
       display: flex;
       align-items: center;
-      gap: 0.3rem;
+      gap: 0.2rem;
       white-space: nowrap;
     }
 
     .att-stat-pill {
       background: #f1f5f9;
       border: 1px solid #cbd5e1;
-      padding: 0.15rem 0.55rem;
-      border-radius: 7px;
-      font-size: 0.82rem;
+      padding: 0.08rem 0.35rem;
+      border-radius: 5px;
+      font-size: 0.72rem;
       font-weight: 700;
       color: #475569;
       display: flex;
       align-items: center;
-      gap: 0.25rem;
+      gap: 0.15rem;
       white-space: nowrap;
     }
 
@@ -480,21 +480,21 @@
     }
 
     .att-stat-pill .num-strong {
-      font-size: 1.15rem;
+      font-size: 0.95rem;
       font-weight: 900;
     }
 
     .absence-compact-pill {
       background: var(--red-bg);
       border: 1px solid #fecdd3;
-      padding: 0.15rem 0.55rem;
-      border-radius: 7px;
-      font-size: 0.82rem;
+      padding: 0.08rem 0.35rem;
+      border-radius: 5px;
+      font-size: 0.72rem;
       font-weight: 800;
       color: #be123c;
       display: flex;
       align-items: center;
-      gap: 0.3rem;
+      gap: 0.2rem;
       max-width: 45%;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -516,13 +516,13 @@
       font-weight: 800;
     }
 
-    /* 今日考試時程卡片 (自適應 1~6 科，間距固定，絕不拉散) */
+    /* 今日考試時程卡片 (自適應 1~6 科，精緻緊湊縮小) */
     .schedule-card {
       flex-shrink: 0;
       background: var(--card-bg);
       border: 1.5px solid var(--border);
-      border-radius: 14px;
-      padding: 0.45rem 0.75rem;
+      border-radius: 10px;
+      padding: 0.32rem 0.55rem;
       display: flex;
       flex-direction: column;
       box-shadow: var(--card-shadow);
@@ -533,13 +533,13 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 0.35rem;
-      border-bottom: 1.5px solid #f1f5f9;
-      padding-bottom: 0.25rem;
+      margin-bottom: 0.25rem;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 0.2rem;
     }
 
     .sched-head .t1 {
-      font-size: 0.95rem;
+      font-size: 0.82rem;
       font-weight: 800;
       color: #1e3a8a;
     }
@@ -548,10 +548,10 @@
       background: #eff6ff;
       border: 1px solid #bfdbfe;
       color: #1d4ed8;
-      font-size: 0.72rem;
+      font-size: 0.65rem;
       font-weight: 800;
-      padding: 0.15rem 0.45rem;
-      border-radius: 5px;
+      padding: 0.08rem 0.32rem;
+      border-radius: 4px;
       cursor: pointer;
       transition: all 0.15s ease;
     }
@@ -562,7 +562,7 @@
     }
 
     .sched-head .t2 {
-      font-size: 0.75rem;
+      font-size: 0.68rem;
       color: #64748b;
       font-weight: 600;
     }
@@ -570,7 +570,7 @@
     .sched-list {
       display: flex;
       flex-direction: column;
-      gap: 0.32rem;
+      gap: 0.22rem;
       overflow: hidden;
     }
 
@@ -579,9 +579,9 @@
       justify-content: space-between;
       align-items: center;
       background: #f8fafc;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 0.32rem 0.65rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 7px;
+      padding: 0.22rem 0.45rem;
       cursor: pointer;
       transition: all 0.15s ease;
     }
@@ -589,7 +589,7 @@
     .sched-item:hover {
       border-color: var(--primary);
       background: #eff6ff;
-      transform: translateX(3px);
+      transform: translateX(2px);
     }
 
     .sched-item.active {
@@ -601,13 +601,13 @@
     .sched-item .sub-left {
       display: flex;
       align-items: center;
-      gap: 0.45rem;
+      gap: 0.35rem;
     }
 
     .active-dot {
       display: inline-block;
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
       background: #10b981;
       box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
@@ -616,27 +616,27 @@
 
     @keyframes pulseGreen {
       0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-      70% { transform: scale(1.1); box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); }
+      70% { transform: scale(1.1); box-shadow: 0 0 0 4px rgba(16, 185, 129, 0); }
       100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
     }
 
     .sched-item .sub-name {
-      font-size: 1.02rem;
+      font-size: 0.88rem;
       font-weight: 800;
       color: #0f172a;
     }
 
     .sched-item .sub-time {
-      font-size: 0.86rem;
+      font-size: 0.74rem;
       font-weight: 700;
       color: #64748b;
     }
 
     .sched-item .status-pill {
-      font-size: 0.72rem;
+      font-size: 0.65rem;
       font-weight: 800;
-      padding: 0.15rem 0.5rem;
-      border-radius: 5px;
+      padding: 0.08rem 0.32rem;
+      border-radius: 4px;
       background: #e2e8f0;
       color: #475569;
     }
@@ -646,14 +646,14 @@
       color: white;
     }
 
-    /* 考場叮嚀守則卡片 (自訂作答提醒，彈性伸縮填滿右下) */
+    /* 考場叮嚀守則卡片 (自訂作答提醒，精巧雅緻，不擠壓) */
     .exam-rules-card {
       flex: 1;
       min-height: 0;
       background: var(--card-bg);
       border: 1.5px solid var(--border);
-      border-radius: 14px;
-      padding: 0.55rem 0.8rem;
+      border-radius: 10px;
+      padding: 0.32rem 0.55rem;
       display: flex;
       flex-direction: column;
       box-shadow: var(--card-shadow);
@@ -661,14 +661,15 @@
     }
 
     .rules-head {
-      font-size: 0.95rem;
+      font-size: 0.82rem;
       font-weight: 800;
       color: #1e3a8a;
-      border-bottom: 1.5px solid #f1f5f9;
-      padding-bottom: 0.35rem;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 0.2rem;
+      margin-bottom: 0.2rem;
       display: flex;
       align-items: center;
-      gap: 0.35rem;
+      gap: 0.25rem;
     }
 
     .rules-body {
@@ -676,30 +677,30 @@
       display: flex;
       flex-direction: column;
       justify-content: space-around;
-      gap: 0.35rem;
-      padding: 0.2rem 0;
+      gap: 0.2rem;
+      padding: 0.1rem 0;
     }
 
     .rule-item {
       display: flex;
       align-items: center;
-      gap: 0.55rem;
+      gap: 0.4rem;
       background: #f8fafc;
       border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 0.45rem 0.65rem;
+      border-radius: 6px;
+      padding: 0.2rem 0.42rem;
     }
 
     .rule-icon {
-      font-size: 1.2rem;
+      font-size: 0.95rem;
       flex-shrink: 0;
     }
 
     .rule-text {
-      font-size: 0.88rem;
+      font-size: 0.76rem;
       font-weight: 700;
       color: #334155;
-      line-height: 1.35;
+      line-height: 1.25;
     }
 
     /* 底部列 */
