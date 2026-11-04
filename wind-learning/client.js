@@ -16,8 +16,8 @@ export async function api(path,{method='GET',data,admin=false}={}){
  try{const r=await fetch(API_BASE.replace(/\/$/,'')+'/api/'+path,{method,headers:{'Content-Type':'application/json',...(admin?{Authorization:'Bearer '+getToken()}:{'X-Class-Key':classKey})},...(data!==undefined?{body:JSON.stringify(data)}:{}),signal:controller.signal,cache:'no-store'});let v;try{v=await r.json()}catch{throw Error('服務回應不正確，請檢查後端網址。')}if(!r.ok){if(r.status===401&&admin)setToken('');throw Object.assign(Error(v.error||'連線失敗。'),{status:r.status})}return v}
  catch(e){if(e.name==='AbortError')throw Error('連線逾時，紀錄仍保存在這台平板。');throw e}finally{clearTimeout(timer)}
 }
-function localState(){return storage.get('wind-v1-demo-state',{revision:1,draft:copy(SEED),published:copy(SEED),version:'initial-1',history:[{id:'initial-1',created:new Date().toISOString().slice(0,10),data:copy(SEED)}]})}
-function saveLocal(s){storage.set('wind-v1-demo-state',s)}
+function localState(){return storage.get('wind-v2-demo-state',{revision:1,draft:copy(SEED),published:copy(SEED),version:'initial-2',history:[{id:'initial-2',created:new Date().toISOString().slice(0,10),data:copy(SEED)}]})}
+function saveLocal(s){storage.set('wind-v2-demo-state',s)}
 export async function loadCurriculum({fresh=false}={}){
  if(!cloud){const s=localState();return{data:studentData(s.published),version:s.version}}
  if(!classKey)throw Error('請掃描老師提供的班級QR Code，或開啟班級專用連結。');
