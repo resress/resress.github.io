@@ -1,2 +1,2 @@
-// GitHub Pages：填入部署完成的 Worker 網址。網址本身不是密碼。
-export const API_BASE='https://wind-learning.resress1121.workers.dev';
+// 本機免雲端模式：直接使用內建教材，無需後端 Worker
+export const API_BASE = '';
