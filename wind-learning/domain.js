@@ -1,4 +1,4 @@
-import {FACTS,SEED_BANK} from './data.js?v=20261104-1';
+import {FACTS,SEED_BANK,WORD_SOURCES} from './data.js?v=20261111-1';
 export const copy=x=>JSON.parse(JSON.stringify(x));
 export const day=()=>new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Taipei'});
 export const sentenceLength=s=>Array.from(String(s).replace(/\s/gu,'')).length;
@@ -20,7 +20,7 @@ export function validate(data,publish=false){
   assert(Number.isInteger(c.revision)&&c.revision>=1&&c.revision<=9999,'教材版本不正確。');
   assert(typeof c.reviewed==='boolean','請標記內容是否已審核。');
   assert(Array.isArray(c.words)&&c.words.length>=1&&c.words.length<=4,'每字需1–4個詞語。');
-  for(const w of c.words)assert(text(w.word,12)&&w.word.includes(key)&&text(w.meaning,120)&&text(w.example,100)&&w.example.includes(w.word),`${key}的造詞或例句不完整，例句需包含完整詞語。`);
+  for(const w of c.words){const approved=WORD_SOURCES[w.word];assert(text(w.word,12)&&w.word.includes(key)&&text(w.meaning,120)&&text(w.example,100)&&w.example.includes(w.word),key+'的造詞或例句不完整，例句需包含完整詞語。');assert(approved&&w.source===approved.source&&w.sourceType===approved.type&&w.sourceName===approved.name&&(w.sourceReason||'')===(approved.reason||''),key+'的造詞「'+w.word+'」需符合已核准的詞語來源。');const id=approved?.source?.split('?ID=')[1]?.split('&')[0]||'';const official=approved?.type==='moe-concise'&&approved.source.startsWith('https://dict.concised.moe.edu.tw/dictView.jsp?ID=')&&id.length>0&&[...id].every(d=>d>='0'&&d<='9');const exception=approved?.type==='approved-exception'&&approved.source?.startsWith('https://')&&text(approved.reason,200);assert(official||exception,key+'的造詞來源僅能使用教育部《國語辭典簡編本》，或具來源與原因的核准例外。');}
   for(const w of c.words)assert(sentenceLength(w.example)>=15,`${key}的「${w.word}」例句至少15字，包含標點，空白不計。`);
   if(c.idiom)validateIdiom(c.idiom,key,key);
   if(c.idioms!==undefined){assert(Array.isArray(c.idioms)&&c.idioms.length<=8,`${key}的補充成語格式不正確。`);const words=new Set(c.idiom?[c.idiom.word]:[]);for(const i of c.idioms){validateIdiom(i,key,key);assert(!words.has(i.word),`${key}的成語不得重複。`);words.add(i.word)}}
@@ -34,7 +34,7 @@ export function questionSet(c,bank){
  return[
  {id:'sound',ability:'recognize',prompt:`「${c.char}」在本課讀什麼？`,answer:c.sound,options:opts(c.sound,others.map(x=>x.sound)),hint:`回想字卡上的注音：${c.sound}。`},
  {id:'radical',ability:'recognize',prompt:`「${c.char}」的部首是什麼？`,answer:c.radical,options:opts(c.radical,others.map(x=>x.radical)),hint:`部首是「${c.radical}」。部首和字的一部分不一定相同。`},
- {id:'strokes',ability:'recognize',prompt:`「${c.char}」總共有幾畫？`,answer:String(c.strokes),options:opts(String(c.strokes),[String(c.strokes-1),String(c.strokes+1)]),hint:`對照全筆順圖，總共是${c.strokes}畫。`},
+ {id:'strokes',ability:'recognize',prompt:`「${c.char}」總共有幾畫？`,answer:String(c.strokes),options:opts(String(c.strokes),[String(c.strokes-1),String(c.strokes+1)]),hint:`回到字卡第一頁播放教育部筆順動畫，總共是${c.strokes}畫。`},
  {id:'word',ability:'use',prompt:w.example.replaceAll(w.word,'＿＿'),answer:w.word,options:opts(w.word,others.map(x=>x.words[0].word)),hint:`想一想「${w.word}」的意思：${w.meaning}`},
  {id:'meaning',ability:'use',prompt:`「${w.word}」是什麼意思？`,answer:w.meaning,options:opts(w.meaning,others.map(x=>x.words[0].meaning)),hint:`例句：${w.example}`}
  ];
