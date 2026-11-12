@@ -12,9 +12,10 @@ export function speak(text){
  const clearWait=()=>{if(waitingVoicesHandler){synth.removeEventListener?.('voiceschanged',waitingVoicesHandler);waitingVoicesHandler=null}if(waitingVoicesTimer){clearTimeout(waitingVoicesTimer);waitingVoicesTimer=0}};
  clearWait();synth.cancel();
  const start=()=>{if(request!==speechRequest)return;clearWait();const voice=synth.getVoices().find(isTaiwanVoice);if(!voice){toast('此裝置尚未提供臺灣中文語音，請在語音設定中啟用「中文（臺灣）」。');return}const utterance=new Utterance(String(text));utterance.lang='zh-TW';utterance.voice=voice;utterance.rate=.8;synth.speak(utterance)};
- const voices=synth.getVoices();
- if(voices.length){start();return}
- waitingVoicesHandler=start;synth.addEventListener?.('voiceschanged',start,{once:true});waitingVoicesTimer=setTimeout(start,1500);
+ if(synth.getVoices().some(isTaiwanVoice)){start();return}
+ waitingVoicesHandler=()=>{if(synth.getVoices().some(isTaiwanVoice))start()};
+ synth.addEventListener?.('voiceschanged',waitingVoicesHandler);
+ waitingVoicesTimer=setTimeout(start,1500);
 }
 export function toast(text){let t=$('#toast');if(!t){t=document.createElement('div');t.id='toast';t.role='status';document.body.append(t)}t.textContent=text;t.hidden=false;clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.hidden=true,6000)}
 export function errorView(e){return`<div class="notice" role="alert">${esc(e.message||e)}</div>`}
