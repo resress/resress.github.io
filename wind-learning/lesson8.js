@@ -10,6 +10,7 @@ const rows=[
 ['蓋','ㄍㄞˋ','艸',14,'遮在物品上面的東西，也可表示遮住。','瓶蓋|蓋在瓶口上的東西。|裝好飲用水以後，我把瓶蓋轉緊，避免水漏到書包裡。','鍋蓋|蓋在鍋子上面的蓋子。|廚房的鍋蓋冒出白色水氣，我站在旁邊等大人處理。','上面是艸部，下面是皿；總筆畫依教育部為十四畫。'],
 ['淨','ㄐㄧㄥˋ','水',11,'清潔，沒有髒東西。','乾淨|沒有髒東西，十分清潔。|午餐結束以後，我們一起把桌面擦乾淨，再收好餐具。','潔淨|清潔而乾淨。|大家輪流整理教室，讓每天上課的環境保持潔淨又舒適。','左邊是水部，右邊是「爭」，不要寫成簡體字。'],
 ['忘','ㄨㄤˋ','心',7,'不記得原本知道的事情。','忘記|原本知道，後來卻想不起來。|為了不忘記明天要帶的用品，我先把清單寫在聯絡簿上。','難忘|印象很深，讓人不容易忘記。|這次和同學一起到海邊觀察的經驗，讓我覺得十分難忘。','上面是「亡」，下面是心，注意心部各點的位置。'],
+['志','ㄓˋ','心',7,'心中的意向、抱負或希望達成的目標。','志工|願意在公共或志願團體中，不受報酬而付出力量的人。|淨灘活動開始前，志工先說明安全方法，大家就能分組工作。','志願|心中希望達成的目標。|我的志願是成為海洋志工，照顧海邊的動物，也守護乾淨的海岸。','上面是「士」，下面是心部；上橫較短，不要寫成「土」。','2026-11-12'],
 ['垃','ㄌㄜˋ','土',8,'與「圾」合成垃圾，指丟棄或不再使用的東西。','垃圾|丟棄或不再使用的東西。|我們把海邊的垃圾帶走，讓寄居蟹和其他動物有乾淨的家。','垃圾桶|收集垃圾的容器。|下課時，我把不能回收的廢紙屑放進垃圾桶，沒有亂丟。','左邊是土，右邊是立；在「垃圾」裡讀ㄌㄜˋ。'],
 ['圾','ㄙㄜˋ','土',7,'與「垃」合成垃圾，指丟棄或不再使用的東西。','垃圾|丟棄或不再使用的東西。|野餐結束以後，我們仔細檢查地面，把自己的垃圾全部帶走。','垃圾袋|用來裝垃圾的袋子。|爸爸把垃圾袋綁好，再依照社區的時間拿到指定地方。','左邊是土，右邊「及」有四畫；共七畫，讀ㄙㄜˋ。'],
 ['位','ㄨㄟˋ','人',7,'所在的地方，也可用來禮貌地計算人數。','位置|人或物品所在的地方。|老師請我們記住集合的位置，參觀結束後就不會找錯地方。','座位|供人坐的地方。|搭公車時，我們把座位讓給有需要的人，站穩並扶好把手。','左邊是人部，右邊是立，不要和「住」混淆。'],
@@ -22,5 +23,5 @@ const idioms={
 淨:['一乾二淨','形容完全沒有剩下，也可形容十分乾淨。','我們把桌上的紙屑收拾得一乾二淨，讓教室恢復整潔的樣子。','40076','ㄧ ㄍㄢ ㄦˋ ㄐㄧㄥˋ'],
 忘:['念念不忘','常常記在心裡，一直沒有忘記。','那次全班合作完成表演的快樂經驗，到現在仍讓我念念不忘。','12871','ㄋㄧㄢˋ ㄋㄧㄢˋ ㄅㄨˋ ㄨㄤˋ']
 };
-export const LESSON8_CHARS=rows.map(r=>r[0]);
-export const LESSON8_BANK=Object.fromEntries(rows.map(r=>{const i=idioms[r[0]];return[r[0],{char:r[0],sound:r[1],radical:r[2],strokes:r[3],definition:r[4],words:r.slice(5,7).map(x=>{const[word,meaning,example]=x.split('|');return{word,meaning,example}}),hint:r[7],scene:'海邊',revision:1,reviewed:true,idiom:i?{word:i[0],meaning:i[1],example:i[2],source:`https://dict.concised.moe.edu.tw/dictView.jsp?ID=${i[3]}`,sound:i[4]}:null,source:`https://stroke-order.learningweb.moe.edu.tw/dictView.jsp?ID=${r[0].codePointAt(0)}`,checkedAt:'2026-10-31'}]}));
+export const LESSON8_CHARS=rows.map(r=>r[0]).filter(c=>c!=='忘');
+export const LESSON8_BANK=Object.fromEntries(rows.map(r=>{const i=idioms[r[0]];return[r[0],{char:r[0],sound:r[1],radical:r[2],strokes:r[3],definition:r[4],words:r.slice(5,7).map(x=>{const[word,meaning,example]=x.split('|');return{word,meaning,example}}),hint:r[7],scene:'海邊',revision:1,reviewed:true,idiom:i?{word:i[0],meaning:i[1],example:i[2],source:`https://dict.concised.moe.edu.tw/dictView.jsp?ID=${i[3]}`,sound:i[4]}:null,source:`https://stroke-order.learningweb.moe.edu.tw/dictView.jsp?ID=${r[0].codePointAt(0)}`,checkedAt:r[8]||'2026-10-31'}]}));

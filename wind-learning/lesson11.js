@@ -131,6 +131,17 @@ const rows=[
     "左邊是手部；「托付」的托可通「託」，讀ㄊㄨㄛ。"
   ],
   [
+    "拖",
+    "ㄊㄨㄛ",
+    "手",
+    8,
+    "牽拉物品，也可指把物品拖著移動。",
+    "拖車|由其他車輛牽引、用來載運物品的車。|車子突然發出怪聲後，爸爸請修車師傅用拖車把車子送進修車廠。",
+    "拖地|用拖把擦抹地面。|打掃廚房時，我先把桌面擦乾淨，再和媽媽一起拖地，讓大家走得安心。",
+    "左邊是手部，右邊是「也」；「拖車」的拖讀ㄊㄨㄛ。",
+    "2026-11-12"
+  ],
+  [
     "幸",
     "ㄒㄧㄥˋ",
     "干",
@@ -218,5 +229,5 @@ const idioms={
     "ㄍㄨㄢ ㄏㄨㄞˊ ㄅㄟˋ ㄓˋ"
   ]
 };
-export const LESSON11_CHARS=rows.map(r=>r[0]);
-export const LESSON11_BANK=Object.fromEntries(rows.map(r=>{const i=idioms[r[0]];return[r[0],{char:r[0],sound:r[1],radical:r[2],strokes:r[3],definition:r[4],words:r.slice(5,7).map(x=>{const[word,meaning,example]=x.split("|");return{word,meaning,example}}),hint:r[7],scene:"旅途",revision:1,reviewed:true,idiom:i?{word:i[0],meaning:i[1],example:i[2],source:i[3],sound:i[4]}:null,source:"https://stroke-order.learningweb.moe.edu.tw/dictView.jsp?ID="+r[0].codePointAt(0),checkedAt:"2026-11-02"}]}));
+export const LESSON11_CHARS=rows.map(r=>r[0]).filter(c=>c!=="托");
+export const LESSON11_BANK=Object.fromEntries(rows.map(r=>{const i=idioms[r[0]];return[r[0],{char:r[0],sound:r[1],radical:r[2],strokes:r[3],definition:r[4],words:r.slice(5,7).map(x=>{const[word,meaning,example]=x.split("|");return{word,meaning,example}}),hint:r[7],scene:"旅途",revision:1,reviewed:true,idiom:i?{word:i[0],meaning:i[1],example:i[2],source:i[3],sound:i[4]}:null,source:"https://stroke-order.learningweb.moe.edu.tw/dictView.jsp?ID="+r[0].codePointAt(0),checkedAt:r[8]||"2026-11-02"}]}));

@@ -1,9 +1,9 @@
-import {LESSON12_BANK} from './lesson12.js?v=20261111-1';
-import {LESSON11_BANK} from './lesson11.js?v=20261111-1';
-import {LESSON10_BANK} from './lesson10.js?v=20261111-1';
-import {LESSON9_BANK} from './lesson9.js?v=20261111-1';
-import {LESSON8_BANK} from './lesson8.js?v=20261111-1';
-import {IDIOM_ADDITIONS} from './idiom-supplements.js?v=20261111-1';
+import {LESSON12_BANK} from './lesson12.js?v=20261112-1';
+import {LESSON11_BANK} from './lesson11.js?v=20261112-1';
+import {LESSON10_BANK} from './lesson10.js?v=20261112-1';
+import {LESSON9_BANK} from './lesson9.js?v=20261112-1';
+import {LESSON8_BANK} from './lesson8.js?v=20261112-1';
+import {IDIOM_ADDITIONS} from './idiom-supplements.js?v=20261112-1';
 // 字形事實來自教育部，教學文字自編。沒有課文全文。
 const rows = [
  ['鹹','ㄒㄧㄢˊ','鹵',20,'帶有鹽的味道。','鹹味|帶有鹽的味道。|媽媽煮的蔬菜湯鹹味剛剛好，大家都喝得很開心。','鹹水|含有鹽分的水。|我們在自然課認識鹹水，也知道海水不能直接飲用。','鹹淡|食物中鹽味的輕重。|爸爸煮湯時先試一試鹹淡，再決定要不要加鹽巴。','右邊是「咸」，左邊是「鹵」。','海邊'],
@@ -1131,6 +1131,30 @@ export const WORD_SOURCES=Object.freeze({
     "type": "moe-concise",
     "name": "教育部《國語辭典簡編本》",
     "checkedAt": "2026-11-11"
+  },
+  "志工": {
+    "source": "https://dict.concised.moe.edu.tw/dictView.jsp?ID=29300&la=0",
+    "type": "moe-concise",
+    "name": "教育部《國語辭典簡編本》",
+    "checkedAt": "2026-11-12"
+  },
+  "志願": {
+    "source": "https://dict.concised.moe.edu.tw/dictView.jsp?ID=29308&la=0",
+    "type": "moe-concise",
+    "name": "教育部《國語辭典簡編本》",
+    "checkedAt": "2026-11-12"
+  },
+  "拖地": {
+    "source": "https://dict.concised.moe.edu.tw/dictView.jsp?ID=11594&la=0",
+    "type": "moe-concise",
+    "name": "教育部《國語辭典簡編本》",
+    "checkedAt": "2026-11-12"
+  },
+  "拖車": {
+    "source": "https://dict.concised.moe.edu.tw/dictView.jsp?ID=11607&la=0",
+    "type": "moe-concise",
+    "name": "教育部《國語辭典簡編本》",
+    "checkedAt": "2026-11-12"
   }
 });
 const WORD_REVISIONS=Object.freeze({

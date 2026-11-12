@@ -1,7 +1,7 @@
-import{WORD_SOURCES}from'./data.js?v=20261111-1';
-import{cloud,api,getToken,setToken,teacherState,saveDraft,publish,report,resetSeat,history,restore}from'./client.js?v=20261111-1';
-import{copy,validate,questionSet,summarize,progressKey,complete,ability,COVER_THEMES,sentenceLength,lessonCharacters,studentEntryUrl,bankCharacters,lessonActivity,publicationChanges}from'./domain.js?v=20261111-1';
-import{$,esc,toast,errorView,download,uid,lessonCover}from'./ui.js?v=20261111-1';
+import{WORD_SOURCES}from'./data.js?v=20261112-1';
+import{cloud,api,getToken,setToken,teacherState,saveDraft,publish,report,resetSeat,history,restore}from'./client.js?v=20261112-1';
+import{copy,validate,questionSet,summarize,progressKey,complete,ability,COVER_THEMES,sentenceLength,lessonCharacters,studentEntryUrl,bankCharacters,lessonActivity,publicationChanges}from'./domain.js?v=20261112-1';
+import{$,esc,toast,errorView,download,uid,lessonCover}from'./ui.js?v=20261112-1';
 let state,draft,page='lessons',selectedLesson='',selectedChar='',dirty=false,reportData,bankLessonId='',reportLessonId=null;
 const app=$('#app');
 let formDirty=false;

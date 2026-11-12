@@ -1,6 +1,6 @@
-import{loadCurriculum,cloud,records,record as writeRecord,startSeat,sync,syncLabel}from'./client.js?v=20261111-1';
-import{copy,progressKey,ability,complete,due,questionSet}from'./domain.js?v=20261111-1';
-import{$,esc,shuffle,speak,toast,errorView,sceneSvg,lessonCover}from'./ui.js?v=20261111-1';
+import{loadCurriculum,cloud,records,record as writeRecord,startSeat,sync,syncLabel}from'./client.js?v=20261112-1';
+import{copy,progressKey,ability,complete,due,questionSet}from'./domain.js?v=20261112-1';
+import{$,esc,shuffle,speak,toast,errorView,sceneSvg,lessonCover}from'./ui.js?v=20261112-1';
 let curriculum,seat=0,lesson,char,tab=0,quizIndex=0,questions=[],isReview=false,reviewErrors=0,lastActivity=Date.now(),studyLessonId='';
 const app=$('#app');
 const speechSynthesis=globalThis.speechSynthesis;
@@ -21,8 +21,8 @@ function renderCard(){
  document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{const nextTab=Number(b.dataset.tab);if(nextTab===tab)return;tab=nextTab;if(tab===3){quizIndex=0;isReview=false;reviewErrors=0}renderCard()});
  const content=$('#content');
  if(tab===0){
-  content.innerHTML=`<div class="two"><div><div class="hanzi">${char}</div><div class="phonetic">${c.sound}</div><div class="toolbar" style="justify-content:center"><button class="secondary" id="listen">♫ 聽詞語</button></div></div><div><span class="tag">${c.scene}站</span><h2 style="margin-top:20px">${esc(c.definition)}</h2><p>部首 <b>${c.radical}</b>　總筆畫 <b>${c.strokes}</b></p><p class="notice success">記字小提醒：${esc(c.hint)}</p><p class="small">筆畫依教育部標準字體。小提醒是記憶方法，不是字源解釋。</p><button class="secondary" id="animate">播放教育部筆順動畫</button><p class="small">動畫來自中華民國教育部，需要網路；按下按鈕後載入。<a href="${esc(c.source)}" target="_blank" rel="noopener noreferrer">另開官方筆順頁面</a></p></div></div><div id="animation" class="stroke-inline" aria-live="polite"></div><p class="notice success">紙上練習小提醒：坐姿端正、字形寫完整，再對照筆順檢查。</p><div class="toolbar"><button id="paper" ${p?.writing?'disabled':''}>${p?.writing?'紙上練習已確認 ✓':'我已在紙上練習完成'}</button><button class="secondary" id="next">看造詞造句 →</button></div><p class="small">完成狀態由學生自行確認，老師可在報表查看。</p>`;
-  $('#listen').onclick=()=>speak(c.words[0].word);
+  content.innerHTML=`<div class="two"><div><div class="hanzi">${char}</div><div class="phonetic">${c.sound}</div><div class="toolbar" style="justify-content:center"><button class="secondary" id="listen">♫ 聽字音</button></div></div><div><span class="tag">${c.scene}站</span><h2 style="margin-top:20px">${esc(c.definition)}</h2><p>部首 <b>${c.radical}</b>　總筆畫 <b>${c.strokes}</b></p><p class="notice success">記字小提醒：${esc(c.hint)}</p><p class="small">筆畫依教育部標準字體。小提醒是記憶方法，不是字源解釋。</p><button class="secondary" id="animate">播放教育部筆順動畫</button><p class="small">動畫來自中華民國教育部，需要網路；按下按鈕後載入。<a href="${esc(c.source)}" target="_blank" rel="noopener noreferrer">另開官方筆順頁面</a></p></div></div><div id="animation" class="stroke-inline" aria-live="polite"></div><p class="notice success">紙上練習小提醒：坐姿端正、字形寫完整，再對照筆順檢查。</p><div class="toolbar"><button id="paper" ${p?.writing?'disabled':''}>${p?.writing?'紙上練習已確認 ✓':'我已在紙上練習完成'}</button><button class="secondary" id="next">看造詞造句 →</button></div><p class="small">完成狀態由學生自行確認，老師可在報表查看。</p>`;
+  $('#listen').onclick=()=>speak(char);
   $('#animate').onclick=()=>{$('#animation').innerHTML=`<iframe class="stroke-frame" title="${char}的教育部筆順動畫" src="https://stroke-order.learningweb.moe.edu.tw/dictFrame.jsp?ID=${char.codePointAt(0)}" allow="fullscreen" referrerpolicy="no-referrer"></iframe>`;$('#animate').disabled=true;$('#animate').textContent='筆順動畫已載入'};
   $('#paper').onclick=()=>{try{record(seat,lesson,char,curriculum.version,c,{type:'writing'});renderCard();toast('已記錄紙上練習完成。')}catch(e){toast(e.message)}};
   $('#next').onclick=()=>{tab=1;renderCard()};
